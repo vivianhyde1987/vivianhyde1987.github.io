@@ -428,6 +428,40 @@ h2 {
     var(--panel);
 }
 
+.featured-song {
+  margin-top: 12px;
+  border: 1px solid rgba(182, 37, 72, 0.2);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(182, 37, 72, 0.13), rgba(14, 138, 148, 0.1)),
+    rgba(255, 255, 255, 0.6);
+  padding: 14px;
+}
+
+.featured-song p {
+  margin: 0;
+  color: rgba(37, 29, 32, 0.66);
+  font-weight: 900;
+}
+
+.featured-song strong {
+  display: block;
+  margin: 6px 0 10px;
+  font-size: 1.08rem;
+}
+
+.featured-song a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  border-radius: 6px;
+  background: var(--rose);
+  color: white;
+  padding: 0 13px;
+  text-decoration: none;
+  font-weight: 900;
+}
+
 .daily-song {
   margin-top: 12px;
   border: 1px solid rgba(37, 29, 32, 0.14);
