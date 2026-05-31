@@ -69,8 +69,36 @@ function normalizeHandle(handle) {
   return handle.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^\w\u4e00-\u9fa5-]/g, "").slice(0, 24);
 }
 
+function handleHash(handle) {
+  let hash = 2166136261;
+  for (const char of normalizeHandle(handle)) {
+    hash ^= char.codePointAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(36);
+}
+
 function authEmailForHandle(handle) {
-  return `${normalizeHandle(handle)}@id.vivianhyde1987.com`;
+  return `id-${handleHash(handle)}@id.vivianhyde1987.com`;
+}
+
+function legacyAuthEmailForHandle(handle) {
+  const normalized = normalizeHandle(handle);
+  return /^[a-z0-9_-]+$/.test(normalized) ? `${normalized}@id.vivianhyde1987.com` : null;
+}
+
+function authEmailsForHandle(handle) {
+  return [...new Set([authEmailForHandle(handle), legacyAuthEmailForHandle(handle)].filter(Boolean))];
+}
+
+async function signInWithHandle(handle, password) {
+  let lastError = null;
+  for (const email of authEmailsForHandle(handle)) {
+    const result = await client.auth.signInWithPassword({ email, password });
+    if (!result.error) return result;
+    lastError = result.error;
+  }
+  return { data: null, error: lastError };
 }
 
 function compressPhoto(file) {
@@ -430,10 +458,7 @@ elements.loginForm.addEventListener("submit", async (event) => {
     return;
   }
   setMessage("登录中");
-  const { error } = await client.auth.signInWithPassword({
-    email: authEmailForHandle(handle),
-    password: $("#loginPassword").value
-  });
+  const { error } = await signInWithHandle(handle, $("#loginPassword").value);
   if (error) {
     setMessage("登录失败，请检查 ID 和密码。", "error");
     return;
@@ -451,16 +476,33 @@ elements.registerForm.addEventListener("submit", async (event) => {
     setMessage("ID 只能包含中文、英文、数字、下划线或短横线。", "error");
     return;
   }
+
+  setMessage("检查 ID 中");
+  const { data: existingProfile } = await client.from("profiles").select("handle").eq("handle", handle).maybeSingle();
+  if (existingProfile) {
+    setMessage("这个 ID 已经注册过了，请直接登录。", "error");
+    return;
+  }
+
   setMessage("注册中");
   const { data, error } = await client.auth.signUp({
     email: authEmailForHandle(handle),
     password,
     options: { data: { handle } }
   });
+
   if (error) {
-    setMessage("注册失败，这个 ID 可能已经被别人用了。", "error");
+    const signIn = await signInWithHandle(handle, password);
+    if (!signIn.error) {
+      setMessage("这个 ID 已经存在，已用你输入的密码登录。", "ok");
+      elements.registerForm.reset();
+      return;
+    }
+    const detail = error.message ? `后台提示：${error.message}` : "";
+    setMessage(`注册没有完成。请换一个 ID 或检查 Supabase 是否关闭 Confirm email。${detail}`, "error");
     return;
   }
+
   if (data.session) {
     const avatar = defaultAvatar(handle);
     await client.from("profiles").upsert({
@@ -471,11 +513,8 @@ elements.registerForm.addEventListener("submit", async (event) => {
     });
     setMessage("注册成功，已经登录。", "ok");
   } else {
-    const signIn = await client.auth.signInWithPassword({
-      email: authEmailForHandle(handle),
-      password
-    });
-    setMessage(signIn.error ? "注册已提交。如果不能直接登录，请在 Supabase 里关闭 Confirm email。" : "注册成功，已经登录。", signIn.error ? "error" : "ok");
+    const signIn = await signInWithHandle(handle, password);
+    setMessage(signIn.error ? "注册已提交，但还不能直接登录。请在 Supabase 里关闭 Confirm email，然后再试一次登录。" : "注册成功，已经登录。", signIn.error ? "error" : "ok");
   }
   elements.registerForm.reset();
 });
