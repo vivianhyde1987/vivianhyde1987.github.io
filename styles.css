@@ -613,6 +613,33 @@ h2 {
   gap: 14px;
 }
 
+.media-upload {
+  border: 1px dashed rgba(182, 37, 72, 0.34);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 12px;
+}
+
+.media-upload span {
+  color: var(--rose);
+  font-weight: 900;
+}
+
+.media-upload small {
+  display: block;
+  margin-top: 2px;
+  color: rgba(37, 29, 32, 0.58);
+  line-height: 1.45;
+}
+
+.media-upload input {
+  margin-top: 8px;
+}
+
+.media-upload--video {
+  border-color: rgba(14, 138, 148, 0.4);
+}
+
 .wide {
   grid-column: 1 / -1;
 }
