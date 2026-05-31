@@ -48,6 +48,25 @@ create table if not exists public.blog_post_likes (
   primary key (post_id, owner_id)
 );
 
+create table if not exists public.chat_messages (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid not null,
+  body text,
+  image_url text,
+  created_at timestamptz not null default now(),
+  constraint chat_message_content check (
+    (body is not null and char_length(body) between 1 and 800)
+    or image_url is not null
+  )
+);
+
+create table if not exists public.chat_message_likes (
+  message_id uuid not null references public.chat_messages(id) on delete cascade,
+  owner_id uuid not null,
+  created_at timestamptz not null default now(),
+  primary key (message_id, owner_id)
+);
+
 alter table public.blog_posts drop constraint if exists blog_posts_owner_id_fkey;
 alter table public.blog_comments drop constraint if exists blog_comments_owner_id_fkey;
 alter table public.blog_post_likes drop constraint if exists blog_post_likes_owner_id_fkey;
@@ -57,6 +76,8 @@ alter table public.blog_sessions enable row level security;
 alter table public.blog_posts enable row level security;
 alter table public.blog_comments enable row level security;
 alter table public.blog_post_likes enable row level security;
+alter table public.chat_messages enable row level security;
+alter table public.chat_message_likes enable row level security;
 
 drop policy if exists "accounts are readable" on public.blog_accounts;
 create policy "accounts are readable"
@@ -76,6 +97,16 @@ using (true);
 drop policy if exists "likes are readable" on public.blog_post_likes;
 create policy "likes are readable"
 on public.blog_post_likes for select
+using (true);
+
+drop policy if exists "chat messages are readable" on public.chat_messages;
+create policy "chat messages are readable"
+on public.chat_messages for select
+using (true);
+
+drop policy if exists "chat likes are readable" on public.chat_message_likes;
+create policy "chat likes are readable"
+on public.chat_message_likes for select
 using (true);
 
 create or replace function public.clean_blog_handle(raw_handle text)
@@ -323,6 +354,71 @@ begin
 end;
 $$;
 
+create or replace function public.create_chat_message(session_token uuid, body_input text, image_input text)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  account_row public.blog_accounts;
+  message_uuid uuid;
+  clean_body text := nullif(trim(body_input), '');
+begin
+  select * into account_row from public.account_from_token(session_token);
+  if account_row.id is null then
+    raise exception 'Please log in first';
+  end if;
+  if clean_body is null and image_input is null then
+    raise exception 'Message cannot be empty';
+  end if;
+  insert into public.chat_messages(owner_id, body, image_url)
+  values (account_row.id, clean_body, image_input)
+  returning id into message_uuid;
+  return message_uuid;
+end;
+$$;
+
+create or replace function public.delete_chat_message(session_token uuid, message_uuid uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  account_row public.blog_accounts;
+begin
+  select * into account_row from public.account_from_token(session_token);
+  if account_row.id is null then
+    raise exception 'Please log in first';
+  end if;
+  delete from public.chat_messages
+  where id = message_uuid
+    and (owner_id = account_row.id or account_row.role = 'owner');
+end;
+$$;
+
+create or replace function public.toggle_chat_like(session_token uuid, message_uuid uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  account_row public.blog_accounts;
+begin
+  select * into account_row from public.account_from_token(session_token);
+  if account_row.id is null then
+    raise exception 'Please log in first';
+  end if;
+  if exists (select 1 from public.chat_message_likes where message_id = message_uuid and owner_id = account_row.id) then
+    delete from public.chat_message_likes where message_id = message_uuid and owner_id = account_row.id;
+  else
+    insert into public.chat_message_likes(message_id, owner_id) values (message_uuid, account_row.id);
+  end if;
+end;
+$$;
+
 grant execute on function public.register_blog_account(text, text) to anon, authenticated;
 grant execute on function public.login_blog_account(text, text) to anon, authenticated;
 grant execute on function public.get_blog_session(uuid) to anon, authenticated;
@@ -332,6 +428,9 @@ grant execute on function public.delete_blog_post(uuid, uuid) to anon, authentic
 grant execute on function public.create_blog_comment(uuid, uuid, uuid, text) to anon, authenticated;
 grant execute on function public.delete_blog_comment(uuid, uuid) to anon, authenticated;
 grant execute on function public.toggle_blog_like(uuid, uuid) to anon, authenticated;
+grant execute on function public.create_chat_message(uuid, text, text) to anon, authenticated;
+grant execute on function public.delete_chat_message(uuid, uuid) to anon, authenticated;
+grant execute on function public.toggle_chat_like(uuid, uuid) to anon, authenticated;
 
 -- After registering your owner ID, replace your-id and run once:
 -- update public.blog_accounts set role = 'owner' where handle = 'your-id';

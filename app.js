@@ -8,6 +8,8 @@ let profile = null;
 let posts = [];
 let comments = [];
 let likes = [];
+let chatMessages = [];
+let chatLikes = [];
 let profiles = new Map();
 let activeCategory = "日志";
 
@@ -31,8 +33,13 @@ const elements = {
   titleInput: $("#titleInput"),
   bodyInput: $("#bodyInput"),
   imageInput: $("#imageInput"),
+  chatForm: $("#chatForm"),
+  chatBodyInput: $("#chatBodyInput"),
+  chatImageInput: $("#chatImageInput"),
+  chatList: $("#chatList"),
   todayText: $("#todayText"),
   syncStatus: $("#syncStatus"),
+  archiveTitle: $("#archiveTitle"),
   feed: $("#feed"),
   postTemplate: $("#postTemplate")
 };
@@ -58,7 +65,6 @@ function escapeHtml(value = "") {
 
 function formatDate(value) {
   return new Intl.DateTimeFormat("zh-CN", {
-    year: "numeric",
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
@@ -67,7 +73,7 @@ function formatDate(value) {
 }
 
 function normalizeHandle(handle) {
-  return handle.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^\w\u4e00-\u9fa5-]/g, "").slice(0, 24);
+  return handle.trim().toLowerCase().replace(/\s+/g, "-").slice(0, 24);
 }
 
 function rpcErrorText(error, fallback) {
@@ -92,8 +98,10 @@ function clearSession() {
   localStorage.removeItem(sessionKey);
 }
 
-function compressPhoto(file) {
+function compressPhoto(file, options = {}) {
   if (!file) return Promise.resolve(null);
+  const maxSide = options.maxSide || 900;
+  const quality = options.quality || 0.72;
   return new Promise((resolve, reject) => {
     if (!file.type.startsWith("image/")) {
       reject(new Error("not image"));
@@ -105,16 +113,14 @@ function compressPhoto(file) {
       const image = new Image();
       image.onerror = () => reject(new Error("photo load failed"));
       image.onload = () => {
-        const maxSide = 900;
         const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
         const width = Math.max(1, Math.round(image.width * scale));
         const height = Math.max(1, Math.round(image.height * scale));
         const canvas = document.createElement("canvas");
         canvas.width = width;
         canvas.height = height;
-        const context = canvas.getContext("2d");
-        context.drawImage(image, 0, 0, width, height);
-        resolve(canvas.toDataURL("image/jpeg", 0.72));
+        canvas.getContext("2d").drawImage(image, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
       };
       image.src = reader.result;
     };
@@ -166,10 +172,11 @@ function renderSession() {
   const logout = document.createElement("button");
   logout.type = "button";
   logout.textContent = "退出";
-  logout.addEventListener("click", async () => {
+  logout.addEventListener("click", () => {
     clearSession();
     renderSession();
     renderFeed();
+    renderChat();
     setMessage("已退出。");
   });
   elements.sessionArea.append(avatarNode, name, logout);
@@ -214,43 +221,52 @@ async function loadBlog() {
   if (!client) return;
   setSync("同步中");
   try {
-    const [{ data: postRows, error: postError }, { data: commentRows, error: commentError }, { data: profileRows, error: profileError }, { data: likeRows, error: likeError }] = await Promise.all([
+    const [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult] = await Promise.all([
       client.from("blog_posts").select("*").order("created_at", { ascending: false }),
       client.from("blog_comments").select("*").order("created_at", { ascending: true }),
       client.from("blog_accounts").select("id, handle, avatar, role"),
-      client.from("blog_post_likes").select("*")
+      client.from("blog_post_likes").select("*"),
+      client.from("chat_messages").select("*").order("created_at", { ascending: false }).limit(80),
+      client.from("chat_message_likes").select("*")
     ]);
-    if (postError) throw postError;
-    if (commentError) throw commentError;
-    if (profileError) throw profileError;
-    if (likeError) throw likeError;
+    for (const result of [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult]) {
+      if (result.error) throw result.error;
+    }
 
-    posts = postRows || [];
-    comments = commentRows || [];
-    likes = likeRows || [];
-    profiles = new Map((profileRows || []).map((item) => [item.id, { ...item, user_id: item.id }]));
+    posts = postResult.data || [];
+    comments = commentResult.data || [];
+    likes = likeResult.data || [];
+    chatMessages = chatResult.data || [];
+    chatLikes = chatLikeResult.data || [];
+    profiles = new Map((profileResult.data || []).map((item) => [item.id, { ...item, user_id: item.id }]));
     setSync("云端已同步");
     renderFeed();
+    renderChat();
   } catch {
     setSync("需要运行新版 SQL");
-    elements.feed.innerHTML = `<div class="empty">账号系统已更新。请先把新版 supabase-setup.sql 复制到 Supabase 的 SQL Editor 运行一次。</div>`;
+    elements.feed.innerHTML = `<div class="empty">新增了栏目历史和临时讨论区。请把新版 supabase-setup.sql 复制到 Supabase 的 SQL Editor 再运行一次。</div>`;
+    elements.chatList.innerHTML = `<div class="empty">讨论区等待云端初始化。</div>`;
   }
 }
 
-function setCategory(category) {
+function setCategory(category, shouldScroll = false) {
   activeCategory = category;
   elements.categoryInput.value = category;
+  elements.archiveTitle.textContent = `${category}历史文章`;
   $$("[data-category]").forEach((button) => {
     if (button.tagName === "BUTTON") button.classList.toggle("active", button.dataset.category === category);
   });
   renderFeed();
+  if (shouldScroll) {
+    elements.archiveTitle.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 }
 
 function renderFeed() {
   const visible = posts.filter((post) => post.category === activeCategory);
   elements.feed.innerHTML = "";
   if (!visible.length) {
-    elements.feed.innerHTML = `<div class="empty">${activeCategory} 里还没有内容。登录后写第一篇，它会保存在这里。</div>`;
+    elements.feed.innerHTML = `<div class="empty">${activeCategory} 里还没有历史文章。</div>`;
     return;
   }
 
@@ -419,12 +435,86 @@ async function deleteComment(id) {
   await loadBlog();
 }
 
+function chatLikeCount(messageId) {
+  return chatLikes.filter((item) => item.message_id === messageId).length;
+}
+
+function isChatLiked(messageId) {
+  return Boolean(profile && chatLikes.some((item) => item.message_id === messageId && item.owner_id === profile.user_id));
+}
+
+function canDeleteChat(message) {
+  return Boolean(profile && (profile.role === "owner" || message.owner_id === profile.user_id));
+}
+
+function renderChat() {
+  elements.chatList.innerHTML = "";
+  if (!chatMessages.length) {
+    elements.chatList.innerHTML = `<div class="empty">临时讨论区还没有消息。</div>`;
+    return;
+  }
+
+  chatMessages.forEach((message) => {
+    const author = profiles.get(message.owner_id);
+    const item = document.createElement("article");
+    item.className = "chat-message";
+    item.innerHTML = `
+      <div class="chat-message__head">
+        <strong>${escapeHtml(author?.handle || "朋友")}</strong>
+        <small>${formatDate(message.created_at)}</small>
+      </div>
+      ${message.body ? `<p>${escapeHtml(message.body)}</p>` : ""}
+      ${message.image_url ? `<img src="${message.image_url}" alt="聊天贴图" />` : ""}
+      <div class="chat-message__actions"></div>
+    `;
+    const actions = item.querySelector(".chat-message__actions");
+    const likeButton = document.createElement("button");
+    likeButton.type = "button";
+    likeButton.className = isChatLiked(message.id) ? "is-liked" : "";
+    likeButton.textContent = `${isChatLiked(message.id) ? "已赞" : "点赞"} ${chatLikeCount(message.id)}`;
+    likeButton.disabled = !profile;
+    likeButton.addEventListener("click", () => toggleChatLike(message.id));
+    actions.append(likeButton);
+
+    if (canDeleteChat(message)) {
+      const deleteButton = document.createElement("button");
+      deleteButton.type = "button";
+      deleteButton.textContent = "删除";
+      deleteButton.addEventListener("click", () => deleteChatMessage(message.id));
+      actions.append(deleteButton);
+    }
+    elements.chatList.append(item);
+  });
+}
+
+async function toggleChatLike(messageId) {
+  if (!profile) {
+    setMessage("请先登录，再点赞。", "error");
+    return;
+  }
+  const { error } = await client.rpc("toggle_chat_like", { session_token: sessionToken, message_uuid: messageId });
+  if (error) {
+    setSync(rpcErrorText(error, "讨论区点赞失败"));
+    return;
+  }
+  await loadBlog();
+}
+
+async function deleteChatMessage(messageId) {
+  const { error } = await client.rpc("delete_chat_message", { session_token: sessionToken, message_uuid: messageId });
+  if (error) {
+    setSync(rpcErrorText(error, "删除讨论消息失败"));
+    return;
+  }
+  await loadBlog();
+}
+
 $$(".auth-tabs button").forEach((button) => {
   button.addEventListener("click", () => switchAuthTab(button.dataset.authTab));
 });
 
 $$("[data-category]").forEach((button) => {
-  button.addEventListener("click", () => setCategory(button.dataset.category));
+  button.addEventListener("click", () => setCategory(button.dataset.category, true));
 });
 
 elements.loginForm.addEventListener("submit", async (event) => {
@@ -455,7 +545,7 @@ elements.registerForm.addEventListener("submit", async (event) => {
   const handle = normalizeHandle($("#registerHandle").value);
   const password = $("#registerPassword").value;
   if (!handle) {
-    setMessage("ID 只能包含中文、英文、数字、下划线或短横线。", "error");
+    setMessage("ID 不能为空。", "error");
     return;
   }
   setMessage("注册中");
@@ -524,7 +614,6 @@ elements.postForm.addEventListener("submit", async (event) => {
     setSync("照片还是太大，请换一张较小的照片");
     return;
   }
-  setSync("保存中");
   const { error } = await client.rpc("create_blog_post", {
     session_token: sessionToken,
     category_input: category,
@@ -540,7 +629,45 @@ elements.postForm.addEventListener("submit", async (event) => {
   activeCategory = category;
   elements.postForm.reset();
   await loadBlog();
-  setCategory(activeCategory);
+  setCategory(activeCategory, true);
+});
+
+elements.chatForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!profile) {
+    setMessage("请先登录，再进入讨论区。", "error");
+    return;
+  }
+  const body = elements.chatBodyInput.value.trim();
+  const file = elements.chatImageInput.files?.[0] || null;
+  if (!body && !file) {
+    setSync("讨论区消息不能为空");
+    return;
+  }
+  setSync(file ? "处理贴图中" : "发送中");
+  let imageUrl = null;
+  try {
+    imageUrl = await compressPhoto(file, { maxSide: 720, quality: 0.7 });
+  } catch {
+    setSync("贴图处理失败，请换一张普通 JPG 或 PNG");
+    return;
+  }
+  if (imageUrl && imageUrl.length > 650000) {
+    setSync("贴图太大，请换一张较小的图片");
+    return;
+  }
+  const { error } = await client.rpc("create_chat_message", {
+    session_token: sessionToken,
+    body_input: body,
+    image_input: imageUrl
+  });
+  if (error) {
+    setSync(rpcErrorText(error, "讨论区发送失败"));
+    return;
+  }
+  elements.chatForm.reset();
+  setSync("已发送");
+  await loadBlog();
 });
 
 elements.todayText.textContent = new Intl.DateTimeFormat("zh-CN", {

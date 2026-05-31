@@ -242,6 +242,7 @@ label {
 }
 
 .hero__badges span,
+.hero__badges button,
 .notice-strip span {
   border: 1px solid rgba(255, 255, 255, 0.32);
   border-radius: 999px;
@@ -251,6 +252,11 @@ label {
   font-size: 0.86rem;
   font-weight: 800;
   backdrop-filter: blur(10px);
+}
+
+.hero__badges button {
+  min-height: 38px;
+  box-shadow: none;
 }
 
 .notice-strip {
@@ -927,6 +933,73 @@ h2 {
   border: 1px solid rgba(37, 29, 32, 0.12);
 }
 
+.archive-title {
+  color: white;
+  font-weight: 900;
+  font-size: 1.05rem;
+}
+
+.chat-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.chat-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.chat-message {
+  display: grid;
+  gap: 8px;
+  border: 1px solid rgba(37, 29, 32, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.56);
+  padding: 12px;
+}
+
+.chat-message__head,
+.chat-message__actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.chat-message__head strong {
+  color: var(--rose);
+}
+
+.chat-message p {
+  margin: 0;
+  line-height: 1.65;
+}
+
+.chat-message img {
+  width: min(100%, 420px);
+  height: 240px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid rgba(37, 29, 32, 0.12);
+}
+
+.chat-message__actions button {
+  min-height: 30px;
+  padding: 0 10px;
+  background: rgba(37, 29, 32, 0.1);
+  color: var(--ink);
+  border: 1px solid rgba(37, 29, 32, 0.13);
+  box-shadow: none;
+}
+
+.chat-message__actions .is-liked {
+  background: var(--rose);
+  color: white;
+}
+
 .post__image[hidden] {
   display: none;
 }
@@ -1087,7 +1160,8 @@ h2 {
 
   .post-form,
   .comment-form,
-  .mood-quiz {
+  .mood-quiz,
+  .chat-form {
     grid-template-columns: 1fr;
   }
 
