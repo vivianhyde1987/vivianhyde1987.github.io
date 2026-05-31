@@ -1,17 +1,20 @@
 :root {
-  color-scheme: dark;
-  --bg: #100e10;
-  --paper: #f6efe7;
-  --ink: #251d20;
-  --panel: rgba(251, 243, 232, 0.96);
-  --line: rgba(37, 29, 32, 0.18);
-  --rose: #b62548;
-  --teal: #0e8a94;
-  --violet: #6c4ea3;
-  --gold: #d4a72c;
-  --blue: #2b5f8c;
-  --moss: #6f6a43;
-  --shadow: 0 20px 60px rgba(0, 0, 0, 0.32);
+  color-scheme: light;
+  --bg: #d8c4a7;
+  --paper: #f4eadb;
+  --ink: #3a2618;
+  --panel: rgba(247, 237, 222, 0.96);
+  --line: rgba(80, 52, 32, 0.2);
+  --rose: #8b4f31;
+  --teal: #6f7350;
+  --violet: #6b513b;
+  --gold: #b88955;
+  --blue: #5e6c63;
+  --moss: #7a704d;
+  --walnut: #5a321f;
+  --coffee: #7b5438;
+  --cream: #fff7ea;
+  --shadow: 0 18px 46px rgba(65, 38, 20, 0.24);
 }
 
 * {
@@ -22,10 +25,10 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(circle at 16% 8%, rgba(182, 37, 72, 0.26), transparent 28rem),
-    radial-gradient(circle at 84% 0%, rgba(14, 138, 148, 0.2), transparent 24rem),
-    linear-gradient(90deg, rgba(246, 239, 231, 0.055) 1px, transparent 1px),
-    linear-gradient(rgba(246, 239, 231, 0.045) 1px, transparent 1px),
+    linear-gradient(135deg, rgba(90, 50, 31, 0.2), transparent 24rem),
+    linear-gradient(315deg, rgba(184, 137, 85, 0.26), transparent 28rem),
+    linear-gradient(90deg, rgba(255, 247, 234, 0.2) 1px, transparent 1px),
+    linear-gradient(rgba(255, 247, 234, 0.16) 1px, transparent 1px),
     var(--bg);
   background-size: auto, auto, 32px 32px, 32px 32px, auto;
   color: var(--ink);
@@ -40,11 +43,11 @@ body::before {
   pointer-events: none;
   content: "";
   background:
-    linear-gradient(rgba(255, 255, 255, 0.035) 50%, transparent 50%),
-    radial-gradient(circle at center, transparent 45%, rgba(0, 0, 0, 0.36));
+    linear-gradient(rgba(255, 247, 234, 0.11) 50%, transparent 50%),
+    radial-gradient(circle at center, transparent 48%, rgba(69, 39, 21, 0.18));
   background-size: 100% 4px, auto;
-  mix-blend-mode: screen;
-  opacity: 0.52;
+  mix-blend-mode: multiply;
+  opacity: 0.38;
 }
 
 button,
@@ -57,7 +60,7 @@ select {
 button {
   border: 0;
   border-radius: 6px;
-  background: linear-gradient(180deg, #c93458, var(--rose));
+  background: linear-gradient(180deg, #8b5a38, var(--walnut));
   color: white;
   min-height: 42px;
   padding: 0 16px;
@@ -83,7 +86,7 @@ select {
   width: 100%;
   border: 1px solid var(--line);
   border-radius: 6px;
-  background: #fffaf5;
+  background: var(--cream);
   color: var(--ink);
   padding: 11px 12px;
   outline-color: var(--teal);
@@ -110,7 +113,7 @@ label {
   position: relative;
   min-height: min(72vh, 560px);
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 247, 234, 0.45);
   border-radius: 8px;
   box-shadow: var(--shadow);
 }
@@ -127,8 +130,8 @@ label {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(90deg, rgba(12, 8, 10, 0.92), rgba(12, 8, 10, 0.54) 52%, rgba(12, 8, 10, 0.2)),
-    linear-gradient(0deg, rgba(12, 8, 10, 0.55), transparent 54%);
+    linear-gradient(90deg, rgba(55, 32, 19, 0.9), rgba(88, 55, 34, 0.58) 52%, rgba(88, 55, 34, 0.18)),
+    linear-gradient(0deg, rgba(80, 48, 29, 0.56), transparent 54%);
 }
 
 .hero::after {
@@ -139,8 +142,8 @@ label {
   height: 120px;
   content: "";
   background:
-    linear-gradient(90deg, rgba(182, 37, 72, 0.78), rgba(212, 167, 44, 0.72), rgba(14, 138, 148, 0.72), rgba(108, 78, 163, 0.72));
-  opacity: 0.28;
+    linear-gradient(90deg, rgba(90, 50, 31, 0.78), rgba(184, 137, 85, 0.7), rgba(111, 115, 80, 0.56), rgba(107, 81, 59, 0.64));
+  opacity: 0.22;
   filter: blur(26px);
 }
 
@@ -173,7 +176,7 @@ label {
   height: 42px;
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 50%;
-  background: radial-gradient(circle at 38% 26%, rgba(255, 255, 255, 0.34), rgba(182, 37, 72, 0.44));
+  background: radial-gradient(circle at 38% 26%, rgba(255, 247, 234, 0.44), rgba(90, 50, 31, 0.62));
 }
 
 .session {
@@ -200,7 +203,7 @@ label {
 
 .eyebrow {
   margin: 0 0 12px;
-  color: #ffd9df;
+  color: #f6dfbd;
   font-weight: 800;
 }
 
@@ -227,10 +230,10 @@ label {
 
 .hero__badges span,
 .notice-strip span {
-  border: 1px solid rgba(255, 255, 255, 0.32);
+  border: 1px solid rgba(255, 247, 234, 0.36);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff7f2;
+  background: rgba(244, 234, 219, 0.14);
+  color: #fff7ea;
   padding: 8px 12px;
   font-size: 0.86rem;
   font-weight: 800;
@@ -243,13 +246,13 @@ label {
   gap: 12px;
   margin-top: 12px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 247, 234, 0.26);
   border-radius: 8px;
   background:
-    linear-gradient(90deg, rgba(37, 29, 32, 0.7), rgba(67, 28, 42, 0.7)),
-    rgba(255, 255, 255, 0.08);
+    linear-gradient(90deg, rgba(82, 48, 29, 0.8), rgba(123, 84, 56, 0.72)),
+    rgba(255, 247, 234, 0.12);
   padding: 10px 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 10px 28px rgba(65, 38, 20, 0.18);
 }
 
 .notice-strip span {
@@ -278,13 +281,13 @@ label {
   position: relative;
   overflow: hidden;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.58), transparent 130px),
+    linear-gradient(180deg, rgba(255, 250, 240, 0.58), transparent 130px),
     var(--panel);
-  border: 1px solid rgba(255, 255, 255, 0.76);
+  border: 1px solid rgba(255, 247, 234, 0.8);
   border-radius: 8px;
   box-shadow:
-    0 10px 30px rgba(0, 0, 0, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+    0 10px 30px rgba(65, 38, 20, 0.16),
+    inset 0 1px 0 rgba(255, 247, 234, 0.8);
 }
 
 .panel::before,
@@ -295,7 +298,7 @@ label {
   left: 0;
   height: 5px;
   content: "";
-  background: linear-gradient(90deg, var(--rose), var(--gold), var(--teal), var(--violet));
+  background: linear-gradient(90deg, var(--walnut), var(--coffee), var(--gold), var(--moss));
 }
 
 .panel {
@@ -356,9 +359,9 @@ h2 {
   width: 54px;
   aspect-ratio: 1;
   flex: 0 0 auto;
-  border: 2px solid rgba(255, 255, 255, 0.86);
+  border: 2px solid rgba(255, 247, 234, 0.92);
   background:
-    radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.48), transparent 26%),
+    radial-gradient(circle at 35% 28%, rgba(255, 247, 234, 0.48), transparent 26%),
     var(--avatar-color, var(--rose));
   color: white;
   font-weight: 900;
@@ -408,7 +411,7 @@ h2 {
 
 .people-card strong,
 .comment strong {
-  color: var(--rose);
+  color: var(--walnut);
 }
 
 .people-card p {
@@ -430,11 +433,11 @@ h2 {
 
 .featured-song {
   margin-top: 12px;
-  border: 1px solid rgba(182, 37, 72, 0.2);
+  border: 1px solid rgba(90, 50, 31, 0.22);
   border-radius: 8px;
   background:
-    linear-gradient(135deg, rgba(182, 37, 72, 0.13), rgba(14, 138, 148, 0.1)),
-    rgba(255, 255, 255, 0.6);
+    linear-gradient(135deg, rgba(90, 50, 31, 0.12), rgba(184, 137, 85, 0.13)),
+    rgba(255, 247, 234, 0.6);
   padding: 14px;
 }
 
@@ -455,7 +458,7 @@ h2 {
   align-items: center;
   min-height: 38px;
   border-radius: 6px;
-  background: var(--rose);
+  background: var(--walnut);
   color: white;
   padding: 0 13px;
   text-decoration: none;
@@ -467,8 +470,8 @@ h2 {
   border: 1px solid rgba(37, 29, 32, 0.14);
   border-radius: 8px;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.74), rgba(255, 246, 229, 0.56)),
-    rgba(255, 255, 255, 0.52);
+    linear-gradient(135deg, rgba(255, 247, 234, 0.78), rgba(232, 214, 188, 0.58)),
+    rgba(255, 247, 234, 0.52);
   padding: 14px;
 }
 
@@ -487,7 +490,7 @@ h2 {
 .daily-song a {
   display: inline-block;
   margin-top: 8px;
-  color: #07575e;
+  color: var(--walnut);
   font-weight: 800;
 }
 
@@ -512,8 +515,8 @@ h2 {
   border-radius: 8px;
   padding: 12px;
   background:
-    radial-gradient(circle at 12% 12%, rgba(212, 167, 44, 0.18), transparent 9rem),
-    rgba(255, 255, 255, 0.5);
+    linear-gradient(135deg, rgba(184, 137, 85, 0.16), transparent 9rem),
+    rgba(255, 247, 234, 0.54);
 }
 
 .shaker-set p {
@@ -603,7 +606,7 @@ h2 {
 
 .guestbook {
   background:
-    linear-gradient(135deg, rgba(255, 250, 245, 0.96), rgba(237, 247, 244, 0.94)),
+    linear-gradient(135deg, rgba(255, 247, 234, 0.96), rgba(232, 214, 188, 0.88)),
     var(--panel);
 }
 
@@ -628,7 +631,7 @@ h2 {
   gap: 8px;
   border: 1px solid rgba(37, 29, 32, 0.16);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.62);
+  background: rgba(255, 247, 234, 0.66);
   padding: 7px 11px;
   font-weight: 800;
 }
@@ -657,12 +660,12 @@ h2 {
   align-items: start;
   border: 1px solid rgba(37, 29, 32, 0.1);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.56);
+  background: rgba(255, 247, 234, 0.58);
   padding: 12px;
 }
 
 .guestbook-message strong {
-  color: var(--rose);
+  color: var(--walnut);
 }
 
 .guestbook-message .mood-stamp {
@@ -693,13 +696,13 @@ h2 {
 }
 
 .tabs button {
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 247, 234, 0.14);
+  border: 1px solid rgba(255, 247, 234, 0.32);
 }
 
 .tabs button.active {
   background: var(--gold);
-  color: #21180b;
+  color: #332113;
 }
 
 .feed {
@@ -714,8 +717,8 @@ h2 {
 .post:hover,
 .panel:hover {
   box-shadow:
-    0 16px 42px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+    0 16px 42px rgba(65, 38, 20, 0.2),
+    inset 0 1px 0 rgba(255, 247, 234, 0.82);
 }
 
 .post__meta {
@@ -745,7 +748,7 @@ h2 {
 .mood {
   flex: 0 0 auto;
   border-radius: 999px;
-  background: #fff;
+  background: var(--cream);
   border: 1px solid var(--line);
   padding: 7px 10px;
   font-weight: 800;
@@ -766,8 +769,8 @@ h2 {
 
 .tag {
   border-radius: 999px;
-  background: rgba(14, 138, 148, 0.13);
-  color: #07575e;
+  background: rgba(123, 84, 56, 0.13);
+  color: var(--walnut);
   padding: 6px 10px;
   font-size: 0.82rem;
   font-weight: 800;
@@ -782,7 +785,7 @@ h2 {
   margin: 0 0 10px;
   padding: 10px 12px;
   border-left: 3px solid var(--gold);
-  background: rgba(255, 255, 255, 0.56);
+  background: rgba(255, 247, 234, 0.58);
   line-height: 1.55;
 }
 
@@ -798,8 +801,8 @@ h2 {
 }
 
 .empty {
-  color: white;
-  border: 1px dashed rgba(255, 255, 255, 0.34);
+  color: var(--cream);
+  border: 1px dashed rgba(255, 247, 234, 0.42);
   border-radius: 8px;
   padding: 24px;
   line-height: 1.7;
@@ -822,15 +825,15 @@ h2 {
 .category-nav button {
   min-height: 38px;
   padding: 0 10px;
-  background: rgba(37, 29, 32, 0.08);
+  background: rgba(90, 50, 31, 0.08);
   color: var(--ink);
-  border: 1px solid rgba(37, 29, 32, 0.14);
+  border: 1px solid rgba(90, 50, 31, 0.16);
   box-shadow: none;
 }
 
 .auth-tabs button.active,
 .category-nav button.active {
-  background: var(--ink);
+  background: var(--walnut);
   color: white;
 }
 
@@ -847,7 +850,7 @@ h2 {
 }
 
 .auth-note[data-tone="ok"] {
-  color: #0b6a47;
+  color: #596234;
 }
 
 .auth-note[data-tone="error"] {
@@ -866,7 +869,7 @@ h2 {
 }
 
 .feed-tools span {
-  border: 1px solid rgba(255, 255, 255, 0.26);
+  border: 1px solid rgba(255, 247, 234, 0.34);
   border-radius: 999px;
   color: white;
   padding: 7px 11px;
@@ -904,7 +907,7 @@ h2 {
 .comment__actions button {
   min-height: 30px;
   padding: 0 10px;
-  background: rgba(37, 29, 32, 0.1);
+  background: rgba(90, 50, 31, 0.1);
   color: var(--ink);
   border: 1px solid rgba(37, 29, 32, 0.13);
   box-shadow: none;
@@ -913,7 +916,7 @@ h2 {
 .reply {
   margin: 8px 0 0 18px;
   border-left-color: var(--teal);
-  background: rgba(255, 255, 255, 0.48);
+  background: rgba(255, 247, 234, 0.5);
 }
 
 .reply-form {
@@ -940,13 +943,13 @@ h2 {
   width: clamp(78px, 15vw, 118px);
   aspect-ratio: 1;
   overflow: hidden;
-  border: 3px solid rgba(246, 239, 231, 0.94);
+  border: 3px solid rgba(255, 247, 234, 0.94);
   border-radius: 50%;
   padding: 0;
-  background: #f6efe7;
+  background: var(--paper);
   box-shadow:
-    0 14px 32px rgba(0, 0, 0, 0.34),
-    0 0 0 1px rgba(182, 37, 72, 0.32);
+    0 14px 32px rgba(65, 38, 20, 0.32),
+    0 0 0 1px rgba(90, 50, 31, 0.32);
   pointer-events: auto;
   animation: mimi-breathe 5.6s ease-in-out infinite;
   list-style: none;
@@ -977,16 +980,16 @@ h2 {
 .mimi-companion__note {
   width: min(240px, calc(100vw - 34px));
   margin-bottom: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.74);
+  border: 1px solid rgba(255, 247, 234, 0.78);
   border-radius: 8px;
-  background: rgba(246, 239, 231, 0.96);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.24);
+  background: rgba(247, 237, 222, 0.96);
+  box-shadow: 0 14px 34px rgba(65, 38, 20, 0.22);
   padding: 12px 14px;
   pointer-events: auto;
 }
 
 .mimi-companion__note strong {
-  color: var(--rose);
+  color: var(--walnut);
 }
 
 .mimi-companion__note p {
