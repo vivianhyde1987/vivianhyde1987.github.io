@@ -51,6 +51,8 @@ const elements = {
   bodyInput: $("#bodyInput"),
   imageInput: $("#imageInput"),
   videoInput: $("#videoInput"),
+  clearImageInput: $("#clearImageInput"),
+  clearVideoInput: $("#clearVideoInput"),
   chatForm: $("#chatForm"),
   chatBodyInput: $("#chatBodyInput"),
   chatImageInput: $("#chatImageInput"),
@@ -769,6 +771,22 @@ elements.avatarForm.addEventListener("submit", async (event) => {
   input.addEventListener("input", renderAvatarPreview);
 });
 
+function updateMediaClearButtons() {
+  elements.clearImageInput.hidden = !elements.imageInput.files?.length;
+  elements.clearVideoInput.hidden = !elements.videoInput.files?.length;
+}
+
+elements.imageInput.addEventListener("change", updateMediaClearButtons);
+elements.videoInput.addEventListener("change", updateMediaClearButtons);
+elements.clearImageInput.addEventListener("click", () => {
+  elements.imageInput.value = "";
+  updateMediaClearButtons();
+});
+elements.clearVideoInput.addEventListener("click", () => {
+  elements.videoInput.value = "";
+  updateMediaClearButtons();
+});
+
 elements.avatarImageInput.addEventListener("change", async () => {
   const file = elements.avatarImageInput.files?.[0] || null;
   if (!file) {
@@ -828,6 +846,7 @@ elements.postForm.addEventListener("submit", async (event) => {
   setSync("已保存");
   activeCategory = category;
   elements.postForm.reset();
+  updateMediaClearButtons();
   await loadBlog();
   setCategory(activeCategory, true);
 });
@@ -886,6 +905,7 @@ elements.postForm.addEventListener("submit", async (event) => {
   setSync("已保存");
   activeCategory = category;
   elements.postForm.reset();
+  updateMediaClearButtons();
   await loadBlog();
   setCategory(activeCategory, true);
 }, { capture: true });

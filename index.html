@@ -169,11 +169,13 @@
               <label class="wide media-upload">
                 <span>上传照片</span>
                 <input id="imageInput" type="file" accept="image/*" />
+                <button id="clearImageInput" class="clear-media" type="button" hidden>删除重选</button>
               </label>
               <label class="wide media-upload media-upload--video">
                 <span>上传视频</span>
                 <small>手机相册里的短视频，建议 50MB 以内</small>
                 <input id="videoInput" type="file" accept="video/mp4,video/webm,video/quicktime,video/*" />
+                <button id="clearVideoInput" class="clear-media" type="button" hidden>删除重选</button>
               </label>
               <button class="wide" type="submit">保存到博客</button>
             </form>

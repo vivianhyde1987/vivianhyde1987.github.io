@@ -636,6 +636,20 @@ h2 {
   margin-top: 8px;
 }
 
+.clear-media {
+  min-height: 32px;
+  margin-top: 8px;
+  padding: 0 10px;
+  border: 1px solid rgba(37, 29, 32, 0.12);
+  background: rgba(37, 29, 32, 0.08);
+  color: var(--ink);
+  box-shadow: none;
+}
+
+.clear-media[hidden] {
+  display: none;
+}
+
 .media-upload--video {
   border-color: rgba(14, 138, 148, 0.4);
 }
