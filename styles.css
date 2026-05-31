@@ -190,14 +190,79 @@ label {
   font-weight: 800;
 }
 
-.brand__mark {
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  border: 1px solid rgba(255, 255, 255, 0.5);
+.brand__logo {
+  position: relative;
+  display: block;
+  width: 58px;
+  height: 58px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.44);
   border-radius: 50%;
-  background: radial-gradient(circle at 38% 26%, rgba(255, 255, 255, 0.34), rgba(182, 37, 72, 0.44));
+  background:
+    radial-gradient(circle at 48% 42%, rgba(255, 232, 228, 0.9) 0 6%, transparent 7%),
+    radial-gradient(circle at 40% 36%, rgba(198, 47, 82, 0.96) 0 13%, transparent 14%),
+    radial-gradient(circle at 58% 36%, rgba(160, 24, 58, 0.96) 0 12%, transparent 13%),
+    radial-gradient(circle at 50% 56%, rgba(117, 18, 48, 0.96) 0 16%, transparent 17%),
+    radial-gradient(circle at 50% 50%, rgba(182, 37, 72, 0.42), rgba(37, 29, 32, 0.18) 58%, rgba(255, 255, 255, 0.08));
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.22),
+    inset 0 0 0 5px rgba(255, 255, 255, 0.07);
+}
+
+.brand__logo::before,
+.brand__logo::after {
+  position: absolute;
+  left: -10px;
+  right: -10px;
+  top: 30px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, #63703b 20%, #263817 52%, #8e1d3c 74%, transparent);
+  content: "";
+  transform: rotate(-28deg);
+}
+
+.brand__logo::after {
+  top: 25px;
+  opacity: 0.82;
+  transform: rotate(32deg);
+}
+
+.brand__rose {
+  position: absolute;
+  inset: 15px;
+  border-radius: 50%;
+  background:
+    conic-gradient(from 20deg, #7d1434, #d13961, #ffd1d8, #9d1f43, #5d122b, #c93458, #7d1434);
+  box-shadow: inset 0 0 0 5px rgba(83, 10, 35, 0.34);
+}
+
+.brand__rose::before {
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffe0e4 0 10%, #c93458 12% 45%, #6e1230 47%);
+  content: "";
+}
+
+.brand__thorn {
+  position: absolute;
+  width: 10px;
+  height: 12px;
+  background: #6f7a3e;
+  clip-path: polygon(50% 0, 100% 100%, 0 72%);
+}
+
+.brand__thorn--one {
+  left: 9px;
+  top: 25px;
+  transform: rotate(-72deg);
+}
+
+.brand__thorn--two {
+  right: 8px;
+  top: 30px;
+  transform: rotate(112deg);
 }
 
 .session {
