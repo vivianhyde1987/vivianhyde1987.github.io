@@ -120,7 +120,7 @@ label {
   html,
   body {
     height: 100%;
-    overflow: hidden;
+    overflow-x: hidden;
   }
 }
 
@@ -145,6 +145,7 @@ label {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center bottom;
 }
 
 .hero__shade {
@@ -463,14 +464,20 @@ label {
 
 @media (min-width: 861px) {
   .shell {
-    display: grid;
-    grid-template-rows: clamp(220px, 30vh, 340px) auto minmax(0, 1fr);
-    height: 100vh;
-    overflow: hidden;
+    position: relative;
+    min-height: 100vh;
+    padding-top: 22px;
   }
 
   .hero {
+    position: fixed;
+    top: 22px;
+    left: 50%;
+    z-index: 0;
+    width: min(calc(100% - 44px), 1240px);
+    height: calc(100vh - 44px);
     min-height: 0;
+    transform: translateX(-50%);
   }
 
   .hero__copy {
@@ -479,26 +486,35 @@ label {
     padding-bottom: 34px;
   }
 
+  .notice-strip,
   .layout {
-    min-height: 0;
-    overflow: hidden;
-    align-items: stretch;
+    position: relative;
+    z-index: 2;
+  }
+
+  .notice-strip {
+    margin-top: clamp(300px, 46vh, 520px);
+    background:
+      linear-gradient(90deg, rgba(37, 29, 32, 0.72), rgba(67, 28, 42, 0.62)),
+      rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+  }
+
+  .layout {
+    align-items: start;
+    padding-bottom: 34px;
   }
 
   .sidebar,
   .content {
-    min-height: 0;
-    max-height: 100%;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    padding-right: 4px;
-    scrollbar-gutter: stable;
+    overflow: visible;
   }
 
   .category-nav {
     position: sticky;
-    top: 0;
+    top: 14px;
     z-index: 8;
+    backdrop-filter: blur(14px);
   }
 }
 
@@ -1627,11 +1643,18 @@ h2 {
 
 @media (max-width: 860px) {
   .shell {
+    position: relative;
     padding: 10px;
   }
 
   .hero {
-    min-height: 520px;
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    z-index: 0;
+    height: calc(100vh - 20px);
+    min-height: 0;
   }
 
   .topbar,
@@ -1657,8 +1680,17 @@ h2 {
   }
 
   .notice-strip {
+    position: relative;
+    z-index: 2;
     align-items: stretch;
     flex-direction: column;
+    margin-top: min(58vh, 460px);
+    backdrop-filter: blur(12px);
+  }
+
+  .layout {
+    position: relative;
+    z-index: 2;
   }
 
   .sound-cluster {
