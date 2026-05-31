@@ -116,6 +116,14 @@ label {
   font-weight: 700;
 }
 
+@media (min-width: 861px) {
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+  }
+}
+
 .shell {
   max-width: 1240px;
   margin: 0 auto;
@@ -386,6 +394,47 @@ label {
 .content {
   display: grid;
   gap: 18px;
+}
+
+@media (min-width: 861px) {
+  .shell {
+    display: grid;
+    grid-template-rows: clamp(220px, 30vh, 340px) auto minmax(0, 1fr);
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .hero {
+    min-height: 0;
+  }
+
+  .hero__copy {
+    align-self: end;
+    padding-top: 38px;
+    padding-bottom: 34px;
+  }
+
+  .layout {
+    min-height: 0;
+    overflow: hidden;
+    align-items: stretch;
+  }
+
+  .sidebar,
+  .content {
+    min-height: 0;
+    max-height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-right: 4px;
+    scrollbar-gutter: stable;
+  }
+
+  .category-nav {
+    position: sticky;
+    top: 0;
+    z-index: 8;
+  }
 }
 
 .panel,
