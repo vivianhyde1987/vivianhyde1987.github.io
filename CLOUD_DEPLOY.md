@@ -10,9 +10,11 @@
 - `blog_posts`：日志、小说、相册、心情栏目内容
 - `blog_comments`：评论和评论下面的回复
 
-## 2. 打开邮箱注册
+## 2. 关闭邮箱确认
 
-在 Supabase 的 Authentication 里确认 Email 登录已开启。忘记密码会通过邮箱发送重置链接。
+在 Supabase 的 Authentication 设置里，确认 Email 登录已开启，同时把 Confirm email 关闭。
+
+这样朋友注册时只需要填写 ID 和密码，不需要收邮件确认。请提醒朋友自己记好密码。
 
 ## 3. 设置站主账号
 

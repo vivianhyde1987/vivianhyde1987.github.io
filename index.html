@@ -47,13 +47,12 @@
             <div class="auth-tabs" role="tablist" aria-label="账号操作">
               <button class="active" type="button" data-auth-tab="login">登录</button>
               <button type="button" data-auth-tab="register">注册</button>
-              <button type="button" data-auth-tab="reset">忘记密码</button>
             </div>
 
             <form id="loginForm" class="stack auth-view">
               <label>
-                邮箱
-                <input id="loginEmail" type="email" autocomplete="email" required />
+                永久 ID
+                <input id="loginHandle" maxlength="24" autocomplete="username" required />
               </label>
               <label>
                 密码
@@ -68,26 +67,14 @@
                 <input id="registerHandle" maxlength="24" placeholder="例如 vivian" autocomplete="username" required />
               </label>
               <label>
-                邮箱
-                <input id="registerEmail" type="email" autocomplete="email" required />
-              </label>
-              <label>
                 密码
                 <input id="registerPassword" type="password" minlength="6" autocomplete="new-password" required />
               </label>
               <button type="submit">注册 ID</button>
             </form>
 
-            <form id="resetForm" class="stack auth-view" hidden>
-              <label>
-                注册邮箱
-                <input id="resetEmail" type="email" autocomplete="email" required />
-              </label>
-              <button type="submit">发送重置邮件</button>
-            </form>
-
             <div class="profile-card" id="profileCard" hidden></div>
-            <p class="auth-note" id="authMessage"></p>
+            <p class="auth-note" id="authMessage">只需要记住自己的 ID 和密码。</p>
           </section>
 
           <section class="panel">

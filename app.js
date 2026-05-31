@@ -1,7 +1,6 @@
 const cloudConfig = window.ROSE_BLOG_CONFIG || {};
 const hasCloud = Boolean(window.supabase && cloudConfig.supabaseUrl && cloudConfig.supabaseAnonKey);
 const client = hasCloud ? window.supabase.createClient(cloudConfig.supabaseUrl, cloudConfig.supabaseAnonKey) : null;
-const categories = ["日志", "小说", "相册", "心情"];
 
 let session = null;
 let profile = null;
@@ -19,7 +18,6 @@ const elements = {
   authMessage: $("#authMessage"),
   loginForm: $("#loginForm"),
   registerForm: $("#registerForm"),
-  resetForm: $("#resetForm"),
   profileCard: $("#profileCard"),
   avatarForm: $("#avatarForm"),
   avatarPreview: $("#avatarPreview"),
@@ -68,6 +66,10 @@ function formatDate(value) {
 
 function normalizeHandle(handle) {
   return handle.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^\w\u4e00-\u9fa5-]/g, "").slice(0, 24);
+}
+
+function authEmailForHandle(handle) {
+  return `${normalizeHandle(handle)}@id.vivianhyde1987.com`;
 }
 
 function defaultAvatar(mark = "R") {
@@ -135,16 +137,11 @@ function switchAuthTab(tab) {
   $$(".auth-tabs button").forEach((button) => button.classList.toggle("active", button.dataset.authTab === tab));
   elements.loginForm.hidden = tab !== "login";
   elements.registerForm.hidden = tab !== "register";
-  elements.resetForm.hidden = tab !== "reset";
 }
 
 async function ensureProfile(user) {
   if (!client || !user) return null;
-  const { data, error } = await client
-    .from("profiles")
-    .select("*")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  const { data, error } = await client.from("profiles").select("*").eq("user_id", user.id).maybeSingle();
   if (error) throw error;
   if (data) return data;
 
@@ -191,7 +188,7 @@ async function loadBlog() {
     profiles = new Map((profileRows || []).map((item) => [item.user_id, item]));
     setSync("云端已同步");
     renderFeed();
-  } catch (error) {
+  } catch {
     setSync("需要初始化云端表");
     elements.feed.innerHTML = `<div class="empty">云端栏目还没有准备好。请把 supabase-setup.sql 里的内容复制到 Supabase 的 SQL Editor 运行一次。</div>`;
   }
@@ -217,8 +214,7 @@ function renderFeed() {
   visible.forEach((post) => {
     const node = elements.postTemplate.content.firstElementChild.cloneNode(true);
     const author = profiles.get(post.owner_id);
-    const avatarNode = node.querySelector(".user-avatar");
-    paintAvatar(avatarNode, avatarFromProfile(author));
+    paintAvatar(node.querySelector(".user-avatar"), avatarFromProfile(author));
     node.querySelector("h3").textContent = post.title;
     node.querySelector(".post__meta p").textContent = `${author?.handle || "朋友"} / ${formatDate(post.created_at)}`;
     node.querySelector(".mood").textContent = post.category;
@@ -279,9 +275,7 @@ function createCommentNode(comment, isReply = false) {
     actions.append(deleteButton);
   }
 
-  comments
-    .filter((item) => item.parent_id === comment.id)
-    .forEach((reply) => node.append(createCommentNode(reply, true)));
+  comments.filter((item) => item.parent_id === comment.id).forEach((reply) => node.append(createCommentNode(reply, true)));
   return node;
 }
 
@@ -336,13 +330,18 @@ $$("[data-category]").forEach((button) => {
 elements.loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!client) return;
+  const handle = normalizeHandle($("#loginHandle").value);
+  if (!handle) {
+    setMessage("请先输入 ID。", "error");
+    return;
+  }
   setMessage("登录中");
   const { error } = await client.auth.signInWithPassword({
-    email: $("#loginEmail").value.trim(),
+    email: authEmailForHandle(handle),
     password: $("#loginPassword").value
   });
   if (error) {
-    setMessage("登录失败，请检查邮箱和密码。", "error");
+    setMessage("登录失败，请检查 ID 和密码。", "error");
     return;
   }
   elements.loginForm.reset();
@@ -353,18 +352,19 @@ elements.registerForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!client) return;
   const handle = normalizeHandle($("#registerHandle").value);
+  const password = $("#registerPassword").value;
   if (!handle) {
     setMessage("ID 只能包含中文、英文、数字、下划线或短横线。", "error");
     return;
   }
   setMessage("注册中");
   const { data, error } = await client.auth.signUp({
-    email: $("#registerEmail").value.trim(),
-    password: $("#registerPassword").value,
+    email: authEmailForHandle(handle),
+    password,
     options: { data: { handle } }
   });
   if (error) {
-    setMessage("注册失败，这个邮箱可能已注册。", "error");
+    setMessage("注册失败，这个 ID 可能已经被别人用了。", "error");
     return;
   }
   if (data.session) {
@@ -377,19 +377,13 @@ elements.registerForm.addEventListener("submit", async (event) => {
     });
     setMessage("注册成功，已经登录。", "ok");
   } else {
-    setMessage("注册成功，请先去邮箱确认，然后回来登录。", "ok");
+    const signIn = await client.auth.signInWithPassword({
+      email: authEmailForHandle(handle),
+      password
+    });
+    setMessage(signIn.error ? "注册已提交。如果不能直接登录，请在 Supabase 里关闭 Confirm email。" : "注册成功，已经登录。", signIn.error ? "error" : "ok");
   }
   elements.registerForm.reset();
-});
-
-elements.resetForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  if (!client) return;
-  const email = $("#resetEmail").value.trim();
-  const { error } = await client.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin
-  });
-  setMessage(error ? "重置邮件发送失败，请稍后再试。" : "已发送密码重置邮件，请查看邮箱。", error ? "error" : "ok");
 });
 
 elements.avatarForm.addEventListener("submit", async (event) => {
