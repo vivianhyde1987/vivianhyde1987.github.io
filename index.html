@@ -180,16 +180,19 @@
               <label class="wide">
                 正文
                 <textarea id="bodyInput" rows="7" maxlength="4000" placeholder="相册可以只上传照片"></textarea>
+                <small id="bodyCount" class="field-meter">0 / 4000 字</small>
               </label>
               <label class="wide media-upload">
                 <span>上传照片</span>
                 <input id="imageInput" type="file" accept="image/*" />
+                <small id="imageSizeHint" class="file-hint">未选择照片</small>
                 <button id="clearImageInput" class="clear-media" type="button" hidden>删除重选</button>
               </label>
               <label class="wide media-upload media-upload--video">
                 <span>上传视频</span>
                 <small>手机相册里的短视频，建议 50MB 以内</small>
                 <input id="videoInput" type="file" accept="video/mp4,video/webm,video/quicktime,video/*" />
+                <small id="videoSizeHint" class="file-hint">未选择视频</small>
                 <button id="clearVideoInput" class="clear-media" type="button" hidden>删除重选</button>
               </label>
               <button class="wide" type="submit">保存到博客</button>

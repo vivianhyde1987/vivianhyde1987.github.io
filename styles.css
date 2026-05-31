@@ -841,6 +841,18 @@ h2 {
   line-height: 1.45;
 }
 
+.field-meter,
+.file-hint {
+  color: rgba(37, 29, 32, 0.58);
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.file-hint[data-tone="warn"] {
+  color: var(--rose);
+}
+
 .media-upload input {
   margin-top: 8px;
 }

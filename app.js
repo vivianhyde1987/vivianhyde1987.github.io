@@ -49,8 +49,11 @@ const elements = {
   interestTypeInput: $("#interestTypeInput"),
   titleInput: $("#titleInput"),
   bodyInput: $("#bodyInput"),
+  bodyCount: $("#bodyCount"),
   imageInput: $("#imageInput"),
   videoInput: $("#videoInput"),
+  imageSizeHint: $("#imageSizeHint"),
+  videoSizeHint: $("#videoSizeHint"),
   clearImageInput: $("#clearImageInput"),
   clearVideoInput: $("#clearVideoInput"),
   chatForm: $("#chatForm"),
@@ -103,6 +106,18 @@ function normalizeHandle(handle) {
 
 function rpcErrorText(error, fallback) {
   return error?.message?.replace(/^.*ERROR:\s*/i, "") || fallback;
+}
+
+function formatFileSize(bytes = 0) {
+  if (!bytes) return "0 KB";
+  const units = ["B", "KB", "MB", "GB"];
+  let size = bytes;
+  let unitIndex = 0;
+  while (size >= 1024 && unitIndex < units.length - 1) {
+    size /= 1024;
+    unitIndex += 1;
+  }
+  return `${size >= 10 || unitIndex === 0 ? size.toFixed(0) : size.toFixed(1)} ${units[unitIndex]}`;
 }
 
 function saveSession(result) {
@@ -772,12 +787,20 @@ elements.avatarForm.addEventListener("submit", async (event) => {
 });
 
 function updateMediaClearButtons() {
-  elements.clearImageInput.hidden = !elements.imageInput.files?.length;
-  elements.clearVideoInput.hidden = !elements.videoInput.files?.length;
+  const imageFile = elements.imageInput.files?.[0] || null;
+  const videoFile = elements.videoInput.files?.[0] || null;
+  elements.clearImageInput.hidden = !imageFile;
+  elements.clearVideoInput.hidden = !videoFile;
+  elements.imageSizeHint.textContent = imageFile ? `已选择：${formatFileSize(imageFile.size)}` : "未选择照片";
+  elements.videoSizeHint.textContent = videoFile ? `已选择：${formatFileSize(videoFile.size)}${videoFile.size > 50 * 1024 * 1024 ? "，超过建议大小" : ""}` : "未选择视频";
+  elements.videoSizeHint.dataset.tone = videoFile && videoFile.size > 50 * 1024 * 1024 ? "warn" : "";
 }
 
 elements.imageInput.addEventListener("change", updateMediaClearButtons);
 elements.videoInput.addEventListener("change", updateMediaClearButtons);
+elements.bodyInput.addEventListener("input", () => {
+  elements.bodyCount.textContent = `${elements.bodyInput.value.length} / ${elements.bodyInput.maxLength} 字`;
+});
 elements.clearImageInput.addEventListener("click", () => {
   elements.imageInput.value = "";
   updateMediaClearButtons();
@@ -1305,6 +1328,8 @@ function setupAmbientSounds() {
 }
 
 renderAvatarPreview();
+elements.bodyCount.textContent = `${elements.bodyInput.value.length} / ${elements.bodyInput.maxLength} 字`;
+updateMediaClearButtons();
 switchAuthTab("login");
 setCategory("日志");
 setupMimiDrag();
