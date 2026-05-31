@@ -89,6 +89,22 @@ select {
   outline-color: var(--teal);
 }
 
+input[type="file"] {
+  color: rgba(37, 29, 32, 0.72);
+  cursor: pointer;
+}
+
+input[type="file"]::file-selector-button {
+  border: 0;
+  border-radius: 6px;
+  background: var(--ink);
+  color: white;
+  min-height: 34px;
+  margin-right: 12px;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
 textarea {
   resize: vertical;
 }
@@ -877,8 +893,9 @@ h2 {
 .post__image {
   display: block;
   width: 100%;
-  max-height: 420px;
+  height: clamp(220px, 42vw, 420px);
   object-fit: cover;
+  object-position: center;
   border-radius: 8px;
   margin: 16px 0 0;
   border: 1px solid rgba(37, 29, 32, 0.12);
