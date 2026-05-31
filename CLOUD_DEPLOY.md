@@ -1,52 +1,29 @@
-# 永久在线版设置
+# 云端账号和留言区设置
 
-这个博客已经支持两种留言区：
+## 1. 运行数据库脚本
 
-- `config.js` 没填 Supabase 时：使用本机 `/api/messages`
-- `config.js` 填了 Supabase 时：使用云端公共留言区
+打开 Supabase 项目，进入 SQL Editor，把 `supabase-setup.sql` 的全部内容复制进去，点击 Run。
 
-## 1. 创建 Supabase 留言库
+它会创建三张表：
 
-1. 打开 Supabase，新建一个 Project。
-2. 进入 SQL Editor。
-3. 粘贴并运行 `supabase-setup.sql`。
-4. 在 Project Settings / API 里找到：
-   - Project URL
-   - anon public key
+- `profiles`：朋友的永久 ID、头像和站主身份
+- `blog_posts`：日志、小说、相册、心情栏目内容
+- `blog_comments`：评论和评论下面的回复
 
-## 2. 填写云端配置
+## 2. 打开邮箱注册
 
-编辑 `config.js`：
+在 Supabase 的 Authentication 里确认 Email 登录已开启。忘记密码会通过邮箱发送重置链接。
 
-```js
-window.ROSE_BLOG_CONFIG = {
-  supabaseUrl: "你的 Project URL",
-  supabaseAnonKey: "你的 anon public key"
-};
+## 3. 设置站主账号
+
+先在网页上注册你的账号。注册完成后，在 Supabase SQL Editor 再运行：
+
+```sql
+update public.profiles set role = 'owner' where handle = 'your-id';
 ```
 
-`anon public key` 可以放在前端；真正保护留言库的是 `supabase-setup.sql` 里的 RLS 策略。
+把 `your-id` 改成你注册时填写的永久 ID。之后你就可以删除任何评论，也可以在评论下面回复朋友。
 
-## 3. 发布永久网址
+## 4. 配置网站公开钥匙
 
-把整个文件夹发布到 Netlify、Vercel 或 GitHub Pages。
-
-需要一起发布的文件包括：
-
-- `index.html`
-- `styles.css`
-- `app.js`
-- `config.js`
-- `assets/`
-
-不需要发布：
-
-- `data/`
-- `tunnel-output.txt`
-- `serveo-output.txt`
-- `preview-screenshot.png`
-
-## 4. 上线后的效果
-
-永久网址上的“公共留言区”会读写 Supabase。
-你在家、单位、手机和朋友手机上打开同一个网址，都能看到同一批留言。
+`config.js` 里需要保留 Supabase Project URL 和 publishable key。这个 key 是公开前端钥匙，不是 service role secret。

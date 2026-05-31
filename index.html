@@ -9,7 +9,7 @@
   <body>
     <div class="shell">
       <header class="hero">
-        <img src="assets/jrock-diary-hero.png" alt="J-rock diary stage" />
+        <img src="assets/jrock-diary-hero.png" alt="Rose and rainbow diary" />
         <div class="hero__shade"></div>
         <nav class="topbar" aria-label="站点导航">
           <div class="brand">
@@ -19,42 +19,82 @@
           <div class="session" id="sessionArea"></div>
         </nav>
         <section class="hero__copy">
-          <p class="eyebrow">X JAPAN / L'Arc-en-Ciel / 每日心情</p>
-          <h1>像以前 yculblog 一样，把今天留在评论区里。</h1>
-          <p>
-            写博客、记心情、注册 ID、互相关注。这里是给视觉系、彩虹、玫瑰和深夜留言准备的小房间。
-          </p>
-          <div class="hero__badges" aria-label="小站状态">
-            <span>玫瑰日记</span>
-            <span>云端留言</span>
-            <span>眯眯陪伴中</span>
+          <p class="eyebrow">私人博客 / 公共留言 / 旧式主页</p>
+          <h1>把每天留下来。</h1>
+          <p>这里保留一点玫瑰、彩虹、旧舞台和深夜留言板的气味。朋友注册自己的 ID 后，可以长期回来留言、评论和回复。</p>
+          <div class="hero__badges" aria-label="栏目">
+            <span>日志</span>
+            <span>小说</span>
+            <span>相册</span>
+            <span>心情</span>
           </div>
         </section>
       </header>
 
-      <section class="notice-strip" aria-label="今日小站公告">
-        <span>Now playing in memory: rain, roses, prism lights.</span>
-        <span>朋友来了可以先测心情，再留下今天的一句话。</span>
+      <section class="notice-strip" aria-label="小站公告">
+        <span>写下来的内容会保存到云端。</span>
+        <span>眯眯在右下角陪着这个小站。</span>
       </section>
 
       <main class="layout">
-        <aside class="sidebar" aria-label="个人与关注">
+        <aside class="sidebar" aria-label="账号">
           <section class="panel auth-panel">
             <div class="panel__head">
-              <h2>我的 ID</h2>
-              <span id="onlineBadge">未登录</span>
+              <h2>账号</h2>
+              <span id="authStatus">未登录</span>
             </div>
-            <form id="authForm" class="stack">
+
+            <div class="auth-tabs" role="tablist" aria-label="账号操作">
+              <button class="active" type="button" data-auth-tab="login">登录</button>
+              <button type="button" data-auth-tab="register">注册</button>
+              <button type="button" data-auth-tab="reset">忘记密码</button>
+            </div>
+
+            <form id="loginForm" class="stack auth-view">
               <label>
-                昵称
-                <input id="nameInput" maxlength="18" placeholder="例如：rose1998" required />
+                邮箱
+                <input id="loginEmail" type="email" autocomplete="email" required />
               </label>
               <label>
-                主页签名
-                <input id="bioInput" maxlength="48" placeholder="今晚听哪首歌？" />
+                密码
+                <input id="loginPassword" type="password" autocomplete="current-password" required />
               </label>
-              <button type="submit">注册 / 进入</button>
+              <button type="submit">登录</button>
             </form>
+
+            <form id="registerForm" class="stack auth-view" hidden>
+              <label>
+                永久 ID
+                <input id="registerHandle" maxlength="24" placeholder="例如 vivian" autocomplete="username" required />
+              </label>
+              <label>
+                邮箱
+                <input id="registerEmail" type="email" autocomplete="email" required />
+              </label>
+              <label>
+                密码
+                <input id="registerPassword" type="password" minlength="6" autocomplete="new-password" required />
+              </label>
+              <button type="submit">注册 ID</button>
+            </form>
+
+            <form id="resetForm" class="stack auth-view" hidden>
+              <label>
+                注册邮箱
+                <input id="resetEmail" type="email" autocomplete="email" required />
+              </label>
+              <button type="submit">发送重置邮件</button>
+            </form>
+
+            <div class="profile-card" id="profileCard" hidden></div>
+            <p class="auth-note" id="authMessage"></p>
+          </section>
+
+          <section class="panel">
+            <div class="panel__head">
+              <h2>头像</h2>
+              <span>自己设计</span>
+            </div>
             <form id="avatarForm" class="avatar-designer">
               <div class="avatar-preview" id="avatarPreview" aria-label="头像预览"></div>
               <label>
@@ -65,152 +105,66 @@
                 形状
                 <select id="avatarShapeInput">
                   <option value="circle">圆形</option>
-                  <option value="soft">软方</option>
+                  <option value="soft">柔方</option>
                   <option value="diamond">菱形</option>
                 </select>
               </label>
               <label>
                 标记
-                <select id="avatarMarkInput">
-                  <option value="✦">星光</option>
-                  <option value="R">玫瑰</option>
-                  <option value="虹">彩虹</option>
-                  <option value="雨">雨夜</option>
-                  <option value="X">X</option>
-                </select>
+                <input id="avatarMarkInput" maxlength="2" value="R" />
               </label>
               <button type="submit">保存头像</button>
             </form>
           </section>
-
-          <section class="panel">
-            <div class="panel__head">
-              <h2>关注的人</h2>
-              <span id="followCount">0</span>
-            </div>
-            <div id="peopleList" class="people-list"></div>
-          </section>
-
-          <section class="panel mixtape">
-            <h2>今日播放</h2>
-            <div class="featured-song">
-              <p>本页私藏曲</p>
-              <strong>软禁记忆 / 郑俊树</strong>
-              <a href="https://y.qq.com/n/ryqq/search?w=%E9%83%91%E4%BF%8A%E6%A0%91%20%E8%BD%AF%E7%A6%81%E8%AE%B0%E5%BF%86" target="_blank" rel="noreferrer">
-                去 QQ 音乐播放
-              </a>
-            </div>
-            <div class="daily-song" id="dailySong"></div>
-            <form id="favoriteSongForm" class="favorite-song-form">
-              <label>
-                收藏歌曲
-                <input id="songTitleInput" maxlength="60" placeholder="例如：ENDLESS RAIN" required />
-              </label>
-              <label>
-                歌手
-                <input id="songArtistInput" maxlength="48" placeholder="例如：X JAPAN" required />
-              </label>
-              <label>
-                QQ音乐链接
-                <input id="songLinkInput" type="url" placeholder="可选，粘贴歌曲或歌单链接" />
-              </label>
-              <button type="submit">加入每日歌单</button>
-            </form>
-            <audio id="moodAudio" controls preload="metadata"></audio>
-            <div class="shaker-set">
-              <p>坚果壳手摇铃</p>
-              <button data-track="nutMorning">晨光轻摇</button>
-              <button data-track="nutRain">雨窗沙沙</button>
-              <button data-track="nutSleep">睡前慢摇</button>
-            </div>
-            <button data-track="rain">雨夜钢琴氛围</button>
-            <button data-track="flower">彩虹吉他氛围</button>
-            <button data-track="nail">深夜鼓点氛围</button>
-            <button id="stopTrack" class="stop-track" type="button">停止</button>
-            <p id="trackNow">每日歌单可以放你喜欢的歌，下面是原创网页氛围声。</p>
-            <small>把 QQ 音乐收藏歌单链接发给我，我可以继续帮你整理成更像你的每日推荐。</small>
-          </section>
         </aside>
 
         <section class="content">
+          <section class="category-nav panel" aria-label="博客栏目">
+            <button class="active" type="button" data-category="日志">日志</button>
+            <button type="button" data-category="小说">小说</button>
+            <button type="button" data-category="相册">相册</button>
+            <button type="button" data-category="心情">心情</button>
+          </section>
+
           <section class="composer panel">
             <div class="panel__head">
-              <h2>写今天</h2>
+              <h2>写一篇</h2>
               <span id="todayText"></span>
             </div>
             <form id="postForm" class="post-form">
               <label>
-                标题
-                <input id="titleInput" maxlength="48" placeholder="今天的标题" required />
+                栏目
+                <select id="categoryInput">
+                  <option>日志</option>
+                  <option>小说</option>
+                  <option>相册</option>
+                  <option>心情</option>
+                </select>
               </label>
               <label>
-                心情
-                <select id="moodInput">
-                  <option value="rose">玫瑰色</option>
-                  <option value="rain">雨夜</option>
-                  <option value="prism">彩虹</option>
-                  <option value="static">旧电视雪花</option>
-                </select>
+                标题
+                <input id="titleInput" maxlength="80" required />
               </label>
               <label class="wide">
                 正文
-                <textarea id="bodyInput" rows="6" maxlength="700" placeholder="写一段博客，或者只是今天的心情。" required></textarea>
+                <textarea id="bodyInput" rows="7" maxlength="4000" required></textarea>
               </label>
-              <fieldset class="tags wide">
-                <legend>标签</legend>
-                <label><input type="checkbox" value="X JAPAN" checked /> X JAPAN</label>
-                <label><input type="checkbox" value="L'Arc-en-Ciel" checked /> L'Arc-en-Ciel</label>
-                <label><input type="checkbox" value="日记" /> 日记</label>
-              </fieldset>
-              <button class="wide" type="submit">发布到留言广场</button>
+              <label class="wide">
+                图片地址
+                <input id="imageInput" type="url" placeholder="可选，适合相册栏目" />
+              </label>
+              <button class="wide" type="submit">保存到博客</button>
             </form>
-          </section>
-
-          <section class="guestbook panel">
-            <div class="panel__head">
-              <h2>公共留言区</h2>
-              <span id="guestbookStatus">同步中</span>
-            </div>
-            <form id="moodQuizForm" class="mood-quiz">
-              <label>
-                现在的天气像什么？
-                <select id="moodWeatherInput">
-                  <option value="rain">雨夜</option>
-                  <option value="prism">彩虹</option>
-                  <option value="moon">月光</option>
-                  <option value="fire">舞台灯</option>
-                </select>
-              </label>
-              <label>
-                今天更想留下什么？
-                <select id="moodWishInput">
-                  <option value="quiet">一句轻轻的话</option>
-                  <option value="spark">一点亮光</option>
-                  <option value="hug">一个拥抱</option>
-                  <option value="noise">一阵鼓点</option>
-                </select>
-              </label>
-              <button type="submit">生成今日表情</button>
-              <div id="moodResult" class="mood-result" aria-live="polite"></div>
-            </form>
-            <form id="guestbookForm" class="guestbook-form">
-              <label>
-                留言
-                <textarea id="guestbookInput" rows="3" maxlength="240" placeholder="像以前踩空间一样，给我留一句话。" required></textarea>
-              </label>
-              <button type="submit">公开留言</button>
-            </form>
-            <div id="guestbookList" class="guestbook-list" aria-live="polite"></div>
           </section>
 
           <section class="feed-tools">
-            <div class="tabs" role="tablist" aria-label="筛选文章">
-              <button class="active" data-filter="all">全部</button>
-              <button data-filter="X JAPAN">X JAPAN</button>
-              <button data-filter="L'Arc-en-Ciel">L'Arc-en-Ciel</button>
-              <button data-filter="following">只看关注</button>
+            <div class="tabs" role="tablist" aria-label="当前栏目">
+              <button class="active" type="button" data-category="日志">日志</button>
+              <button type="button" data-category="小说">小说</button>
+              <button type="button" data-category="相册">相册</button>
+              <button type="button" data-category="心情">心情</button>
             </div>
-            <button id="resetDemo" class="ghost">恢复示例</button>
+            <span id="syncStatus">准备同步</span>
           </section>
 
           <section id="feed" class="feed" aria-live="polite"></section>
@@ -220,7 +174,7 @@
 
     <details class="mimi-companion" aria-label="眯眯陪伴组件">
       <summary class="mimi-companion__photo">
-        <img src="assets/mimi-face-v2.jpg" alt="眯眯的脸部照片" />
+        <img src="assets/mimi-face-v2.jpg" alt="眯眯的脸" />
         <span class="mimi-companion__glow"></span>
       </summary>
       <div class="mimi-companion__note">
@@ -232,22 +186,26 @@
     <template id="postTemplate">
       <article class="post">
         <div class="post__meta">
-          <div>
-            <h3></h3>
-            <p></p>
+          <div class="post-author">
+            <span class="user-avatar"><span></span></span>
+            <div>
+              <h3></h3>
+              <p></p>
+            </div>
           </div>
           <span class="mood"></span>
         </div>
+        <img class="post__image" alt="" hidden />
         <p class="post__body"></p>
-        <div class="post__tags"></div>
         <div class="comments"></div>
         <form class="comment-form">
-          <input maxlength="180" placeholder="在评论区互动一下" required />
+          <input maxlength="500" placeholder="写评论" required />
           <button type="submit">评论</button>
         </form>
       </article>
     </template>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <script src="app.js"></script>
   </body>

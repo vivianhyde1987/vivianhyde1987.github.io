@@ -805,6 +805,124 @@ h2 {
   line-height: 1.7;
 }
 
+.auth-tabs,
+.category-nav {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.category-nav {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 0;
+}
+
+.auth-tabs button,
+.category-nav button {
+  min-height: 38px;
+  padding: 0 10px;
+  background: rgba(37, 29, 32, 0.08);
+  color: var(--ink);
+  border: 1px solid rgba(37, 29, 32, 0.14);
+  box-shadow: none;
+}
+
+.auth-tabs button.active,
+.category-nav button.active {
+  background: var(--ink);
+  color: white;
+}
+
+.auth-view[hidden],
+.profile-card[hidden] {
+  display: none;
+}
+
+.auth-note {
+  min-height: 1.5em;
+  margin: 12px 0 0;
+  color: rgba(37, 29, 32, 0.66);
+  line-height: 1.55;
+}
+
+.auth-note[data-tone="ok"] {
+  color: #0b6a47;
+}
+
+.auth-note[data-tone="error"] {
+  color: var(--rose);
+}
+
+.profile-card {
+  margin-top: 14px;
+  border-top: 1px dashed var(--line);
+  padding-top: 14px;
+}
+
+.profile-card p {
+  margin: 4px 0 0;
+  color: rgba(37, 29, 32, 0.65);
+}
+
+.feed-tools span {
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  border-radius: 999px;
+  color: white;
+  padding: 7px 11px;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.post__image {
+  display: block;
+  width: 100%;
+  max-height: 420px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin: 16px 0 0;
+  border: 1px solid rgba(37, 29, 32, 0.12);
+}
+
+.post__image[hidden] {
+  display: none;
+}
+
+.comment {
+  display: grid;
+  gap: 7px;
+}
+
+.comment__head,
+.comment__actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.comment__actions button {
+  min-height: 30px;
+  padding: 0 10px;
+  background: rgba(37, 29, 32, 0.1);
+  color: var(--ink);
+  border: 1px solid rgba(37, 29, 32, 0.13);
+  box-shadow: none;
+}
+
+.reply {
+  margin: 8px 0 0 18px;
+  border-left-color: var(--teal);
+  background: rgba(255, 255, 255, 0.48);
+}
+
+.reply-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  margin-top: 8px;
+}
+
 .mimi-companion {
   position: fixed;
   right: 18px;

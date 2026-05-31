@@ -1,9 +1,20 @@
 # Rose & Rainbow Blog
 
-一个怀旧个人博客小站，包含每日歌单、公共留言区、心情测试、头像设计器和眯眯陪伴组件。
+一个私人博客小站，支持云端注册、登录、栏目文章、评论、回复和站主删除评论。
 
-## 云端留言区
+## 栏目
 
-公共留言区支持 Supabase。配置方法见 `CLOUD_DEPLOY.md`。
+- 日志
+- 小说
+- 相册
+- 心情
 
-如果 `config.js` 里没有填写 Supabase 信息，网站会尝试使用本机 `/api/messages`，适合本地临时预览。
+## 云端设置
+
+网站使用 Supabase 保存账号、文章和评论。第一次上线前，请把 `supabase-setup.sql` 的内容复制到 Supabase 的 SQL Editor 运行一次。
+
+注册好你的站主账号后，再运行这句，把 `your-id` 改成你的永久 ID：
+
+```sql
+update public.profiles set role = 'owner' where handle = 'your-id';
+```
