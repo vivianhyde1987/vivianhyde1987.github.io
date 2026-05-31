@@ -11,7 +11,9 @@
 
 ## 云端设置
 
-网站使用 Supabase 保存账号、文章和评论。第一次上线前，请把 `supabase-setup.sql` 的内容复制到 Supabase 的 SQL Editor 运行一次，并在 Authentication 设置里关闭 Confirm email。
+网站使用 Supabase 保存账号、文章和评论。账号系统是博客自己的 ID + 密码，不再使用邮箱验证。
+
+每次 `supabase-setup.sql` 更新后，请把它复制到 Supabase 的 SQL Editor 运行一次。
 
 注册好你的站主账号后，再运行这句，把 `your-id` 改成你的永久 ID：
 

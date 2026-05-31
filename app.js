@@ -1,8 +1,9 @@
 const cloudConfig = window.ROSE_BLOG_CONFIG || {};
 const hasCloud = Boolean(window.supabase && cloudConfig.supabaseUrl && cloudConfig.supabaseAnonKey);
 const client = hasCloud ? window.supabase.createClient(cloudConfig.supabaseUrl, cloudConfig.supabaseAnonKey) : null;
+const sessionKey = "rose-blog-session-token";
 
-let session = null;
+let sessionToken = localStorage.getItem(sessionKey) || "";
 let profile = null;
 let posts = [];
 let comments = [];
@@ -69,36 +70,26 @@ function normalizeHandle(handle) {
   return handle.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^\w\u4e00-\u9fa5-]/g, "").slice(0, 24);
 }
 
-function handleHash(handle) {
-  let hash = 2166136261;
-  for (const char of normalizeHandle(handle)) {
-    hash ^= char.codePointAt(0);
-    hash = Math.imul(hash, 16777619);
-  }
-  return (hash >>> 0).toString(36);
+function rpcErrorText(error, fallback) {
+  return error?.message?.replace(/^.*ERROR:\s*/i, "") || fallback;
 }
 
-function authEmailForHandle(handle) {
-  return `id-${handleHash(handle)}@id.vivianhyde1987.com`;
+function saveSession(result) {
+  sessionToken = result.token;
+  localStorage.setItem(sessionKey, sessionToken);
+  profile = {
+    user_id: result.account.id,
+    id: result.account.id,
+    handle: result.account.handle,
+    avatar: result.account.avatar,
+    role: result.account.role
+  };
 }
 
-function legacyAuthEmailForHandle(handle) {
-  const normalized = normalizeHandle(handle);
-  return /^[a-z0-9_-]+$/.test(normalized) ? `${normalized}@id.vivianhyde1987.com` : null;
-}
-
-function authEmailsForHandle(handle) {
-  return [...new Set([authEmailForHandle(handle), legacyAuthEmailForHandle(handle)].filter(Boolean))];
-}
-
-async function signInWithHandle(handle, password) {
-  let lastError = null;
-  for (const email of authEmailsForHandle(handle)) {
-    const result = await client.auth.signInWithPassword({ email, password });
-    if (!result.error) return result;
-    lastError = result.error;
-  }
-  return { data: null, error: lastError };
+function clearSession() {
+  sessionToken = "";
+  profile = null;
+  localStorage.removeItem(sessionKey);
 }
 
 function compressPhoto(file) {
@@ -176,7 +167,10 @@ function renderSession() {
   logout.type = "button";
   logout.textContent = "退出";
   logout.addEventListener("click", async () => {
-    await client.auth.signOut();
+    clearSession();
+    renderSession();
+    renderFeed();
+    setMessage("已退出。");
   });
   elements.sessionArea.append(avatarNode, name, logout);
 
@@ -198,33 +192,20 @@ function switchAuthTab(tab) {
   elements.registerForm.hidden = tab !== "register";
 }
 
-async function ensureProfile(user) {
-  if (!client || !user) return null;
-  const { data, error } = await client.from("profiles").select("*").eq("user_id", user.id).maybeSingle();
-  if (error) throw error;
-  if (data) return data;
-
-  const fallbackHandle = normalizeHandle(user.user_metadata?.handle || user.email?.split("@")[0] || "friend");
-  const created = {
-    user_id: user.id,
-    handle: fallbackHandle,
-    display_name: fallbackHandle,
-    avatar: defaultAvatar(fallbackHandle)
-  };
-  const { data: inserted, error: insertError } = await client.from("profiles").insert(created).select("*").single();
-  if (insertError) throw insertError;
-  return inserted;
-}
-
 async function refreshSession() {
   if (!hasCloud) {
     setMessage("云端账号还没连接。请确认 config.js 已填 Supabase 地址和公开钥匙。", "error");
     renderSession();
     return;
   }
-  const result = await client.auth.getSession();
-  session = result.data.session;
-  profile = session ? await ensureProfile(session.user) : null;
+  if (sessionToken) {
+    const { data, error } = await client.rpc("get_blog_session", { session_token: sessionToken });
+    if (error) {
+      clearSession();
+    } else {
+      profile = { user_id: data.id, id: data.id, handle: data.handle, avatar: data.avatar, role: data.role };
+    }
+  }
   renderSession();
   await loadBlog();
 }
@@ -233,30 +214,27 @@ async function loadBlog() {
   if (!client) return;
   setSync("同步中");
   try {
-    const [{ data: postRows, error: postError }, { data: commentRows, error: commentError }, { data: profileRows, error: profileError }] = await Promise.all([
+    const [{ data: postRows, error: postError }, { data: commentRows, error: commentError }, { data: profileRows, error: profileError }, { data: likeRows, error: likeError }] = await Promise.all([
       client.from("blog_posts").select("*").order("created_at", { ascending: false }),
       client.from("blog_comments").select("*").order("created_at", { ascending: true }),
-      client.from("profiles").select("*")
+      client.from("blog_accounts").select("id, handle, avatar, role"),
+      client.from("blog_post_likes").select("*")
     ]);
     if (postError) throw postError;
     if (commentError) throw commentError;
     if (profileError) throw profileError;
+    if (likeError) throw likeError;
 
     posts = postRows || [];
     comments = commentRows || [];
-    profiles = new Map((profileRows || []).map((item) => [item.user_id, item]));
-    await loadLikes();
+    likes = likeRows || [];
+    profiles = new Map((profileRows || []).map((item) => [item.id, { ...item, user_id: item.id }]));
     setSync("云端已同步");
     renderFeed();
   } catch {
-    setSync("需要初始化云端表");
-    elements.feed.innerHTML = `<div class="empty">云端栏目还没有准备好。请把 supabase-setup.sql 里的内容复制到 Supabase 的 SQL Editor 运行一次。</div>`;
+    setSync("需要运行新版 SQL");
+    elements.feed.innerHTML = `<div class="empty">账号系统已更新。请先把新版 supabase-setup.sql 复制到 Supabase 的 SQL Editor 运行一次。</div>`;
   }
-}
-
-async function loadLikes() {
-  const { data, error } = await client.from("blog_post_likes").select("*");
-  likes = error ? [] : data || [];
 }
 
 function setCategory(category) {
@@ -299,7 +277,7 @@ function renderFeed() {
     likeButton.type = "button";
     likeButton.className = "like-button";
     likeButton.textContent = `${isLiked(post.id) ? "已赞" : "点赞"} ${likeCount(post.id)}`;
-    likeButton.disabled = !session;
+    likeButton.disabled = !profile;
     likeButton.classList.toggle("is-liked", isLiked(post.id));
     likeButton.addEventListener("click", () => toggleLike(post.id));
     postActions.append(likeButton);
@@ -316,7 +294,7 @@ function renderFeed() {
     commentsArea.before(postActions);
     renderComments(node.querySelector(".comments"), post.id);
     const form = node.querySelector(".comment-form");
-    form.hidden = !session;
+    form.hidden = !profile;
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       const input = form.querySelector("input");
@@ -332,7 +310,7 @@ function likeCount(postId) {
 }
 
 function isLiked(postId) {
-  return Boolean(session && likes.some((item) => item.post_id === postId && item.owner_id === session.user.id));
+  return Boolean(profile && likes.some((item) => item.post_id === postId && item.owner_id === profile.user_id));
 }
 
 function canDeletePost(post) {
@@ -340,26 +318,22 @@ function canDeletePost(post) {
 }
 
 async function toggleLike(postId) {
-  if (!session) {
+  if (!profile) {
     setMessage("请先登录，再点赞。", "error");
     return;
   }
-  const liked = isLiked(postId);
-  const request = liked
-    ? client.from("blog_post_likes").delete().eq("post_id", postId).eq("owner_id", session.user.id)
-    : client.from("blog_post_likes").insert({ post_id: postId, owner_id: session.user.id });
-  const { error } = await request;
+  const { error } = await client.rpc("toggle_blog_like", { session_token: sessionToken, post_uuid: postId });
   if (error) {
-    setSync("点赞功能需要先运行新版 SQL");
+    setSync(rpcErrorText(error, "点赞失败"));
     return;
   }
   await loadBlog();
 }
 
 async function deletePost(id) {
-  const { error } = await client.from("blog_posts").delete().eq("id", id);
+  const { error } = await client.rpc("delete_blog_post", { session_token: sessionToken, post_uuid: id });
   if (error) {
-    setSync("删除失败");
+    setSync(rpcErrorText(error, "删除失败"));
     return;
   }
   await loadBlog();
@@ -386,7 +360,7 @@ function createCommentNode(comment, isReply = false) {
   `;
 
   const actions = node.querySelector(".comment__actions");
-  if (session) {
+  if (profile) {
     const replyButton = document.createElement("button");
     replyButton.type = "button";
     replyButton.textContent = "回复";
@@ -422,24 +396,24 @@ function showReplyForm(node, comment) {
 }
 
 async function addComment(postId, parentId, body) {
-  if (!session || !body) return;
-  const { error } = await client.from("blog_comments").insert({
-    post_id: postId,
-    parent_id: parentId,
-    owner_id: session.user.id,
-    body
+  if (!profile || !body) return;
+  const { error } = await client.rpc("create_blog_comment", {
+    session_token: sessionToken,
+    post_uuid: postId,
+    parent_uuid: parentId,
+    body_input: body
   });
   if (error) {
-    setSync("评论发送失败");
+    setSync(rpcErrorText(error, "评论发送失败"));
     return;
   }
   await loadBlog();
 }
 
 async function deleteComment(id) {
-  const { error } = await client.from("blog_comments").delete().eq("id", id);
+  const { error } = await client.rpc("delete_blog_comment", { session_token: sessionToken, comment_uuid: id });
   if (error) {
-    setSync("删除失败");
+    setSync(rpcErrorText(error, "删除失败"));
     return;
   }
   await loadBlog();
@@ -457,17 +431,21 @@ elements.loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!client) return;
   const handle = normalizeHandle($("#loginHandle").value);
+  const password = $("#loginPassword").value;
   if (!handle) {
     setMessage("请先输入 ID。", "error");
     return;
   }
   setMessage("登录中");
-  const { error } = await signInWithHandle(handle, $("#loginPassword").value);
+  const { data, error } = await client.rpc("login_blog_account", { handle_input: handle, password_input: password });
   if (error) {
-    setMessage("登录失败，请检查 ID 和密码。", "error");
+    setMessage(rpcErrorText(error, "登录失败，请检查 ID 和密码。"), "error");
     return;
   }
+  saveSession(data);
   elements.loginForm.reset();
+  renderSession();
+  await loadBlog();
   setMessage("已登录。", "ok");
 });
 
@@ -480,52 +458,22 @@ elements.registerForm.addEventListener("submit", async (event) => {
     setMessage("ID 只能包含中文、英文、数字、下划线或短横线。", "error");
     return;
   }
-
-  setMessage("检查 ID 中");
-  const { data: existingProfile } = await client.from("profiles").select("handle").eq("handle", handle).maybeSingle();
-  if (existingProfile) {
-    setMessage("这个 ID 已经注册过了，请直接登录。", "error");
-    return;
-  }
-
   setMessage("注册中");
-  const { data, error } = await client.auth.signUp({
-    email: authEmailForHandle(handle),
-    password,
-    options: { data: { handle } }
-  });
-
+  const { data, error } = await client.rpc("register_blog_account", { handle_input: handle, password_input: password });
   if (error) {
-    const signIn = await signInWithHandle(handle, password);
-    if (!signIn.error) {
-      setMessage("这个 ID 已经存在，已用你输入的密码登录。", "ok");
-      elements.registerForm.reset();
-      return;
-    }
-    const detail = error.message ? `后台提示：${error.message}` : "";
-    setMessage(`注册没有完成。请换一个 ID 或检查 Supabase 是否关闭 Confirm email。${detail}`, "error");
+    setMessage(rpcErrorText(error, "注册失败，请换一个 ID 再试。"), "error");
     return;
   }
-
-  if (data.session) {
-    const avatar = defaultAvatar(handle);
-    await client.from("profiles").upsert({
-      user_id: data.user.id,
-      handle,
-      display_name: handle,
-      avatar
-    });
-    setMessage("注册成功，已经登录。", "ok");
-  } else {
-    const signIn = await signInWithHandle(handle, password);
-    setMessage(signIn.error ? "注册已提交，但还不能直接登录。请在 Supabase 里关闭 Confirm email，然后再试一次登录。" : "注册成功，已经登录。", signIn.error ? "error" : "ok");
-  }
+  saveSession(data);
   elements.registerForm.reset();
+  renderSession();
+  await loadBlog();
+  setMessage("注册成功，已经登录。", "ok");
 });
 
 elements.avatarForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  if (!session || !profile) {
+  if (!profile) {
     setMessage("请先登录，再保存头像。", "error");
     return;
   }
@@ -534,12 +482,12 @@ elements.avatarForm.addEventListener("submit", async (event) => {
     shape: elements.avatarShapeInput.value,
     mark: elements.avatarMarkInput.value || "R"
   };
-  const { data, error } = await client.from("profiles").update({ avatar }).eq("user_id", session.user.id).select("*").single();
+  const { data, error } = await client.rpc("update_blog_avatar", { session_token: sessionToken, avatar_input: avatar });
   if (error) {
-    setMessage("头像保存失败。", "error");
+    setMessage(rpcErrorText(error, "头像保存失败。"), "error");
     return;
   }
-  profile = data;
+  profile = { user_id: data.id, id: data.id, handle: data.handle, avatar: data.avatar, role: data.role };
   profiles.set(profile.user_id, profile);
   setMessage("头像已保存。", "ok");
   renderSession();
@@ -552,7 +500,7 @@ elements.avatarForm.addEventListener("submit", async (event) => {
 
 elements.postForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  if (!session) {
+  if (!profile) {
     setMessage("请先登录，再写博客。", "error");
     return;
   }
@@ -577,15 +525,15 @@ elements.postForm.addEventListener("submit", async (event) => {
     return;
   }
   setSync("保存中");
-  const { error } = await client.from("blog_posts").insert({
-    owner_id: session.user.id,
-    category,
-    title,
-    body,
-    image_url: imageUrl
+  const { error } = await client.rpc("create_blog_post", {
+    session_token: sessionToken,
+    category_input: category,
+    title_input: title,
+    body_input: body,
+    image_input: imageUrl
   });
   if (error) {
-    setSync(`保存失败：${error.message || "请稍后再试"}`);
+    setSync(rpcErrorText(error, "保存失败"));
     return;
   }
   setSync("已保存");
@@ -605,14 +553,4 @@ elements.todayText.textContent = new Intl.DateTimeFormat("zh-CN", {
 renderAvatarPreview();
 switchAuthTab("login");
 setCategory("日志");
-
-if (client) {
-  client.auth.onAuthStateChange(async (_event, nextSession) => {
-    session = nextSession;
-    profile = session ? await ensureProfile(session.user) : null;
-    renderSession();
-    await loadBlog();
-  });
-}
-
 refreshSession();
