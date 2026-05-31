@@ -11,6 +11,7 @@ let likes = [];
 let chatMessages = [];
 let chatLikes = [];
 let profiles = new Map();
+let pendingAvatarImage = null;
 let activeCategory = "日志";
 
 const $ = (selector) => document.querySelector(selector);
@@ -28,6 +29,7 @@ const elements = {
   avatarColorInput: $("#avatarColorInput"),
   avatarShapeInput: $("#avatarShapeInput"),
   avatarMarkInput: $("#avatarMarkInput"),
+  avatarImageInput: $("#avatarImageInput"),
   postForm: $("#postForm"),
   categoryInput: $("#categoryInput"),
   titleInput: $("#titleInput"),
@@ -139,18 +141,42 @@ function avatarFromProfile(item) {
 function paintAvatar(node, avatar) {
   node.className = `user-avatar user-avatar--${avatar.shape || "circle"}`;
   node.style.setProperty("--avatar-color", avatar.color || "#b62548");
-  node.innerHTML = `<span>${escapeHtml(avatar.mark || "R")}</span>`;
+  node.innerHTML = avatar.image
+    ? `<img src="${avatar.image}" alt="" />`
+    : `<span>${escapeHtml(avatar.mark || "R")}</span>`;
 }
 
 function renderAvatarPreview() {
+  const currentAvatar = avatarFromProfile(profile);
   const avatar = {
     color: elements.avatarColorInput.value,
     shape: elements.avatarShapeInput.value,
-    mark: elements.avatarMarkInput.value || "R"
+    mark: elements.avatarMarkInput.value || "R",
+    image: pendingAvatarImage || currentAvatar.image || ""
   };
   elements.avatarPreview.style.setProperty("--avatar-color", avatar.color);
   elements.avatarPreview.dataset.shape = avatar.shape;
-  elements.avatarPreview.innerHTML = `<span>${escapeHtml(avatar.mark)}</span>`;
+  elements.avatarPreview.innerHTML = avatar.image
+    ? `<img src="${avatar.image}" alt="" />`
+    : `<span>${escapeHtml(avatar.mark)}</span>`;
+}
+
+function moodFromText(text = "") {
+  const value = text.toLowerCase();
+  const moodRules = [
+    { label: "开心", face: ":-)", tone: "happy", words: ["开心", "高兴", "快乐", "喜欢", "哈哈", "好耶", "棒", "爱", "幸福"] },
+    { label: "想念", face: "<3", tone: "miss", words: ["想你", "想念", "怀念", "记得", "以前", "回忆", "思念"] },
+    { label: "疲惫", face: "-_-", tone: "tired", words: ["累", "困", "疲惫", "加班", "忙", "撑不住", "睡"] },
+    { label: "难过", face: ":'(", tone: "sad", words: ["难过", "伤心", "哭", "失落", "痛", "烦", "崩溃", "委屈"] },
+    { label: "闪亮", face: "*", tone: "bright", words: ["期待", "希望", "加油", "明天", "漂亮", "浪漫", "惊喜"] }
+  ];
+  const found = moodRules.find((rule) => rule.words.some((word) => value.includes(word)));
+  return found || { label: "安静", face: "...", tone: "calm" };
+}
+
+function moodBubble(text) {
+  const mood = moodFromText(text);
+  return `<span class="mood-bubble mood-bubble--${mood.tone}" title="根据留言自动判断">${mood.face} ${mood.label}</span>`;
 }
 
 function renderSession() {
@@ -187,9 +213,11 @@ function renderSession() {
     <p>${profile.role === "owner" ? "站主账号" : "朋友账号"}</p>
   `;
   const avatar = avatarFromProfile(profile);
+  pendingAvatarImage = null;
   elements.avatarColorInput.value = avatar.color || "#b62548";
   elements.avatarShapeInput.value = avatar.shape || "circle";
   elements.avatarMarkInput.value = avatar.mark || "R";
+  elements.avatarImageInput.value = "";
   renderAvatarPreview();
 }
 
@@ -369,6 +397,7 @@ function createCommentNode(comment, isReply = false) {
   node.innerHTML = `
     <div class="comment__head">
       <strong>${escapeHtml(author?.handle || "朋友")}</strong>
+      ${moodBubble(comment.body)}
       <small>${formatDate(comment.created_at)}</small>
     </div>
     <p>${escapeHtml(comment.body)}</p>
@@ -461,6 +490,7 @@ function renderChat() {
     item.innerHTML = `
       <div class="chat-message__head">
         <strong>${escapeHtml(author?.handle || "朋友")}</strong>
+        ${message.body ? moodBubble(message.body) : ""}
         <small>${formatDate(message.created_at)}</small>
       </div>
       ${message.body ? `<p>${escapeHtml(message.body)}</p>` : ""}
@@ -570,7 +600,8 @@ elements.avatarForm.addEventListener("submit", async (event) => {
   const avatar = {
     color: elements.avatarColorInput.value,
     shape: elements.avatarShapeInput.value,
-    mark: elements.avatarMarkInput.value || "R"
+    mark: elements.avatarMarkInput.value || "R",
+    image: pendingAvatarImage || avatarFromProfile(profile).image || ""
   };
   const { data, error } = await client.rpc("update_blog_avatar", { session_token: sessionToken, avatar_input: avatar });
   if (error) {
@@ -586,6 +617,24 @@ elements.avatarForm.addEventListener("submit", async (event) => {
 
 [elements.avatarColorInput, elements.avatarShapeInput, elements.avatarMarkInput].forEach((input) => {
   input.addEventListener("input", renderAvatarPreview);
+});
+
+elements.avatarImageInput.addEventListener("change", async () => {
+  const file = elements.avatarImageInput.files?.[0] || null;
+  if (!file) {
+    pendingAvatarImage = null;
+    renderAvatarPreview();
+    return;
+  }
+  try {
+    pendingAvatarImage = await compressPhoto(file, { maxSide: 260, quality: 0.78 });
+    renderAvatarPreview();
+    setMessage("头像照片已选好，点保存头像后生效。", "ok");
+  } catch {
+    pendingAvatarImage = null;
+    elements.avatarImageInput.value = "";
+    setMessage("头像照片读取失败，请换一张普通 JPG 或 PNG。", "error");
+  }
 });
 
 elements.postForm.addEventListener("submit", async (event) => {
