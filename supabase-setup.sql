@@ -67,6 +67,15 @@ create table if not exists public.chat_message_likes (
   primary key (message_id, owner_id)
 );
 
+create table if not exists public.koi_wishes (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid not null,
+  wish_key text not null,
+  wish_text text not null,
+  cost integer not null check (cost > 0),
+  created_at timestamptz not null default now()
+);
+
 alter table public.blog_posts drop constraint if exists blog_posts_owner_id_fkey;
 alter table public.blog_comments drop constraint if exists blog_comments_owner_id_fkey;
 alter table public.blog_post_likes drop constraint if exists blog_post_likes_owner_id_fkey;
@@ -78,6 +87,7 @@ alter table public.blog_comments enable row level security;
 alter table public.blog_post_likes enable row level security;
 alter table public.chat_messages enable row level security;
 alter table public.chat_message_likes enable row level security;
+alter table public.koi_wishes enable row level security;
 
 drop policy if exists "accounts are readable" on public.blog_accounts;
 create policy "accounts are readable"
@@ -107,6 +117,11 @@ using (true);
 drop policy if exists "chat likes are readable" on public.chat_message_likes;
 create policy "chat likes are readable"
 on public.chat_message_likes for select
+using (true);
+
+drop policy if exists "koi wishes are readable" on public.koi_wishes;
+create policy "koi wishes are readable"
+on public.koi_wishes for select
 using (true);
 
 create or replace function public.clean_blog_handle(raw_handle text)
@@ -419,6 +434,50 @@ begin
 end;
 $$;
 
+create or replace function public.create_koi_wish(session_token uuid, wish_key_input text, wish_text_input text, cost_input integer)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  account_row public.blog_accounts;
+  earned_coins integer;
+  spent_coins integer;
+  wish_uuid uuid;
+begin
+  select * into account_row from public.account_from_token(session_token);
+  if account_row.id is null then
+    raise exception 'Please log in first';
+  end if;
+  if cost_input not in (6, 9, 12, 15, 24, 36) then
+    raise exception 'Invalid wish cost';
+  end if;
+  if char_length(trim(wish_text_input)) < 2 or char_length(trim(wish_text_input)) > 40 then
+    raise exception 'Invalid wish text';
+  end if;
+
+  select
+    coalesce((select count(*) from public.blog_post_likes where owner_id = account_row.id), 0)
+    + coalesce((select count(*) * 3 from public.blog_comments where owner_id = account_row.id), 0)
+  into earned_coins;
+
+  select coalesce(sum(cost), 0)
+  into spent_coins
+  from public.koi_wishes
+  where owner_id = account_row.id;
+
+  if earned_coins - spent_coins < cost_input then
+    raise exception 'Not enough koi coins';
+  end if;
+
+  insert into public.koi_wishes(owner_id, wish_key, wish_text, cost)
+  values (account_row.id, trim(wish_key_input), trim(wish_text_input), cost_input)
+  returning id into wish_uuid;
+  return wish_uuid;
+end;
+$$;
+
 grant execute on function public.register_blog_account(text, text) to anon, authenticated;
 grant execute on function public.login_blog_account(text, text) to anon, authenticated;
 grant execute on function public.get_blog_session(uuid) to anon, authenticated;
@@ -431,6 +490,7 @@ grant execute on function public.toggle_blog_like(uuid, uuid) to anon, authentic
 grant execute on function public.create_chat_message(uuid, text, text) to anon, authenticated;
 grant execute on function public.delete_chat_message(uuid, uuid) to anon, authenticated;
 grant execute on function public.toggle_chat_like(uuid, uuid) to anon, authenticated;
+grant execute on function public.create_koi_wish(uuid, text, text, integer) to anon, authenticated;
 
 -- After registering your owner ID, replace your-id and run once:
 -- update public.blog_accounts set role = 'owner' where handle = 'your-id';

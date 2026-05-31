@@ -12,10 +12,20 @@ let chatMessages = [];
 let chatLikes = [];
 let profiles = new Map();
 let pendingAvatarImage = null;
+let koiWishes = [];
 let activeCategory = "日志";
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
+
+const wishMenu = [
+  { key: "big-ticket", text: "今天开大单", cost: 6 },
+  { key: "new-client", text: "今天拓新有望", cost: 9 },
+  { key: "no-redemption", text: "今天不赎回", cost: 12 },
+  { key: "smooth-meeting", text: "客户会议顺利", cost: 15 },
+  { key: "roadshow-glow", text: "产品路演发光", cost: 24 },
+  { key: "aum-steady", text: "本周稳住规模", cost: 36 }
+];
 
 const elements = {
   sessionArea: $("#sessionArea"),
@@ -39,6 +49,10 @@ const elements = {
   chatBodyInput: $("#chatBodyInput"),
   chatImageInput: $("#chatImageInput"),
   chatList: $("#chatList"),
+  koiCoinText: $("#koiCoinText"),
+  wishOptions: $("#wishOptions"),
+  wishHistory: $("#wishHistory"),
+  soundToggle: $("#soundToggle"),
   todayText: $("#todayText"),
   syncStatus: $("#syncStatus"),
   archiveTitle: $("#archiveTitle"),
@@ -161,6 +175,74 @@ function renderAvatarPreview() {
     : `<span>${escapeHtml(avatar.mark)}</span>`;
 }
 
+function koiStatsFor(userId) {
+  if (!userId) return { likes: 0, comments: 0, earned: 0, spent: 0, balance: 0 };
+  const likeCoins = likes.filter((item) => item.owner_id === userId).length;
+  const commentCoins = comments.filter((item) => item.owner_id === userId).length * 3;
+  const spent = koiWishes
+    .filter((wish) => wish.owner_id === userId)
+    .reduce((total, wish) => total + Number(wish.cost || 0), 0);
+  const earned = likeCoins + commentCoins;
+  return { likes: likeCoins, comments: commentCoins, earned, spent, balance: Math.max(0, earned - spent) };
+}
+
+function renderWishPool() {
+  const stats = koiStatsFor(profile?.user_id);
+  elements.koiCoinText.textContent = profile ? `锦鲤币 ${stats.balance}` : "登录后积累";
+  elements.wishOptions.innerHTML = "";
+  wishMenu.forEach((wish) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "wish-option";
+    button.disabled = !profile || stats.balance < wish.cost;
+    button.innerHTML = `<strong>${escapeHtml(wish.text)}</strong><span>${wish.cost} 枚</span>`;
+    button.addEventListener("click", () => makeKoiWish(wish));
+    elements.wishOptions.append(button);
+  });
+
+  const recent = koiWishes
+    .filter((wish) => !profile || wish.owner_id === profile.user_id)
+    .slice(0, 6);
+  if (!recent.length) {
+    elements.wishHistory.innerHTML = `<p>还没有投愿望。先去评论或给文章点赞，攒一点锦鲤币。</p>`;
+    return;
+  }
+  elements.wishHistory.innerHTML = recent.map((wish) => {
+    const author = profiles.get(wish.owner_id);
+    return `
+      <article>
+        <span>${escapeHtml(author?.handle || "朋友")}</span>
+        <strong>${escapeHtml(wish.wish_text || wish.text || "投了一个愿望")}</strong>
+        <small>-${Number(wish.cost || 0)} 枚 · ${formatDate(wish.created_at)}</small>
+      </article>
+    `;
+  }).join("");
+}
+
+async function makeKoiWish(wish) {
+  if (!profile) {
+    setMessage("请先登录，再去许愿池投愿望。", "error");
+    return;
+  }
+  const stats = koiStatsFor(profile.user_id);
+  if (stats.balance < wish.cost) {
+    setMessage("锦鲤币还不够，再评论或点赞攒一点。", "error");
+    return;
+  }
+  const { error } = await client.rpc("create_koi_wish", {
+    session_token: sessionToken,
+    wish_key_input: wish.key,
+    wish_text_input: wish.text,
+    cost_input: wish.cost
+  });
+  if (error) {
+    setMessage(rpcErrorText(error, "许愿失败，请确认新版 SQL 已运行。"), "error");
+    return;
+  }
+  setMessage(`愿望已投入许愿池：${wish.text}`, "ok");
+  await loadBlog();
+}
+
 function moodFromText(text = "") {
   const value = text.toLowerCase();
   const moodRules = [
@@ -188,6 +270,7 @@ function renderSession() {
     label.textContent = hasCloud ? "请登录" : "需要先配置云端";
     elements.sessionArea.append(label);
     elements.profileCard.hidden = true;
+    renderWishPool();
     return;
   }
 
@@ -203,6 +286,7 @@ function renderSession() {
     renderSession();
     renderFeed();
     renderChat();
+    renderWishPool();
     setMessage("已退出。");
   });
   elements.sessionArea.append(avatarNode, name, logout);
@@ -219,6 +303,7 @@ function renderSession() {
   elements.avatarMarkInput.value = avatar.mark || "R";
   elements.avatarImageInput.value = "";
   renderAvatarPreview();
+  renderWishPool();
 }
 
 function switchAuthTab(tab) {
@@ -249,13 +334,14 @@ async function loadBlog() {
   if (!client) return;
   setSync("同步中");
   try {
-    const [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult] = await Promise.all([
+    const [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult, wishResult] = await Promise.all([
       client.from("blog_posts").select("*").order("created_at", { ascending: false }),
       client.from("blog_comments").select("*").order("created_at", { ascending: true }),
       client.from("blog_accounts").select("id, handle, avatar, role"),
       client.from("blog_post_likes").select("*"),
       client.from("chat_messages").select("*").order("created_at", { ascending: false }).limit(80),
-      client.from("chat_message_likes").select("*")
+      client.from("chat_message_likes").select("*"),
+      client.from("koi_wishes").select("*").order("created_at", { ascending: false }).limit(80)
     ]);
     for (const result of [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult]) {
       if (result.error) throw result.error;
@@ -266,10 +352,12 @@ async function loadBlog() {
     likes = likeResult.data || [];
     chatMessages = chatResult.data || [];
     chatLikes = chatLikeResult.data || [];
+    koiWishes = wishResult.error ? [] : (wishResult.data || []);
     profiles = new Map((profileResult.data || []).map((item) => [item.id, { ...item, user_id: item.id }]));
     setSync("云端已同步");
     renderFeed();
     renderChat();
+    renderWishPool();
   } catch {
     setSync("需要运行新版 SQL");
     elements.feed.innerHTML = `<div class="empty">新增了栏目历史和临时讨论区。请把新版 supabase-setup.sql 复制到 Supabase 的 SQL Editor 再运行一次。</div>`;
@@ -812,8 +900,85 @@ function setupMimiDrag() {
   });
 }
 
+function setupHealingSound() {
+  const button = elements.soundToggle;
+  if (!button) return;
+  let audioContext = null;
+  let masterGain = null;
+  let timer = null;
+  let enabled = false;
+
+  const frequencies = [136.1, 174, 221.2, 256, 341.3];
+
+  const ensureAudio = () => {
+    if (audioContext) return;
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = audioContext.createGain();
+    masterGain.gain.value = 0.075;
+    masterGain.connect(audioContext.destination);
+  };
+
+  const playBowl = () => {
+    if (!audioContext || !masterGain || !enabled) return;
+    const now = audioContext.currentTime;
+    const frequency = frequencies[Math.floor(Math.random() * frequencies.length)];
+    [1, 2.01, 3.02].forEach((multiple, index) => {
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      oscillator.type = index === 0 ? "sine" : "triangle";
+      oscillator.frequency.value = frequency * multiple;
+      oscillator.detune.value = (Math.random() - 0.5) * 8;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(index === 0 ? 0.18 : 0.045, now + 0.18);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 8.5 + index * 1.2);
+      oscillator.connect(gain).connect(masterGain);
+      oscillator.start(now);
+      oscillator.stop(now + 11);
+    });
+  };
+
+  const updateButton = () => {
+    button.textContent = enabled ? "颂钵播放中" : "疗愈颂钵";
+    button.classList.toggle("is-playing", enabled);
+  };
+
+  const start = async () => {
+    ensureAudio();
+    if (audioContext.state === "suspended") await audioContext.resume();
+    if (enabled) return;
+    enabled = true;
+    updateButton();
+    playBowl();
+    timer = window.setInterval(playBowl, 5200);
+  };
+
+  const stop = () => {
+    enabled = false;
+    if (timer) window.clearInterval(timer);
+    timer = null;
+    updateButton();
+  };
+
+  button.addEventListener("click", async () => {
+    if (enabled) {
+      stop();
+    } else {
+      await start();
+    }
+  });
+
+  const autoStart = (event) => {
+    if (event?.target === button) return;
+    start().catch(() => updateButton());
+  };
+  window.addEventListener("pointerdown", autoStart, { once: true });
+  window.addEventListener("keydown", autoStart, { once: true });
+  updateButton();
+}
+
 renderAvatarPreview();
 switchAuthTab("login");
 setCategory("日志");
 setupMimiDrag();
+setupHealingSound();
 refreshSession();

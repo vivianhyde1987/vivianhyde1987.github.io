@@ -281,6 +281,20 @@ label {
   white-space: nowrap;
 }
 
+.sound-toggle {
+  min-height: 34px;
+  padding: 0 13px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.14);
+  box-shadow: none;
+  white-space: nowrap;
+}
+
+.sound-toggle.is-playing {
+  background: rgba(238, 192, 83, 0.24);
+  color: white;
+}
+
 .layout {
   display: grid;
   grid-template-columns: 340px minmax(0, 1fr);
@@ -944,6 +958,140 @@ h2 {
   color: white;
 }
 
+.wish-pool {
+  overflow: hidden;
+}
+
+.wish-pool__pond {
+  position: relative;
+  height: 92px;
+  margin: 12px 0;
+  overflow: hidden;
+  border: 1px solid rgba(14, 138, 148, 0.18);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 18% 32%, rgba(238, 192, 83, 0.28), transparent 10%),
+    radial-gradient(circle at 76% 64%, rgba(182, 37, 72, 0.18), transparent 12%),
+    linear-gradient(135deg, rgba(17, 86, 98, 0.2), rgba(255, 255, 255, 0.62));
+}
+
+.wish-pool__pond span {
+  position: absolute;
+  width: 42px;
+  height: 18px;
+  border-radius: 50% 55% 48% 58%;
+  background: linear-gradient(90deg, var(--gold), #fff2b5);
+  box-shadow: 0 0 18px rgba(238, 192, 83, 0.44);
+  animation: koi-swim 9s ease-in-out infinite;
+}
+
+.wish-pool__pond span::after {
+  content: "";
+  position: absolute;
+  right: -10px;
+  top: 4px;
+  border-left: 12px solid #f7d779;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+}
+
+.wish-pool__pond span:nth-child(1) {
+  left: 10%;
+  top: 24px;
+}
+
+.wish-pool__pond span:nth-child(2) {
+  left: 54%;
+  top: 54px;
+  animation-delay: -2.6s;
+  transform: scale(0.8);
+}
+
+.wish-pool__pond span:nth-child(3) {
+  left: 30%;
+  top: 68px;
+  animation-delay: -5.1s;
+  transform: scale(0.64);
+}
+
+.wish-pool__note {
+  margin: 0 0 12px;
+  color: rgba(37, 29, 32, 0.68);
+  line-height: 1.6;
+}
+
+.wish-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.wish-option {
+  display: grid;
+  gap: 3px;
+  min-height: 58px;
+  border: 1px solid rgba(37, 29, 32, 0.12);
+  background: rgba(255, 255, 255, 0.58);
+  color: var(--ink);
+  box-shadow: none;
+  padding: 8px;
+}
+
+.wish-option strong,
+.wish-option span {
+  overflow-wrap: anywhere;
+}
+
+.wish-option span {
+  color: var(--rose);
+  font-size: 0.78rem;
+}
+
+.wish-option:disabled {
+  opacity: 0.45;
+}
+
+.wish-history {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.wish-history p,
+.wish-history article {
+  margin: 0;
+  border-top: 1px dashed var(--line);
+  padding-top: 9px;
+  line-height: 1.55;
+}
+
+.wish-history article {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.wish-history span {
+  color: var(--rose);
+  font-weight: 900;
+}
+
+.wish-history small {
+  color: rgba(37, 29, 32, 0.58);
+}
+
+@keyframes koi-swim {
+  0%,
+  100% {
+    transform: translateX(-8px) translateY(0);
+  }
+
+  50% {
+    transform: translateX(34px) translateY(-7px);
+  }
+}
+
 .auth-view[hidden],
 .profile-card[hidden] {
   display: none;
@@ -1236,6 +1384,19 @@ h2 {
   .mood-quiz,
   .chat-form {
     grid-template-columns: 1fr;
+  }
+
+  .notice-strip {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .wish-history article {
+    grid-template-columns: 1fr;
+  }
+
+  .wish-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .mimi-companion {

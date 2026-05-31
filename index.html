@@ -31,6 +31,7 @@
       <section class="notice-strip" aria-label="小站公告">
         <span>写下来的内容会保存到云端。</span>
         <span>眯眯在右下角陪着这个小站。</span>
+        <button id="soundToggle" class="sound-toggle" type="button">疗愈颂钵</button>
       </section>
 
       <main class="layout">
@@ -112,6 +113,21 @@
             <button type="button" data-category="小说">小说</button>
             <button type="button" data-category="相册">相册</button>
             <button type="button" data-category="心情">心情</button>
+          </section>
+
+          <section class="wish-pool panel" aria-label="许愿池">
+            <div class="panel__head">
+              <h2>许愿池</h2>
+              <span id="koiCoinText">锦鲤币 0</span>
+            </div>
+            <div class="wish-pool__pond" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <p class="wish-pool__note">评论 +3，文章点赞 +1。攒够锦鲤币就可以在这里投一个工作日愿望。</p>
+            <div id="wishOptions" class="wish-options"></div>
+            <div id="wishHistory" class="wish-history" aria-live="polite"></div>
           </section>
 
           <section class="composer panel">
