@@ -104,13 +104,17 @@ async function signInWithHandle(handle, password) {
 function compressPhoto(file) {
   if (!file) return Promise.resolve(null);
   return new Promise((resolve, reject) => {
+    if (!file.type.startsWith("image/")) {
+      reject(new Error("not image"));
+      return;
+    }
     const reader = new FileReader();
     reader.onerror = () => reject(new Error("photo read failed"));
     reader.onload = () => {
       const image = new Image();
       image.onerror = () => reject(new Error("photo load failed"));
       image.onload = () => {
-        const maxSide = 1200;
+        const maxSide = 900;
         const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
         const width = Math.max(1, Math.round(image.width * scale));
         const height = Math.max(1, Math.round(image.height * scale));
@@ -119,7 +123,7 @@ function compressPhoto(file) {
         canvas.height = height;
         const context = canvas.getContext("2d");
         context.drawImage(image, 0, 0, width, height);
-        resolve(canvas.toDataURL("image/jpeg", 0.82));
+        resolve(canvas.toDataURL("image/jpeg", 0.72));
       };
       image.src = reader.result;
     };
@@ -552,29 +556,40 @@ elements.postForm.addEventListener("submit", async (event) => {
     setMessage("请先登录，再写博客。", "error");
     return;
   }
-  const title = elements.titleInput.value.trim();
-  const body = elements.bodyInput.value.trim();
-  if (!title || !body) return;
-  setSync("处理照片中");
-  let imageUrl = null;
-  try {
-    imageUrl = await compressPhoto(elements.imageInput.files?.[0]);
-  } catch {
-    setSync("照片处理失败");
+  const category = elements.categoryInput.value;
+  const photoFile = elements.imageInput.files?.[0] || null;
+  const title = elements.titleInput.value.trim() || (category === "相册" && photoFile ? "相册照片" : "");
+  const body = elements.bodyInput.value.trim() || (category === "相册" && photoFile ? "分享一张照片。" : "");
+  if (!title || !body) {
+    setSync("请先填写标题和正文");
     return;
   }
+  setSync(photoFile ? "处理照片中" : "保存中");
+  let imageUrl = null;
+  try {
+    imageUrl = await compressPhoto(photoFile);
+  } catch {
+    setSync("照片处理失败，请换一张普通 JPG 或 PNG");
+    return;
+  }
+  if (imageUrl && imageUrl.length > 850000) {
+    setSync("照片还是太大，请换一张较小的照片");
+    return;
+  }
+  setSync("保存中");
   const { error } = await client.from("blog_posts").insert({
     owner_id: session.user.id,
-    category: elements.categoryInput.value,
+    category,
     title,
     body,
     image_url: imageUrl
   });
   if (error) {
-    setSync("保存失败");
+    setSync(`保存失败：${error.message || "请稍后再试"}`);
     return;
   }
-  activeCategory = elements.categoryInput.value;
+  setSync("已保存");
+  activeCategory = category;
   elements.postForm.reset();
   await loadBlog();
   setCategory(activeCategory);
