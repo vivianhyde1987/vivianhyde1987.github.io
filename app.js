@@ -677,7 +677,94 @@ elements.todayText.textContent = new Intl.DateTimeFormat("zh-CN", {
   weekday: "long"
 }).format(new Date());
 
+function setupMimiDrag() {
+  const mimi = document.querySelector(".mimi-companion");
+  const handle = document.querySelector(".mimi-companion__photo");
+  if (!mimi || !handle) return;
+
+  const storageKey = "mimi-companion-position";
+  const edgeGap = 8;
+  let isDragging = false;
+  let didMove = false;
+  let startX = 0;
+  let startY = 0;
+  let startLeft = 0;
+  let startTop = 0;
+
+  const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+  const placeMimi = (left, top) => {
+    const rect = mimi.getBoundingClientRect();
+    const maxLeft = Math.max(edgeGap, window.innerWidth - rect.width - edgeGap);
+    const maxTop = Math.max(edgeGap, window.innerHeight - rect.height - edgeGap);
+    mimi.style.left = `${clamp(left, edgeGap, maxLeft)}px`;
+    mimi.style.top = `${clamp(top, edgeGap, maxTop)}px`;
+    mimi.style.right = "auto";
+    mimi.style.bottom = "auto";
+  };
+
+  const savePosition = () => {
+    const rect = mimi.getBoundingClientRect();
+    localStorage.setItem(storageKey, JSON.stringify({ left: rect.left, top: rect.top }));
+  };
+
+  try {
+    const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
+    if (saved && Number.isFinite(saved.left) && Number.isFinite(saved.top)) {
+      placeMimi(saved.left, saved.top);
+    }
+  } catch {
+    localStorage.removeItem(storageKey);
+  }
+
+  handle.addEventListener("pointerdown", (event) => {
+    const rect = mimi.getBoundingClientRect();
+    isDragging = true;
+    didMove = false;
+    startX = event.clientX;
+    startY = event.clientY;
+    startLeft = rect.left;
+    startTop = rect.top;
+    mimi.classList.add("is-dragging");
+    handle.setPointerCapture?.(event.pointerId);
+  });
+
+  handle.addEventListener("pointermove", (event) => {
+    if (!isDragging) return;
+    const deltaX = event.clientX - startX;
+    const deltaY = event.clientY - startY;
+    if (Math.abs(deltaX) + Math.abs(deltaY) > 4) didMove = true;
+    placeMimi(startLeft + deltaX, startTop + deltaY);
+  });
+
+  const stopDrag = (event) => {
+    if (!isDragging) return;
+    isDragging = false;
+    mimi.classList.remove("is-dragging");
+    savePosition();
+    if (didMove) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  };
+
+  handle.addEventListener("pointerup", stopDrag);
+  handle.addEventListener("pointercancel", stopDrag);
+  handle.addEventListener("click", (event) => {
+    if (!didMove) return;
+    event.preventDefault();
+    event.stopPropagation();
+    didMove = false;
+  });
+  window.addEventListener("resize", () => {
+    const rect = mimi.getBoundingClientRect();
+    placeMimi(rect.left, rect.top);
+    savePosition();
+  });
+}
+
 renderAvatarPreview();
 switchAuthTab("login");
 setCategory("日志");
+setupMimiDrag();
 refreshSession();

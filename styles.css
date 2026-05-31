@@ -1048,6 +1048,12 @@ h2 {
   justify-items: end;
   gap: 10px;
   pointer-events: none;
+  touch-action: none;
+  user-select: none;
+}
+
+.mimi-companion.is-dragging {
+  transition: none;
 }
 
 .mimi-companion__photo {
@@ -1064,8 +1070,13 @@ h2 {
     0 14px 32px rgba(0, 0, 0, 0.34),
     0 0 0 1px rgba(182, 37, 72, 0.32);
   pointer-events: auto;
+  cursor: grab;
   animation: mimi-breathe 5.6s ease-in-out infinite;
   list-style: none;
+}
+
+.mimi-companion.is-dragging .mimi-companion__photo {
+  cursor: grabbing;
 }
 
 .mimi-companion__photo::-webkit-details-marker {
