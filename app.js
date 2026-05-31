@@ -45,6 +45,7 @@ const elements = {
   titleInput: $("#titleInput"),
   bodyInput: $("#bodyInput"),
   imageInput: $("#imageInput"),
+  videoInput: $("#videoInput"),
   chatForm: $("#chatForm"),
   chatBodyInput: $("#chatBodyInput"),
   chatImageInput: $("#chatImageInput"),
@@ -142,6 +143,27 @@ function compressPhoto(file, options = {}) {
     };
     reader.readAsDataURL(file);
   });
+}
+
+async function uploadPostVideo(file) {
+  if (!file) return null;
+  const maxBytes = 50 * 1024 * 1024;
+  if (!file.type.startsWith("video/")) {
+    throw new Error("not video");
+  }
+  if (file.size > maxBytes) {
+    throw new Error("video too large");
+  }
+  const extension = (file.name.split(".").pop() || "mp4").toLowerCase().replace(/[^a-z0-9]/g, "") || "mp4";
+  const path = `${profile.user_id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${extension}`;
+  const { error } = await client.storage.from("blog-videos").upload(path, file, {
+    cacheControl: "31536000",
+    contentType: file.type || "video/mp4",
+    upsert: false
+  });
+  if (error) throw error;
+  const { data } = client.storage.from("blog-videos").getPublicUrl(path);
+  return data.publicUrl;
 }
 
 function defaultAvatar(mark = "R") {
@@ -399,6 +421,11 @@ function renderFeed() {
     if (post.image_url) {
       image.src = post.image_url;
       image.hidden = false;
+    }
+    const video = node.querySelector(".post__video");
+    if (post.video_url) {
+      video.src = post.video_url;
+      video.hidden = false;
     }
 
     const commentsArea = node.querySelector(".comments");
@@ -768,6 +795,62 @@ elements.postForm.addEventListener("submit", async (event) => {
   await loadBlog();
   setCategory(activeCategory, true);
 });
+
+elements.postForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  if (!profile) {
+    setMessage("请先登录，再写博客。", "error");
+    return;
+  }
+  const category = elements.categoryInput.value;
+  const photoFile = elements.imageInput.files?.[0] || null;
+  const videoFile = elements.videoInput.files?.[0] || null;
+  const title = elements.titleInput.value.trim() || (videoFile ? "视频记录" : photoFile ? "相册照片" : "");
+  const body = elements.bodyInput.value.trim() || (videoFile ? "分享一段视频。" : photoFile ? "分享一张照片。" : "");
+  if (!title || !body) {
+    setSync("请先填写标题和正文");
+    return;
+  }
+
+  setSync(videoFile ? "上传视频中" : photoFile ? "处理照片中" : "保存中");
+  let imageUrl = null;
+  let videoUrl = null;
+  try {
+    imageUrl = await compressPhoto(photoFile);
+  } catch {
+    setSync("照片处理失败，请换一张普通 JPG 或 PNG");
+    return;
+  }
+  if (imageUrl && imageUrl.length > 850000) {
+    setSync("照片还是太大，请换一张较小的照片");
+    return;
+  }
+  try {
+    videoUrl = await uploadPostVideo(videoFile);
+  } catch (error) {
+    setSync(error.message === "video too large" ? "视频太大，请换 50MB 以内的短视频" : "视频上传失败，请确认新版 SQL 已运行");
+    return;
+  }
+
+  const { error } = await client.rpc("create_blog_post", {
+    session_token: sessionToken,
+    category_input: category,
+    title_input: title,
+    body_input: body,
+    image_input: imageUrl,
+    video_input: videoUrl
+  });
+  if (error) {
+    setSync(rpcErrorText(error, "保存失败，请确认新版 SQL 已运行"));
+    return;
+  }
+  setSync("已保存");
+  activeCategory = category;
+  elements.postForm.reset();
+  await loadBlog();
+  setCategory(activeCategory, true);
+}, { capture: true });
 
 elements.chatForm.addEventListener("submit", async (event) => {
   event.preventDefault();

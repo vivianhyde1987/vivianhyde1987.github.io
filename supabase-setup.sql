@@ -25,6 +25,7 @@ create table if not exists public.blog_posts (
   title text not null,
   body text not null,
   image_url text,
+  video_url text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint title_length check (char_length(title) between 1 and 80),
@@ -76,6 +77,22 @@ create table if not exists public.koi_wishes (
   created_at timestamptz not null default now()
 );
 
+alter table public.blog_posts
+add column if not exists video_url text;
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'blog-videos',
+  'blog-videos',
+  true,
+  52428800,
+  array['video/mp4', 'video/webm', 'video/quicktime']
+)
+on conflict (id) do update
+set public = excluded.public,
+    file_size_limit = excluded.file_size_limit,
+    allowed_mime_types = excluded.allowed_mime_types;
+
 alter table public.blog_posts drop constraint if exists blog_posts_owner_id_fkey;
 alter table public.blog_comments drop constraint if exists blog_comments_owner_id_fkey;
 alter table public.blog_post_likes drop constraint if exists blog_post_likes_owner_id_fkey;
@@ -123,6 +140,16 @@ drop policy if exists "koi wishes are readable" on public.koi_wishes;
 create policy "koi wishes are readable"
 on public.koi_wishes for select
 using (true);
+
+drop policy if exists "blog videos are public" on storage.objects;
+create policy "blog videos are public"
+on storage.objects for select
+using (bucket_id = 'blog-videos');
+
+drop policy if exists "blog videos can be uploaded" on storage.objects;
+create policy "blog videos can be uploaded"
+on storage.objects for insert
+with check (bucket_id = 'blog-videos');
 
 create or replace function public.clean_blog_handle(raw_handle text)
 returns text
@@ -268,7 +295,10 @@ begin
 end;
 $$;
 
-create or replace function public.create_blog_post(session_token uuid, category_input text, title_input text, body_input text, image_input text)
+drop function if exists public.create_blog_post(uuid, text, text, text, text);
+drop function if exists public.create_blog_post(uuid, text, text, text, text, text);
+
+create or replace function public.create_blog_post(session_token uuid, category_input text, title_input text, body_input text, image_input text, video_input text)
 returns uuid
 language plpgsql
 security definer
@@ -282,8 +312,8 @@ begin
   if account_row.id is null then
     raise exception 'Please log in first';
   end if;
-  insert into public.blog_posts(owner_id, category, title, body, image_url)
-  values (account_row.id, category_input, title_input, body_input, image_input)
+  insert into public.blog_posts(owner_id, category, title, body, image_url, video_url)
+  values (account_row.id, category_input, title_input, body_input, image_input, video_input)
   returning id into post_uuid;
   return post_uuid;
 end;
@@ -482,7 +512,7 @@ grant execute on function public.register_blog_account(text, text) to anon, auth
 grant execute on function public.login_blog_account(text, text) to anon, authenticated;
 grant execute on function public.get_blog_session(uuid) to anon, authenticated;
 grant execute on function public.update_blog_avatar(uuid, jsonb) to anon, authenticated;
-grant execute on function public.create_blog_post(uuid, text, text, text, text) to anon, authenticated;
+grant execute on function public.create_blog_post(uuid, text, text, text, text, text) to anon, authenticated;
 grant execute on function public.delete_blog_post(uuid, uuid) to anon, authenticated;
 grant execute on function public.create_blog_comment(uuid, uuid, uuid, text) to anon, authenticated;
 grant execute on function public.delete_blog_comment(uuid, uuid) to anon, authenticated;

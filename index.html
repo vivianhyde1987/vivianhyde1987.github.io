@@ -155,6 +155,10 @@
                 上传照片
                 <input id="imageInput" type="file" accept="image/*" />
               </label>
+              <label class="wide">
+                上传视频
+                <input id="videoInput" type="file" accept="video/mp4,video/webm,video/quicktime,video/*" />
+              </label>
               <button class="wide" type="submit">保存到博客</button>
             </form>
           </section>
@@ -218,6 +222,7 @@
           <span class="mood"></span>
         </div>
         <img class="post__image" alt="" hidden />
+        <video class="post__video" controls playsinline preload="metadata" hidden></video>
         <p class="post__body"></p>
         <div class="comments"></div>
         <form class="comment-form">
