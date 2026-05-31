@@ -1,4 +1,4 @@
-create extension if not exists pgcrypto;
+create extension if not exists pgcrypto with schema extensions;
 
 create table if not exists public.blog_accounts (
   id uuid primary key default gen_random_uuid(),
@@ -146,7 +146,7 @@ begin
   end if;
 
   insert into public.blog_accounts(handle, password_hash)
-  values (clean_handle, crypt(password_input, gen_salt('bf')))
+  values (clean_handle, extensions.crypt(password_input, extensions.gen_salt('bf')))
   returning id into account_uuid;
 
   return public.make_blog_session(account_uuid);
@@ -169,7 +169,7 @@ begin
   select id into account_uuid
   from public.blog_accounts
   where handle = clean_handle
-    and password_hash = crypt(password_input, password_hash);
+    and password_hash = extensions.crypt(password_input, password_hash);
 
   if account_uuid is null then
     raise exception 'ID or password is incorrect';
