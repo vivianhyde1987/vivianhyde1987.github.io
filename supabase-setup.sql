@@ -26,6 +26,7 @@ create table if not exists public.blog_posts (
   body text not null,
   image_url text,
   video_url text,
+  interest_type text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint title_length check (char_length(title) between 1 and 80),
@@ -79,6 +80,9 @@ create table if not exists public.koi_wishes (
 
 alter table public.blog_posts
 add column if not exists video_url text;
+
+alter table public.blog_posts
+add column if not exists interest_type text;
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
@@ -297,8 +301,9 @@ $$;
 
 drop function if exists public.create_blog_post(uuid, text, text, text, text);
 drop function if exists public.create_blog_post(uuid, text, text, text, text, text);
+drop function if exists public.create_blog_post(uuid, text, text, text, text, text, text);
 
-create or replace function public.create_blog_post(session_token uuid, category_input text, title_input text, body_input text, image_input text, video_input text)
+create or replace function public.create_blog_post(session_token uuid, category_input text, title_input text, body_input text, image_input text, video_input text, interest_type_input text)
 returns uuid
 language plpgsql
 security definer
@@ -312,8 +317,8 @@ begin
   if account_row.id is null then
     raise exception 'Please log in first';
   end if;
-  insert into public.blog_posts(owner_id, category, title, body, image_url, video_url)
-  values (account_row.id, category_input, title_input, body_input, image_input, video_input)
+  insert into public.blog_posts(owner_id, category, title, body, image_url, video_url, interest_type)
+  values (account_row.id, category_input, title_input, body_input, image_input, video_input, interest_type_input)
   returning id into post_uuid;
   return post_uuid;
 end;
@@ -512,7 +517,7 @@ grant execute on function public.register_blog_account(text, text) to anon, auth
 grant execute on function public.login_blog_account(text, text) to anon, authenticated;
 grant execute on function public.get_blog_session(uuid) to anon, authenticated;
 grant execute on function public.update_blog_avatar(uuid, jsonb) to anon, authenticated;
-grant execute on function public.create_blog_post(uuid, text, text, text, text, text) to anon, authenticated;
+grant execute on function public.create_blog_post(uuid, text, text, text, text, text, text) to anon, authenticated;
 grant execute on function public.delete_blog_post(uuid, uuid) to anon, authenticated;
 grant execute on function public.create_blog_comment(uuid, uuid, uuid, text) to anon, authenticated;
 grant execute on function public.delete_blog_comment(uuid, uuid) to anon, authenticated;

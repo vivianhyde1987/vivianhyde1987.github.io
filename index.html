@@ -24,12 +24,14 @@
             <button type="button" data-category="小说">小说</button>
             <button type="button" data-category="相册">相册</button>
             <button type="button" data-category="心情">心情</button>
+            <button type="button" data-category="兴趣">兴趣</button>
           </div>
         </section>
       </header>
 
       <section class="notice-strip" aria-label="小站公告">
-        <button id="soundToggle" class="sound-toggle" type="button">疗愈颂钵</button>
+        <button id="soundToggle" class="sound-toggle" type="button" data-sound-mode="bowl">疗愈颂钵</button>
+        <button class="sound-toggle" type="button" data-sound-mode="stream">溪流摇铃</button>
       </section>
 
       <main class="layout">
@@ -111,6 +113,7 @@
             <button type="button" data-category="小说">小说</button>
             <button type="button" data-category="相册">相册</button>
             <button type="button" data-category="心情">心情</button>
+            <button type="button" data-category="兴趣">兴趣</button>
           </section>
 
           <section class="wish-pool panel" aria-label="许愿池">
@@ -141,6 +144,18 @@
                   <option>小说</option>
                   <option>相册</option>
                   <option>心情</option>
+                  <option>兴趣</option>
+                </select>
+              </label>
+              <label id="interestTypeWrap">
+                兴趣类型
+                <select id="interestTypeInput">
+                  <option>艺术</option>
+                  <option>音乐</option>
+                  <option>电影</option>
+                  <option>阅读</option>
+                  <option>展览</option>
+                  <option>生活灵感</option>
                 </select>
               </label>
               <label>
@@ -188,10 +203,12 @@
               <button type="button" data-category="小说">小说</button>
               <button type="button" data-category="相册">相册</button>
               <button type="button" data-category="心情">心情</button>
+              <button type="button" data-category="兴趣">兴趣</button>
             </div>
             <span id="syncStatus">准备同步</span>
           </section>
 
+          <section id="interestFilters" class="interest-filters" aria-label="兴趣分类"></section>
           <div class="archive-title" id="archiveTitle">日志历史文章</div>
           <section id="feed" class="feed" aria-live="polite"></section>
         </section>

@@ -13,10 +13,13 @@ let chatLikes = [];
 let profiles = new Map();
 let pendingAvatarImage = null;
 let koiWishes = [];
+let activeInterest = "全部";
 let activeCategory = "日志";
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
+
+const interestTypes = ["全部", "艺术", "音乐", "电影", "阅读", "展览", "生活灵感"];
 
 const wishMenu = [
   { key: "big-ticket", text: "今天开大单", cost: 6 },
@@ -42,6 +45,8 @@ const elements = {
   avatarImageInput: $("#avatarImageInput"),
   postForm: $("#postForm"),
   categoryInput: $("#categoryInput"),
+  interestTypeWrap: $("#interestTypeWrap"),
+  interestTypeInput: $("#interestTypeInput"),
   titleInput: $("#titleInput"),
   bodyInput: $("#bodyInput"),
   imageInput: $("#imageInput"),
@@ -57,6 +62,7 @@ const elements = {
   todayText: $("#todayText"),
   syncStatus: $("#syncStatus"),
   archiveTitle: $("#archiveTitle"),
+  interestFilters: $("#interestFilters"),
   feed: $("#feed"),
   postTemplate: $("#postTemplate")
 };
@@ -390,18 +396,43 @@ async function loadBlog() {
 function setCategory(category, shouldScroll = false) {
   activeCategory = category;
   elements.categoryInput.value = category;
+  if (category !== "兴趣") activeInterest = "全部";
+  if (elements.interestTypeWrap) elements.interestTypeWrap.hidden = category !== "兴趣";
   elements.archiveTitle.textContent = `${category}历史文章`;
   $$("[data-category]").forEach((button) => {
     if (button.tagName === "BUTTON") button.classList.toggle("active", button.dataset.category === category);
   });
+  renderInterestFilters();
   renderFeed();
   if (shouldScroll) {
     elements.archiveTitle.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 }
 
+function renderInterestFilters() {
+  if (!elements.interestFilters) return;
+  elements.interestFilters.hidden = activeCategory !== "兴趣";
+  if (activeCategory !== "兴趣") {
+    elements.interestFilters.innerHTML = "";
+    return;
+  }
+  elements.interestFilters.innerHTML = interestTypes.map((type) => (
+    `<button type="button" class="${type === activeInterest ? "active" : ""}" data-interest-filter="${escapeHtml(type)}">${escapeHtml(type)}</button>`
+  )).join("");
+  elements.interestFilters.querySelectorAll("button").forEach((button) => {
+    button.addEventListener("click", () => {
+      activeInterest = button.dataset.interestFilter || "全部";
+      renderInterestFilters();
+      renderFeed();
+    });
+  });
+}
+
 function renderFeed() {
-  const visible = posts.filter((post) => post.category === activeCategory);
+  const visible = posts.filter((post) => (
+    post.category === activeCategory
+    && (activeCategory !== "兴趣" || activeInterest === "全部" || (post.interest_type || "生活灵感") === activeInterest)
+  ));
   elements.feed.innerHTML = "";
   if (!visible.length) {
     elements.feed.innerHTML = `<div class="empty">${activeCategory} 里还没有历史文章。</div>`;
@@ -414,7 +445,7 @@ function renderFeed() {
     paintAvatar(node.querySelector(".user-avatar"), avatarFromProfile(author));
     node.querySelector("h3").textContent = post.title;
     node.querySelector(".post__meta p").textContent = `${author?.handle || "朋友"} / ${formatDate(post.created_at)}`;
-    node.querySelector(".mood").textContent = post.category;
+    node.querySelector(".mood").textContent = post.category === "兴趣" ? (post.interest_type || "生活灵感") : post.category;
     node.querySelector(".post__body").textContent = post.body;
 
     const image = node.querySelector(".post__image");
@@ -662,6 +693,10 @@ $$("[data-category]").forEach((button) => {
   button.addEventListener("click", () => setCategory(button.dataset.category, true));
 });
 
+elements.categoryInput.addEventListener("change", () => {
+  if (elements.interestTypeWrap) elements.interestTypeWrap.hidden = elements.categoryInput.value !== "兴趣";
+});
+
 elements.loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!client) return;
@@ -759,6 +794,7 @@ elements.postForm.addEventListener("submit", async (event) => {
     return;
   }
   const category = elements.categoryInput.value;
+  const interestType = category === "兴趣" ? elements.interestTypeInput.value : null;
   const photoFile = elements.imageInput.files?.[0] || null;
   const title = elements.titleInput.value.trim() || (category === "相册" && photoFile ? "相册照片" : "");
   const body = elements.bodyInput.value.trim() || (category === "相册" && photoFile ? "分享一张照片。" : "");
@@ -804,6 +840,7 @@ elements.postForm.addEventListener("submit", async (event) => {
     return;
   }
   const category = elements.categoryInput.value;
+  const interestType = category === "兴趣" ? elements.interestTypeInput.value : null;
   const photoFile = elements.imageInput.files?.[0] || null;
   const videoFile = elements.videoInput.files?.[0] || null;
   const title = elements.titleInput.value.trim() || (videoFile ? "视频记录" : photoFile ? "相册照片" : "");
@@ -839,7 +876,8 @@ elements.postForm.addEventListener("submit", async (event) => {
     title_input: title,
     body_input: body,
     image_input: imageUrl,
-    video_input: videoUrl
+    video_input: videoUrl,
+    interest_type_input: interestType
   });
   if (error) {
     setSync(rpcErrorText(error, "保存失败，请确认新版 SQL 已运行"));
@@ -1059,9 +1097,152 @@ function setupHealingSound() {
   updateButton();
 }
 
+function setupAmbientSounds() {
+  const buttons = [...document.querySelectorAll("[data-sound-mode]")];
+  if (!buttons.length) return;
+  let audioContext = null;
+  let masterGain = null;
+  let activeMode = "";
+  let timers = [];
+  let nodes = [];
+  let lastTouchAt = 0;
+
+  const clearSound = () => {
+    timers.forEach((timer) => window.clearInterval(timer));
+    timers = [];
+    nodes.forEach((node) => {
+      try {
+        node.stop?.();
+      } catch {}
+      node.disconnect?.();
+    });
+    nodes = [];
+  };
+
+  const ensureAudio = async () => {
+    if (!audioContext) {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      masterGain = audioContext.createGain();
+      masterGain.gain.value = 0.085;
+      masterGain.connect(audioContext.destination);
+    }
+    if (audioContext.state === "suspended") await audioContext.resume();
+  };
+
+  const updateButtons = () => {
+    buttons.forEach((button) => {
+      const playing = activeMode === button.dataset.soundMode;
+      button.classList.toggle("is-playing", playing);
+      button.textContent = playing
+        ? (button.dataset.soundMode === "stream" ? "溪流摇铃中" : "颂钵播放中")
+        : (button.dataset.soundMode === "stream" ? "溪流摇铃" : "疗愈颂钵");
+    });
+  };
+
+  const playBowl = () => {
+    if (!audioContext || !masterGain || activeMode !== "bowl") return;
+    const now = audioContext.currentTime;
+    const frequency = [136.1, 174, 221.2, 256, 341.3][Math.floor(Math.random() * 5)];
+    [1, 2.01, 3.02].forEach((multiple, index) => {
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      oscillator.type = index === 0 ? "sine" : "triangle";
+      oscillator.frequency.value = frequency * multiple;
+      oscillator.detune.value = (Math.random() - 0.5) * 8;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(index === 0 ? 0.18 : 0.045, now + 0.18);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 8.5 + index * 1.2);
+      oscillator.connect(gain).connect(masterGain);
+      oscillator.start(now);
+      oscillator.stop(now + 11);
+      nodes.push(oscillator, gain);
+    });
+  };
+
+  const startStream = () => {
+    const bufferSize = 2 * audioContext.sampleRate;
+    const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i += 1) {
+      data[i] = (Math.random() * 2 - 1) * 0.26;
+    }
+    const noise = audioContext.createBufferSource();
+    const lowPass = audioContext.createBiquadFilter();
+    const highPass = audioContext.createBiquadFilter();
+    noise.buffer = buffer;
+    noise.loop = true;
+    lowPass.type = "lowpass";
+    lowPass.frequency.value = 950;
+    highPass.type = "highpass";
+    highPass.frequency.value = 180;
+    noise.connect(lowPass).connect(highPass).connect(masterGain);
+    noise.start();
+    nodes.push(noise, lowPass, highPass);
+
+    const shake = () => {
+      if (!audioContext || !masterGain || activeMode !== "stream") return;
+      const now = audioContext.currentTime;
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      oscillator.type = "triangle";
+      oscillator.frequency.value = 680 + Math.random() * 420;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.045, now + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+      oscillator.connect(gain).connect(masterGain);
+      oscillator.start(now);
+      oscillator.stop(now + 0.25);
+      nodes.push(oscillator, gain);
+    };
+    timers.push(window.setInterval(shake, 900 + Math.random() * 700));
+    shake();
+  };
+
+  const startMode = async (mode) => {
+    await ensureAudio();
+    clearSound();
+    activeMode = mode;
+    updateButtons();
+    if (mode === "stream") {
+      startStream();
+    } else {
+      playBowl();
+      timers.push(window.setInterval(playBowl, 5200));
+    }
+  };
+
+  const stop = () => {
+    activeMode = "";
+    clearSound();
+    updateButtons();
+  };
+
+  buttons.forEach((button) => {
+    const activate = async (event) => {
+      event.preventDefault();
+      if (event.type === "touchend") lastTouchAt = Date.now();
+      if (event.type === "click" && Date.now() - lastTouchAt < 700) return;
+      const mode = button.dataset.soundMode;
+      if (activeMode === mode) {
+        stop();
+      } else {
+        try {
+          await startMode(mode);
+        } catch {
+          updateButtons();
+        }
+      }
+    };
+    button.addEventListener("click", activate);
+    button.addEventListener("touchend", activate, { passive: false });
+  });
+
+  updateButtons();
+}
+
 renderAvatarPreview();
 switchAuthTab("login");
 setCategory("日志");
 setupMimiDrag();
-setupHealingSound();
+setupAmbientSounds();
 refreshSession();
