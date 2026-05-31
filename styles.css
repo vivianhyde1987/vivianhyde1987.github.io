@@ -281,18 +281,97 @@ label {
   white-space: nowrap;
 }
 
+.sound-cluster {
+  position: relative;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 14% 28%, rgba(182, 37, 72, 0.28), transparent 16%),
+    linear-gradient(90deg, rgba(37, 29, 32, 0.5), rgba(67, 28, 42, 0.42));
+}
+
+.sound-cluster::before,
+.sound-cluster::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  height: 1px;
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, transparent, rgba(91, 116, 55, 0.78), rgba(182, 37, 72, 0.68), transparent);
+  pointer-events: none;
+}
+
+.sound-cluster::before {
+  top: 5px;
+  transform: rotate(-1.5deg);
+}
+
+.sound-cluster::after {
+  bottom: 5px;
+  transform: rotate(1.2deg);
+}
+
 .sound-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   min-height: 34px;
-  padding: 0 13px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.14);
-  box-shadow: none;
+  padding: 0 12px 0 8px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.08));
+  box-shadow: inset 0 0 0 1px rgba(37, 29, 32, 0.08);
   white-space: nowrap;
+}
+
+.sound-toggle::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  border-radius: 50% 50% 50% 0;
+  background: rgba(182, 37, 72, 0.72);
+  transform: translateY(-50%) rotate(-35deg);
+}
+
+.sound-toggle__icon {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff7f2;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.sound-toggle__label {
+  position: relative;
+  z-index: 1;
 }
 
 .sound-toggle.is-playing {
   background: rgba(238, 192, 83, 0.24);
   color: white;
+}
+
+.sound-toggle.is-playing .sound-toggle__icon {
+  background: var(--gold);
+  color: var(--ink);
 }
 
 .layout {
@@ -1466,6 +1545,16 @@ h2 {
   .notice-strip {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .sound-cluster {
+    width: 100%;
+    border-radius: 18px;
+  }
+
+  .sound-toggle {
+    flex: 1 1 120px;
+    justify-content: center;
   }
 
   .wish-history article {

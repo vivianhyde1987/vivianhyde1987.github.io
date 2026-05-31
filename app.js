@@ -1152,10 +1152,12 @@ function setupAmbientSounds() {
   const updateButtons = () => {
     buttons.forEach((button) => {
       const playing = activeMode === button.dataset.soundMode;
+      const label = button.querySelector(".sound-toggle__label");
       button.classList.toggle("is-playing", playing);
-      button.textContent = playing
-        ? (button.dataset.soundMode === "stream" ? "溪流摇铃中" : "颂钵播放中")
-        : (button.dataset.soundMode === "stream" ? "溪流摇铃" : "疗愈颂钵");
+      if (!label) return;
+      const names = { bowl: "疗愈颂钵", stream: "溪流摇铃", cosmos: "宇宙的声音" };
+      const playingNames = { bowl: "颂钵播放中", stream: "溪流摇铃中", cosmos: "宇宙播放中" };
+      label.textContent = playing ? playingNames[button.dataset.soundMode] : names[button.dataset.soundMode];
     });
   };
 
@@ -1218,6 +1220,46 @@ function setupAmbientSounds() {
     shake();
   };
 
+  const startCosmos = () => {
+    const droneGain = audioContext.createGain();
+    droneGain.gain.value = 0.36;
+    droneGain.connect(masterGain);
+    [55, 82.41, 110].forEach((frequency, index) => {
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      oscillator.type = "sine";
+      oscillator.frequency.value = frequency;
+      gain.gain.value = index === 0 ? 0.16 : 0.06;
+      oscillator.connect(gain).connect(droneGain);
+      oscillator.start();
+      nodes.push(oscillator, gain);
+    });
+    nodes.push(droneGain);
+
+    const sparkle = () => {
+      if (!audioContext || !masterGain || activeMode !== "cosmos") return;
+      const now = audioContext.currentTime;
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      const filter = audioContext.createBiquadFilter();
+      oscillator.type = "sine";
+      oscillator.frequency.value = 520 + Math.random() * 920;
+      filter.type = "bandpass";
+      filter.frequency.value = oscillator.frequency.value;
+      filter.Q.value = 8;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.035, now + 0.12);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.8);
+      oscillator.connect(filter).connect(gain).connect(masterGain);
+      oscillator.start(now);
+      oscillator.stop(now + 3);
+      nodes.push(oscillator, filter, gain);
+    };
+
+    sparkle();
+    timers.push(window.setInterval(sparkle, 1800));
+  };
+
   const startMode = async (mode) => {
     await ensureAudio();
     clearSound();
@@ -1225,6 +1267,8 @@ function setupAmbientSounds() {
     updateButtons();
     if (mode === "stream") {
       startStream();
+    } else if (mode === "cosmos") {
+      startCosmos();
     } else {
       playBowl();
       timers.push(window.setInterval(playBowl, 5200));

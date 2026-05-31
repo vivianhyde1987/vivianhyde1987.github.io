@@ -30,8 +30,20 @@
       </header>
 
       <section class="notice-strip" aria-label="小站公告">
-        <button id="soundToggle" class="sound-toggle" type="button" data-sound-mode="bowl">疗愈颂钵</button>
-        <button class="sound-toggle" type="button" data-sound-mode="stream">溪流摇铃</button>
+        <div class="sound-cluster" aria-label="疗愈声音">
+          <button id="soundToggle" class="sound-toggle" type="button" data-sound-mode="bowl">
+            <span class="sound-toggle__icon">◎</span>
+            <span class="sound-toggle__label">疗愈颂钵</span>
+          </button>
+          <button class="sound-toggle" type="button" data-sound-mode="stream">
+            <span class="sound-toggle__icon">≋</span>
+            <span class="sound-toggle__label">溪流摇铃</span>
+          </button>
+          <button class="sound-toggle" type="button" data-sound-mode="cosmos">
+            <span class="sound-toggle__icon">✦</span>
+            <span class="sound-toggle__label">宇宙的声音</span>
+          </button>
+        </div>
       </section>
 
       <main class="layout">
