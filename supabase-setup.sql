@@ -21,7 +21,7 @@ create table if not exists public.blog_sessions (
 create table if not exists public.blog_posts (
   id uuid primary key default gen_random_uuid(),
   owner_id uuid not null,
-  category text not null check (category in ('日志', '小说', '相册', '心情')),
+  category text not null,
   title text not null,
   body text not null,
   image_url text,
@@ -83,7 +83,7 @@ returns text
 language sql
 immutable
 as $$
-  select left(regexp_replace(lower(trim(raw_handle)), '[^a-z0-9_\-\u4e00-\u9fa5]', '', 'g'), 24);
+  select left(regexp_replace(lower(trim(raw_handle)), '\s+', '-', 'g'), 24);
 $$;
 
 create or replace function public.make_blog_session(account_uuid uuid)
@@ -139,10 +139,10 @@ declare
   account_uuid uuid;
 begin
   if char_length(clean_handle) < 2 then
-    raise exception 'ID 至少需要 2 个字符';
+    raise exception 'ID must be at least 2 characters';
   end if;
   if char_length(password_input) < 6 then
-    raise exception '密码至少需要 6 位';
+    raise exception 'Password must be at least 6 characters';
   end if;
 
   insert into public.blog_accounts(handle, password_hash)
@@ -152,7 +152,7 @@ begin
   return public.make_blog_session(account_uuid);
 exception
   when unique_violation then
-    raise exception '这个 ID 已经注册过了';
+    raise exception 'This ID is already registered';
 end;
 $$;
 
@@ -172,7 +172,7 @@ begin
     and password_hash = crypt(password_input, password_hash);
 
   if account_uuid is null then
-    raise exception 'ID 或密码不正确';
+    raise exception 'ID or password is incorrect';
   end if;
 
   return public.make_blog_session(account_uuid);
@@ -190,7 +190,7 @@ declare
 begin
   select * into account_row from public.account_from_token(session_token);
   if account_row.id is null then
-    raise exception '登录已过期';
+    raise exception 'Session expired';
   end if;
   return jsonb_build_object(
     'id', account_row.id,
@@ -212,7 +212,7 @@ declare
 begin
   select * into account_row from public.account_from_token(session_token);
   if account_row.id is null then
-    raise exception '请先登录';
+    raise exception 'Please log in first';
   end if;
   update public.blog_accounts
   set avatar = avatar_input, updated_at = now()
@@ -234,7 +234,7 @@ declare
 begin
   select * into account_row from public.account_from_token(session_token);
   if account_row.id is null then
-    raise exception '请先登录';
+    raise exception 'Please log in first';
   end if;
   insert into public.blog_posts(owner_id, category, title, body, image_url)
   values (account_row.id, category_input, title_input, body_input, image_input)
@@ -254,7 +254,7 @@ declare
 begin
   select * into account_row from public.account_from_token(session_token);
   if account_row.id is null then
-    raise exception '请先登录';
+    raise exception 'Please log in first';
   end if;
   delete from public.blog_posts
   where id = post_uuid
@@ -274,7 +274,7 @@ declare
 begin
   select * into account_row from public.account_from_token(session_token);
   if account_row.id is null then
-    raise exception '请先登录';
+    raise exception 'Please log in first';
   end if;
   insert into public.blog_comments(post_id, parent_id, owner_id, body)
   values (post_uuid, parent_uuid, account_row.id, body_input)
@@ -294,7 +294,7 @@ declare
 begin
   select * into account_row from public.account_from_token(session_token);
   if account_row.id is null then
-    raise exception '请先登录';
+    raise exception 'Please log in first';
   end if;
   delete from public.blog_comments
   where id = comment_uuid
@@ -313,7 +313,7 @@ declare
 begin
   select * into account_row from public.account_from_token(session_token);
   if account_row.id is null then
-    raise exception '请先登录';
+    raise exception 'Please log in first';
   end if;
   if exists (select 1 from public.blog_post_likes where post_id = post_uuid and owner_id = account_row.id) then
     delete from public.blog_post_likes where post_id = post_uuid and owner_id = account_row.id;
@@ -333,5 +333,5 @@ grant execute on function public.create_blog_comment(uuid, uuid, uuid, text) to 
 grant execute on function public.delete_blog_comment(uuid, uuid) to anon, authenticated;
 grant execute on function public.toggle_blog_like(uuid, uuid) to anon, authenticated;
 
--- 注册好你的站主账号后，把下面这一行里的 your-id 改成你的永久 ID，运行一次：
+-- After registering your owner ID, replace your-id and run once:
 -- update public.blog_accounts set role = 'owner' where handle = 'your-id';
