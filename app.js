@@ -6,6 +6,7 @@ let session = null;
 let profile = null;
 let posts = [];
 let comments = [];
+let likes = [];
 let profiles = new Map();
 let activeCategory = "日志";
 
@@ -212,12 +213,18 @@ async function loadBlog() {
     posts = postRows || [];
     comments = commentRows || [];
     profiles = new Map((profileRows || []).map((item) => [item.user_id, item]));
+    await loadLikes();
     setSync("云端已同步");
     renderFeed();
   } catch {
     setSync("需要初始化云端表");
     elements.feed.innerHTML = `<div class="empty">云端栏目还没有准备好。请把 supabase-setup.sql 里的内容复制到 Supabase 的 SQL Editor 运行一次。</div>`;
   }
+}
+
+async function loadLikes() {
+  const { data, error } = await client.from("blog_post_likes").select("*");
+  likes = error ? [] : data || [];
 }
 
 function setCategory(category) {
@@ -252,6 +259,29 @@ function renderFeed() {
       image.hidden = false;
     }
 
+    const commentsArea = node.querySelector(".comments");
+    const postActions = document.createElement("div");
+    postActions.className = "post-actions";
+
+    const likeButton = document.createElement("button");
+    likeButton.type = "button";
+    likeButton.className = "like-button";
+    likeButton.textContent = `${isLiked(post.id) ? "已赞" : "点赞"} ${likeCount(post.id)}`;
+    likeButton.disabled = !session;
+    likeButton.classList.toggle("is-liked", isLiked(post.id));
+    likeButton.addEventListener("click", () => toggleLike(post.id));
+    postActions.append(likeButton);
+
+    if (canDeletePost(post)) {
+      const deletePostButton = document.createElement("button");
+      deletePostButton.type = "button";
+      deletePostButton.className = "danger-button";
+      deletePostButton.textContent = post.category === "相册" ? "删除照片" : "删除";
+      deletePostButton.addEventListener("click", () => deletePost(post.id));
+      postActions.append(deletePostButton);
+    }
+
+    commentsArea.before(postActions);
     renderComments(node.querySelector(".comments"), post.id);
     const form = node.querySelector(".comment-form");
     form.hidden = !session;
@@ -263,6 +293,44 @@ function renderFeed() {
     });
     elements.feed.append(node);
   });
+}
+
+function likeCount(postId) {
+  return likes.filter((item) => item.post_id === postId).length;
+}
+
+function isLiked(postId) {
+  return Boolean(session && likes.some((item) => item.post_id === postId && item.owner_id === session.user.id));
+}
+
+function canDeletePost(post) {
+  return Boolean(profile && (profile.role === "owner" || post.owner_id === profile.user_id));
+}
+
+async function toggleLike(postId) {
+  if (!session) {
+    setMessage("请先登录，再点赞。", "error");
+    return;
+  }
+  const liked = isLiked(postId);
+  const request = liked
+    ? client.from("blog_post_likes").delete().eq("post_id", postId).eq("owner_id", session.user.id)
+    : client.from("blog_post_likes").insert({ post_id: postId, owner_id: session.user.id });
+  const { error } = await request;
+  if (error) {
+    setSync("点赞功能需要先运行新版 SQL");
+    return;
+  }
+  await loadBlog();
+}
+
+async function deletePost(id) {
+  const { error } = await client.from("blog_posts").delete().eq("id", id);
+  if (error) {
+    setSync("删除失败");
+    return;
+  }
+  await loadBlog();
 }
 
 function renderComments(container, postId) {

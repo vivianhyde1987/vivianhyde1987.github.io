@@ -773,6 +773,32 @@ h2 {
   white-space: pre-wrap;
 }
 
+.post-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.post-actions button {
+  min-height: 34px;
+  padding: 0 12px;
+  background: rgba(37, 29, 32, 0.1);
+  color: var(--ink);
+  border: 1px solid rgba(37, 29, 32, 0.14);
+  box-shadow: none;
+}
+
+.post-actions .like-button.is-liked {
+  background: var(--rose);
+  color: white;
+}
+
+.post-actions .danger-button {
+  background: rgba(182, 37, 72, 0.12);
+  color: var(--rose);
+}
+
 .post__tags {
   display: flex;
   flex-wrap: wrap;

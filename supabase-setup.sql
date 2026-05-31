@@ -32,9 +32,17 @@ create table if not exists public.blog_comments (
   constraint comment_length check (char_length(body) between 1 and 500)
 );
 
+create table if not exists public.blog_post_likes (
+  post_id uuid not null references public.blog_posts(id) on delete cascade,
+  owner_id uuid not null references auth.users(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (post_id, owner_id)
+);
+
 alter table public.profiles enable row level security;
 alter table public.blog_posts enable row level security;
 alter table public.blog_comments enable row level security;
+alter table public.blog_post_likes enable row level security;
 
 drop policy if exists "profiles are readable" on public.profiles;
 create policy "profiles are readable"
@@ -102,6 +110,21 @@ using (
   auth.uid() = owner_id
   or exists (select 1 from public.profiles p where p.user_id = auth.uid() and p.role = 'owner')
 );
+
+drop policy if exists "likes are readable" on public.blog_post_likes;
+create policy "likes are readable"
+on public.blog_post_likes for select
+using (true);
+
+drop policy if exists "signed in users like posts" on public.blog_post_likes;
+create policy "signed in users like posts"
+on public.blog_post_likes for insert
+with check (auth.uid() = owner_id);
+
+drop policy if exists "users remove own likes" on public.blog_post_likes;
+create policy "users remove own likes"
+on public.blog_post_likes for delete
+using (auth.uid() = owner_id);
 
 -- 注册好你的站主账号后，把下面这一行里的 your-id 改成你的永久 ID，运行一次：
 -- update public.profiles set role = 'owner' where handle = 'your-id';

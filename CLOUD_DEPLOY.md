@@ -9,6 +9,7 @@
 - `profiles`：朋友的永久 ID、头像和站主身份
 - `blog_posts`：日志、小说、相册、心情栏目内容
 - `blog_comments`：评论和评论下面的回复
+- `blog_post_likes`：照片和文章的点赞记录
 
 ## 2. 关闭邮箱确认
 
