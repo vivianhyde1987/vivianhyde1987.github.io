@@ -319,8 +319,6 @@ function renderSession() {
     return;
   }
 
-  const avatarNode = document.createElement("span");
-  paintAvatar(avatarNode, avatarFromProfile(profile));
   const name = document.createElement("span");
   name.textContent = profile.handle;
   const logout = document.createElement("button");
@@ -334,7 +332,7 @@ function renderSession() {
     renderWishPool();
     setMessage("已退出。");
   });
-  elements.sessionArea.append(avatarNode, name, logout);
+  elements.sessionArea.append(name, logout);
 
   elements.profileCard.hidden = false;
   elements.profileCard.innerHTML = `
