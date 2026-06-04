@@ -78,6 +78,25 @@ create table if not exists public.koi_wishes (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.lottery_topics (
+  id uuid primary key default gen_random_uuid(),
+  topic_date date not null unique,
+  owner_id uuid not null,
+  topic_text text not null,
+  created_at timestamptz not null default now(),
+  constraint lottery_topic_length check (char_length(topic_text) between 2 and 120)
+);
+
+create table if not exists public.lottery_entries (
+  id uuid primary key default gen_random_uuid(),
+  topic_id uuid not null references public.lottery_topics(id) on delete cascade,
+  owner_id uuid not null,
+  body text not null,
+  created_at timestamptz not null default now(),
+  unique (topic_id, owner_id),
+  constraint lottery_entry_length check (char_length(body) between 1 and 300)
+);
+
 alter table public.blog_posts
 add column if not exists video_url text;
 
@@ -109,6 +128,8 @@ alter table public.blog_post_likes enable row level security;
 alter table public.chat_messages enable row level security;
 alter table public.chat_message_likes enable row level security;
 alter table public.koi_wishes enable row level security;
+alter table public.lottery_topics enable row level security;
+alter table public.lottery_entries enable row level security;
 
 drop policy if exists "accounts are readable" on public.blog_accounts;
 create policy "accounts are readable"
@@ -143,6 +164,16 @@ using (true);
 drop policy if exists "koi wishes are readable" on public.koi_wishes;
 create policy "koi wishes are readable"
 on public.koi_wishes for select
+using (true);
+
+drop policy if exists "lottery topics are readable" on public.lottery_topics;
+create policy "lottery topics are readable"
+on public.lottery_topics for select
+using (true);
+
+drop policy if exists "lottery entries are readable" on public.lottery_entries;
+create policy "lottery entries are readable"
+on public.lottery_entries for select
 using (true);
 
 drop policy if exists "blog videos are public" on storage.objects;
@@ -513,6 +544,54 @@ begin
 end;
 $$;
 
+create or replace function public.create_lottery_topic(session_token uuid, topic_date_input date, topic_text_input text)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  account_row public.blog_accounts;
+  topic_uuid uuid;
+begin
+  select * into account_row from public.account_from_token(session_token);
+  if account_row.id is null or account_row.role <> 'owner' then
+    raise exception 'Only owner can create lottery topic';
+  end if;
+  insert into public.lottery_topics(topic_date, owner_id, topic_text)
+  values (topic_date_input, account_row.id, trim(topic_text_input))
+  on conflict (topic_date) do update
+    set topic_text = excluded.topic_text,
+        owner_id = excluded.owner_id
+  returning id into topic_uuid;
+  return topic_uuid;
+end;
+$$;
+
+create or replace function public.enter_lottery(session_token uuid, topic_uuid uuid, body_input text)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  account_row public.blog_accounts;
+  entry_uuid uuid;
+begin
+  select * into account_row from public.account_from_token(session_token);
+  if account_row.id is null then
+    raise exception 'Please log in first';
+  end if;
+  insert into public.lottery_entries(topic_id, owner_id, body)
+  values (topic_uuid, account_row.id, trim(body_input))
+  returning id into entry_uuid;
+  return entry_uuid;
+exception
+  when unique_violation then
+    raise exception 'Already entered today';
+end;
+$$;
+
 grant execute on function public.register_blog_account(text, text) to anon, authenticated;
 grant execute on function public.login_blog_account(text, text) to anon, authenticated;
 grant execute on function public.get_blog_session(uuid) to anon, authenticated;
@@ -526,6 +605,8 @@ grant execute on function public.create_chat_message(uuid, text, text) to anon, 
 grant execute on function public.delete_chat_message(uuid, uuid) to anon, authenticated;
 grant execute on function public.toggle_chat_like(uuid, uuid) to anon, authenticated;
 grant execute on function public.create_koi_wish(uuid, text, text, integer) to anon, authenticated;
+grant execute on function public.create_lottery_topic(uuid, date, text) to anon, authenticated;
+grant execute on function public.enter_lottery(uuid, uuid, text) to anon, authenticated;
 
 -- After registering your owner ID, replace your-id and run once:
 -- update public.blog_accounts set role = 'owner' where handle = 'your-id';

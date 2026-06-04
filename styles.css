@@ -1433,6 +1433,78 @@ h2 {
   color: rgba(37, 29, 32, 0.58);
 }
 
+.lottery-topic-form,
+.lottery-entry-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 14px;
+}
+
+.lottery-topic-card,
+.lottery-result,
+.lottery-entries article,
+.lottery-entries p {
+  border: 1px solid rgba(37, 29, 32, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.58);
+  padding: 12px;
+}
+
+.lottery-topic-card {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.lottery-topic-card span,
+.lottery-topic-card small,
+.lottery-entries small {
+  color: rgba(37, 29, 32, 0.58);
+}
+
+.lottery-topic-card strong,
+.lottery-result strong {
+  color: var(--rose);
+  line-height: 1.55;
+}
+
+.lottery-result {
+  display: grid;
+  gap: 5px;
+  margin: 12px 0;
+  border-color: rgba(212, 167, 44, 0.32);
+  background:
+    radial-gradient(circle at 10% 20%, rgba(212, 167, 44, 0.18), transparent 28%),
+    rgba(255, 255, 255, 0.66);
+}
+
+.lottery-result p,
+.lottery-entries p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.lottery-entries {
+  display: grid;
+  gap: 8px;
+}
+
+.lottery-entries article {
+  display: grid;
+  gap: 5px;
+}
+
+.lottery-entries article p {
+  margin: 0;
+  line-height: 1.65;
+}
+
+.lottery-entries article strong {
+  color: var(--teal);
+}
+
 @keyframes koi-swim {
   0%,
   100% {
