@@ -151,9 +151,76 @@ label {
 .hero__shade {
   position: absolute;
   inset: 0;
+  z-index: 1;
   background:
-    linear-gradient(90deg, rgba(12, 8, 10, 0.92), rgba(12, 8, 10, 0.54) 52%, rgba(12, 8, 10, 0.2)),
-    linear-gradient(0deg, rgba(12, 8, 10, 0.55), transparent 54%);
+    radial-gradient(circle at 56% 70%, rgba(255, 190, 96, 0.2), transparent 26%),
+    linear-gradient(90deg, rgba(12, 8, 10, 0.82), rgba(12, 8, 10, 0.45) 52%, rgba(12, 8, 10, 0.12)),
+    linear-gradient(0deg, rgba(12, 8, 10, 0.66), transparent 58%);
+}
+
+.hero__mist {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.hero__mist span {
+  position: absolute;
+  left: 48%;
+  bottom: 18%;
+  width: clamp(90px, 14vw, 190px);
+  height: clamp(260px, 42vh, 560px);
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 50% 88%, rgba(255, 210, 126, 0.34), transparent 28%),
+    radial-gradient(ellipse at 48% 58%, rgba(255, 247, 220, 0.24), transparent 40%),
+    linear-gradient(0deg, rgba(255, 195, 105, 0.18), rgba(255, 255, 255, 0.05), transparent 76%);
+  filter: blur(16px);
+  opacity: 0;
+  transform: translate3d(-50%, 34%, 0) scaleX(0.48);
+  animation: humidifier-mist 9s ease-in-out infinite;
+}
+
+.hero__mist span:nth-child(2) {
+  left: 53%;
+  bottom: 16%;
+  width: clamp(120px, 18vw, 240px);
+  animation-delay: -3s;
+  animation-duration: 11s;
+  filter: blur(22px);
+}
+
+.hero__mist span:nth-child(3) {
+  left: 57%;
+  bottom: 17%;
+  width: clamp(80px, 12vw, 160px);
+  animation-delay: -6s;
+  animation-duration: 12.5s;
+  filter: blur(18px);
+}
+
+@keyframes humidifier-mist {
+  0% {
+    opacity: 0;
+    transform: translate3d(-50%, 38%, 0) scaleX(0.36) scaleY(0.74) rotate(-2deg);
+  }
+
+  18% {
+    opacity: 0.5;
+  }
+
+  55% {
+    opacity: 0.38;
+    transform: translate3d(-54%, -16%, 0) scaleX(0.72) scaleY(1.08) rotate(3deg);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(-46%, -68%, 0) scaleX(1.05) scaleY(1.24) rotate(-5deg);
+  }
 }
 
 .hero::after {
@@ -167,12 +234,13 @@ label {
     linear-gradient(90deg, rgba(182, 37, 72, 0.78), rgba(212, 167, 44, 0.72), rgba(14, 138, 148, 0.72), rgba(108, 78, 163, 0.72));
   opacity: 0.28;
   filter: blur(26px);
+  z-index: 2;
 }
 
 .topbar,
 .hero__copy {
   position: relative;
-  z-index: 1;
+  z-index: 3;
 }
 
 .topbar {
