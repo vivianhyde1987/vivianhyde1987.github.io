@@ -1838,7 +1838,7 @@ h2 {
 }
 
 .event-log-list {
-  display: grid;
+  display: none;
   gap: 10px;
   margin-top: 14px;
 }

@@ -1093,6 +1093,12 @@ async function deleteEventLog(recordId) {
   await loadBlog();
 }
 
+function renderEventLogs() {
+  renderHiveCounter();
+  renderSleepPanel();
+  if (elements.eventLogList) elements.eventLogList.innerHTML = "";
+}
+
 function hiveAreaFromNote(note = "") {
   const match = note.match(/^\[风团计数\]\s*(手|脖子|四肢)/);
   return match ? match[1] : "";
