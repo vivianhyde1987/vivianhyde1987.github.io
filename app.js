@@ -78,6 +78,7 @@ const elements = {
   medicineInput: $("#medicineInput"),
   eventNoteInput: $("#eventNoteInput"),
   eventLogList: $("#eventLogList"),
+  hiveTotalText: $("#hiveTotalText"),
   soundToggle: $("#soundToggle"),
   todayText: $("#todayText"),
   syncStatus: $("#syncStatus"),
@@ -984,6 +985,7 @@ async function addChatMessage(body, imageUrl = null, parentId = null) {
 
 function renderEventLogs() {
   if (!elements.eventLogList) return;
+  renderHiveCounter();
   if (!eventLogs.length) {
     elements.eventLogList.innerHTML = `<div class="empty">还没有事件记录。</div>`;
     return;
@@ -1027,8 +1029,69 @@ async function deleteEventLog(recordId) {
   await loadBlog();
 }
 
+function hiveAreaFromNote(note = "") {
+  const match = note.match(/^\[风团计数\]\s*(手|脖子|四肢)/);
+  return match ? match[1] : "";
+}
+
+function isTodayInShanghai(value) {
+  if (!value) return false;
+  const key = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Shanghai",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(new Date(value));
+  return key === todayKey();
+}
+
+function hiveCountsToday() {
+  return eventLogs.reduce((counts, record) => {
+    if (!isTodayInShanghai(record.event_time || record.created_at)) return counts;
+    const area = hiveAreaFromNote(record.note || "");
+    if (area) counts[area] = (counts[area] || 0) + 1;
+    return counts;
+  }, { 手: 0, 脖子: 0, 四肢: 0 });
+}
+
+function renderHiveCounter() {
+  const counts = hiveCountsToday();
+  const total = Object.values(counts).reduce((sum, value) => sum + value, 0);
+  if (elements.hiveTotalText) {
+    elements.hiveTotalText.textContent = `今日合计 ${total} 次`;
+  }
+  $$("[data-hive-area]").forEach((button) => {
+    const area = button.dataset.hiveArea;
+    const number = button.querySelector("span");
+    if (number) number.textContent = counts[area] || 0;
+  });
+}
+
+async function addHiveCount(area) {
+  if (!profile) {
+    setMessage("请先登录，再记录风团次数。", "error");
+    return;
+  }
+  const { error } = await client.rpc("create_health_event_log", {
+    session_token: sessionToken,
+    event_time_input: new Date().toISOString(),
+    medicine_input: "",
+    note_input: `[风团计数] ${area}`
+  });
+  if (error) {
+    setSync(rpcErrorText(error, "风团计数保存失败，请确认新版 SQL 已运行"));
+    return;
+  }
+  setSync(`${area} 风团 +1`);
+  await loadBlog();
+}
+
 $$(".auth-tabs button").forEach((button) => {
   button.addEventListener("click", () => switchAuthTab(button.dataset.authTab));
+});
+
+$$("[data-hive-area]").forEach((button) => {
+  button.addEventListener("click", () => addHiveCount(button.dataset.hiveArea));
 });
 
 $$("[data-category]").forEach((button) => {

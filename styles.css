@@ -1671,6 +1671,67 @@ h2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.hive-counter {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(182, 37, 72, 0.16);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(182, 37, 72, 0.14), transparent 28%),
+    rgba(255, 255, 255, 0.54);
+  padding: 12px;
+}
+
+.hive-counter__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.hive-counter__head strong {
+  color: var(--rose);
+}
+
+.hive-counter__head span {
+  border-radius: 999px;
+  background: rgba(37, 29, 32, 0.1);
+  padding: 5px 10px;
+  font-weight: 900;
+}
+
+.hive-counter__buttons {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.hive-counter__buttons button {
+  min-height: 54px;
+  background: rgba(255, 255, 255, 0.68);
+  color: var(--ink);
+  border: 1px solid rgba(37, 29, 32, 0.12);
+  box-shadow: none;
+}
+
+.hive-counter__buttons button span {
+  display: inline-grid;
+  place-items: center;
+  min-width: 26px;
+  min-height: 26px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background: var(--rose);
+  color: white;
+  font-weight: 900;
+}
+
+.hive-counter small {
+  color: rgba(37, 29, 32, 0.58);
+}
+
 .event-log-list {
   display: grid;
   gap: 10px;

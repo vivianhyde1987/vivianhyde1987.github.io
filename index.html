@@ -178,7 +178,19 @@
           <section class="event-log panel" aria-label="定向事件记录">
             <div class="panel__head">
               <h2>荨麻疹日常管理记录</h2>
-              <span>吃药 / 症状 / 备注</span>
+              <span>风团计数 / 吃药 / 备注</span>
+            </div>
+            <div class="hive-counter" aria-label="今日风团计数">
+              <div class="hive-counter__head">
+                <strong>今天哪里出现过荨麻疹</strong>
+                <span id="hiveTotalText">今日合计 0 次</span>
+              </div>
+              <div class="hive-counter__buttons">
+                <button type="button" data-hive-area="手">手 <span>0</span></button>
+                <button type="button" data-hive-area="脖子">脖子 <span>0</span></button>
+                <button type="button" data-hive-area="四肢">四肢 <span>0</span></button>
+              </div>
+              <small>看到一次风团就点一次，数字会自动记入今天。</small>
             </div>
             <form id="eventLogForm" class="event-log-form">
               <label>
@@ -324,6 +336,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
-    <script src="app.js?v=weekly-lottery-20260605"></script>
+    <script src="app.js?v=hive-counter-20260605"></script>
   </body>
 </html>
