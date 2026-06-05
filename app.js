@@ -87,6 +87,9 @@ const elements = {
   sleepRecordText: $("#sleepRecordText"),
   sleepQuizForm: $("#sleepQuizForm"),
   sleepSummary: $("#sleepSummary"),
+  copyInviteButton: $("#copyInviteButton"),
+  posterButton: $("#posterButton"),
+  sharePoster: $("#sharePoster"),
   soundToggle: $("#soundToggle"),
   todayText: $("#todayText"),
   syncStatus: $("#syncStatus"),
@@ -1369,6 +1372,125 @@ if (elements.sleepQuizForm) {
     const ok = await saveSleepNote("睡前收尾", sleepClosingLine(score, need));
     if (ok) setSync("今晚收尾已生成");
   });
+}
+
+function siteUrl() {
+  return "https://www.vivianhyde1987.com/";
+}
+
+function currentInviteText() {
+  const topic = currentLotteryTopic();
+  const topicText = topic?.topic_text ? `本周话题：${topic.topic_text}` : "来我的小站坐一会，留下今天的一句话。";
+  return `${topicText}\n可以注册 ID、留言、参加每周抽奖，也可以看看日志和相册。\n${siteUrl()}`;
+}
+
+async function copyInviteText() {
+  const text = currentInviteText();
+  try {
+    await navigator.clipboard.writeText(text);
+    setSync("邀请语已复制");
+  } catch {
+    setSync("复制失败，可以手动复制网址");
+  }
+}
+
+function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
+  const paragraphs = String(text).split("\n");
+  let cursorY = y;
+  paragraphs.forEach((paragraph) => {
+    let line = "";
+    Array.from(paragraph).forEach((char) => {
+      const next = line + char;
+      if (ctx.measureText(next).width > maxWidth && line) {
+        ctx.fillText(line, x, cursorY);
+        line = char;
+        cursorY += lineHeight;
+      } else {
+        line = next;
+      }
+    });
+    if (line) {
+      ctx.fillText(line, x, cursorY);
+      cursorY += lineHeight;
+    }
+    cursorY += lineHeight * 0.35;
+  });
+  return cursorY;
+}
+
+function generateSharePoster() {
+  if (!elements.sharePoster) return;
+  const canvas = document.createElement("canvas");
+  canvas.width = 900;
+  canvas.height = 1280;
+  const ctx = canvas.getContext("2d");
+  const gradient = ctx.createLinearGradient(0, 0, 900, 1280);
+  gradient.addColorStop(0, "#160b12");
+  gradient.addColorStop(0.46, "#2a111d");
+  gradient.addColorStop(1, "#0b0a0d");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 900, 1280);
+
+  ctx.fillStyle = "rgba(182, 37, 72, 0.32)";
+  ctx.beginPath();
+  ctx.arc(170, 190, 190, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(212, 167, 44, 0.18)";
+  ctx.beginPath();
+  ctx.arc(760, 1060, 220, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(255, 250, 245, 0.08)";
+  for (let i = 0; i < 42; i += 1) {
+    ctx.beginPath();
+    ctx.arc((i * 97) % 900, (i * 173) % 1280, 1.8, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.strokeStyle = "rgba(255, 240, 220, 0.28)";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(56, 56, 788, 1168);
+
+  ctx.fillStyle = "rgba(255, 245, 232, 0.92)";
+  ctx.font = "700 48px Microsoft YaHei, sans-serif";
+  ctx.fillText("来小站坐一会", 96, 170);
+  ctx.font = "400 25px Microsoft YaHei, sans-serif";
+  ctx.fillStyle = "rgba(255, 245, 232, 0.68)";
+  ctx.fillText("留言、日志、相册、每周话题抽奖", 98, 220);
+
+  ctx.font = "700 34px Microsoft YaHei, sans-serif";
+  ctx.fillStyle = "rgba(255, 217, 223, 0.95)";
+  const topic = currentLotteryTopic();
+  const mainText = topic?.topic_text || "今晚也可以留下你的一句话。";
+  let y = wrapCanvasText(ctx, mainText, 98, 390, 704, 52);
+
+  ctx.font = "400 27px Microsoft YaHei, sans-serif";
+  ctx.fillStyle = "rgba(255, 245, 232, 0.74)";
+  y = wrapCanvasText(ctx, "这里是一间私人博客小房间。注册 ID 后，可以留言、互动，也可以参与每周日 21:00 的抽奖。", 98, y + 52, 704, 42);
+
+  ctx.fillStyle = "rgba(255, 245, 232, 0.12)";
+  ctx.fillRect(98, 980, 704, 118);
+  ctx.fillStyle = "rgba(255, 245, 232, 0.86)";
+  ctx.font = "700 31px Microsoft YaHei, sans-serif";
+  ctx.fillText("www.vivianhyde1987.com", 132, 1048);
+  ctx.font = "400 22px Microsoft YaHei, sans-serif";
+  ctx.fillStyle = "rgba(255, 245, 232, 0.58)";
+  ctx.fillText("长按保存海报，发给想邀请来的朋友", 132, 1088);
+
+  const dataUrl = canvas.toDataURL("image/png");
+  elements.sharePoster.hidden = false;
+  elements.sharePoster.innerHTML = `
+    <img src="${dataUrl}" alt="博客分享海报" />
+    <a href="${dataUrl}" download="vivian-blog-poster.png">下载海报</a>
+  `;
+  setSync("分享海报已生成");
+}
+
+if (elements.copyInviteButton) {
+  elements.copyInviteButton.addEventListener("click", copyInviteText);
+}
+
+if (elements.posterButton) {
+  elements.posterButton.addEventListener("click", generateSharePoster);
 }
 
 $$("[data-category]").forEach((button) => {
