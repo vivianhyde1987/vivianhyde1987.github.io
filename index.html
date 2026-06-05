@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Rose & Rainbow Blog</title>
-    <link rel="stylesheet" href="styles.css?v=mist-20260605" />
+    <link rel="stylesheet" href="styles.css?v=reply-event-20260605" />
   </head>
   <body>
     <div class="shell">
@@ -175,6 +175,29 @@
             <div id="lotteryEntries" class="lottery-entries"></div>
           </section>
 
+          <section class="event-log panel" aria-label="定向事件记录">
+            <div class="panel__head">
+              <h2>荨麻疹日常管理记录</h2>
+              <span>吃药 / 症状 / 备注</span>
+            </div>
+            <form id="eventLogForm" class="event-log-form">
+              <label>
+                吃药时间
+                <input id="eventTimeInput" type="datetime-local" />
+              </label>
+              <label>
+                药品种类
+                <input id="medicineInput" maxlength="80" placeholder="例如：氯雷他定、西替利嗪" />
+              </label>
+              <label class="wide">
+                备注
+                <textarea id="eventNoteInput" rows="3" maxlength="600" placeholder="例如：几点出现风团，可能原因，是否瘙痒，是否缓解"></textarea>
+              </label>
+              <button type="submit">保存记录</button>
+            </form>
+            <div id="eventLogList" class="event-log-list" aria-live="polite"></div>
+          </section>
+
           <section class="composer panel">
             <div class="panel__head">
               <h2>写一篇</h2>
@@ -231,7 +254,7 @@
           <section class="chat panel" aria-label="临时讨论区">
             <div class="panel__head">
               <h2>临时讨论区</h2>
-              <span>文字 / 贴图 / 点赞</span>
+              <span>文字 / 贴图 / 点赞 / 回复</span>
             </div>
             <form id="chatForm" class="chat-form">
               <label class="wide">
@@ -301,6 +324,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
-    <script src="app.js?v=avatar-clean-20260604"></script>
+    <script src="app.js?v=reply-event-20260605"></script>
   </body>
 </html>
