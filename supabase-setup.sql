@@ -52,6 +52,7 @@ create table if not exists public.blog_post_likes (
 
 create table if not exists public.chat_messages (
   id uuid primary key default gen_random_uuid(),
+  parent_id uuid references public.chat_messages(id) on delete cascade,
   owner_id uuid not null,
   body text,
   image_url text,
@@ -97,6 +98,22 @@ create table if not exists public.lottery_entries (
   constraint lottery_entry_length check (char_length(body) between 1 and 300)
 );
 
+create table if not exists public.health_event_logs (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid not null,
+  event_time timestamptz not null default now(),
+  medicine_name text,
+  note text,
+  created_at timestamptz not null default now(),
+  constraint health_event_content check (
+    (medicine_name is not null and char_length(medicine_name) between 1 and 80)
+    or (note is not null and char_length(note) between 1 and 600)
+  )
+);
+
+alter table public.chat_messages
+add column if not exists parent_id uuid references public.chat_messages(id) on delete cascade;
+
 alter table public.blog_posts
 add column if not exists video_url text;
 
@@ -130,6 +147,7 @@ alter table public.chat_message_likes enable row level security;
 alter table public.koi_wishes enable row level security;
 alter table public.lottery_topics enable row level security;
 alter table public.lottery_entries enable row level security;
+alter table public.health_event_logs enable row level security;
 
 drop policy if exists "accounts are readable" on public.blog_accounts;
 create policy "accounts are readable"
@@ -174,6 +192,11 @@ using (true);
 drop policy if exists "lottery entries are readable" on public.lottery_entries;
 create policy "lottery entries are readable"
 on public.lottery_entries for select
+using (true);
+
+drop policy if exists "health event logs are readable" on public.health_event_logs;
+create policy "health event logs are readable"
+on public.health_event_logs for select
 using (true);
 
 drop policy if exists "blog videos are public" on storage.objects;
@@ -460,6 +483,31 @@ begin
 end;
 $$;
 
+create or replace function public.create_chat_message(session_token uuid, body_input text, image_input text, parent_uuid uuid)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  account_row public.blog_accounts;
+  message_uuid uuid;
+  clean_body text := nullif(trim(body_input), '');
+begin
+  select * into account_row from public.account_from_token(session_token);
+  if account_row.id is null then
+    raise exception 'Please log in first';
+  end if;
+  if clean_body is null and image_input is null then
+    raise exception 'Message cannot be empty';
+  end if;
+  insert into public.chat_messages(parent_id, owner_id, body, image_url)
+  values (parent_uuid, account_row.id, clean_body, image_input)
+  returning id into message_uuid;
+  return message_uuid;
+end;
+$$;
+
 create or replace function public.delete_chat_message(session_token uuid, message_uuid uuid)
 returns void
 language plpgsql
@@ -497,6 +545,51 @@ begin
   else
     insert into public.chat_message_likes(message_id, owner_id) values (message_uuid, account_row.id);
   end if;
+end;
+$$;
+
+create or replace function public.create_health_event_log(session_token uuid, event_time_input timestamptz, medicine_input text, note_input text)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  account_row public.blog_accounts;
+  record_uuid uuid;
+  clean_medicine text := nullif(trim(medicine_input), '');
+  clean_note text := nullif(trim(note_input), '');
+begin
+  select * into account_row from public.account_from_token(session_token);
+  if account_row.id is null then
+    raise exception 'Please log in first';
+  end if;
+  if clean_medicine is null and clean_note is null then
+    raise exception 'Record cannot be empty';
+  end if;
+  insert into public.health_event_logs(owner_id, event_time, medicine_name, note)
+  values (account_row.id, coalesce(event_time_input, now()), clean_medicine, clean_note)
+  returning id into record_uuid;
+  return record_uuid;
+end;
+$$;
+
+create or replace function public.delete_health_event_log(session_token uuid, record_uuid uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  account_row public.blog_accounts;
+begin
+  select * into account_row from public.account_from_token(session_token);
+  if account_row.id is null then
+    raise exception 'Please log in first';
+  end if;
+  delete from public.health_event_logs
+  where id = record_uuid
+    and (owner_id = account_row.id or account_row.role = 'owner');
 end;
 $$;
 
@@ -602,8 +695,11 @@ grant execute on function public.create_blog_comment(uuid, uuid, uuid, text) to 
 grant execute on function public.delete_blog_comment(uuid, uuid) to anon, authenticated;
 grant execute on function public.toggle_blog_like(uuid, uuid) to anon, authenticated;
 grant execute on function public.create_chat_message(uuid, text, text) to anon, authenticated;
+grant execute on function public.create_chat_message(uuid, text, text, uuid) to anon, authenticated;
 grant execute on function public.delete_chat_message(uuid, uuid) to anon, authenticated;
 grant execute on function public.toggle_chat_like(uuid, uuid) to anon, authenticated;
+grant execute on function public.create_health_event_log(uuid, timestamptz, text, text) to anon, authenticated;
+grant execute on function public.delete_health_event_log(uuid, uuid) to anon, authenticated;
 grant execute on function public.create_koi_wish(uuid, text, text, integer) to anon, authenticated;
 grant execute on function public.create_lottery_topic(uuid, date, text) to anon, authenticated;
 grant execute on function public.enter_lottery(uuid, uuid, text) to anon, authenticated;

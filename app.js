@@ -15,6 +15,7 @@ let pendingAvatarImage = null;
 let koiWishes = [];
 let lotteryTopics = [];
 let lotteryEntries = [];
+let eventLogs = [];
 let activeInterest = "全部";
 let activeCategory = "日志";
 
@@ -72,6 +73,11 @@ const elements = {
   lotteryEntryInput: $("#lotteryEntryInput"),
   lotteryResult: $("#lotteryResult"),
   lotteryEntries: $("#lotteryEntries"),
+  eventLogForm: $("#eventLogForm"),
+  eventTimeInput: $("#eventTimeInput"),
+  medicineInput: $("#medicineInput"),
+  eventNoteInput: $("#eventNoteInput"),
+  eventLogList: $("#eventLogList"),
   soundToggle: $("#soundToggle"),
   todayText: $("#todayText"),
   syncStatus: $("#syncStatus"),
@@ -465,7 +471,7 @@ async function loadBlog() {
   if (!client) return;
   setSync("同步中");
   try {
-    const [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult, wishResult, lotteryTopicResult, lotteryEntryResult] = await Promise.all([
+    const [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult, wishResult, lotteryTopicResult, lotteryEntryResult, eventLogResult] = await Promise.all([
       client.from("blog_posts").select("*").order("created_at", { ascending: false }),
       client.from("blog_comments").select("*").order("created_at", { ascending: true }),
       client.from("blog_accounts").select("id, handle, avatar, role"),
@@ -474,7 +480,8 @@ async function loadBlog() {
       client.from("chat_message_likes").select("*"),
       client.from("koi_wishes").select("*").order("created_at", { ascending: false }).limit(80),
       client.from("lottery_topics").select("*").order("topic_date", { ascending: false }).limit(30),
-      client.from("lottery_entries").select("*").order("created_at", { ascending: true }).limit(200)
+      client.from("lottery_entries").select("*").order("created_at", { ascending: true }).limit(200),
+      client.from("health_event_logs").select("*").order("event_time", { ascending: false }).limit(80)
     ]);
     for (const result of [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult]) {
       if (result.error) throw result.error;
@@ -488,12 +495,14 @@ async function loadBlog() {
     koiWishes = wishResult.error ? [] : (wishResult.data || []);
     lotteryTopics = lotteryTopicResult.error ? [] : (lotteryTopicResult.data || []);
     lotteryEntries = lotteryEntryResult.error ? [] : (lotteryEntryResult.data || []);
+    eventLogs = eventLogResult.error ? [] : (eventLogResult.data || []);
     profiles = new Map((profileResult.data || []).map((item) => [item.id, { ...item, user_id: item.id }]));
     setSync("云端已同步");
     renderFeed();
     renderChat();
     renderWishPool();
     renderLottery();
+    renderEventLogs();
   } catch {
     setSync("需要运行新版 SQL");
     elements.feed.innerHTML = `<div class="empty">新增了栏目历史和临时讨论区。请把新版 supabase-setup.sql 复制到 Supabase 的 SQL Editor 再运行一次。</div>`;
@@ -788,6 +797,147 @@ async function deleteChatMessage(messageId) {
   const { error } = await client.rpc("delete_chat_message", { session_token: sessionToken, message_uuid: messageId });
   if (error) {
     setSync(rpcErrorText(error, "删除讨论消息失败"));
+    return;
+  }
+  await loadBlog();
+}
+
+function renderChat() {
+  elements.chatList.innerHTML = "";
+  const topMessages = chatMessages.filter((message) => !message.parent_id);
+  if (!topMessages.length) {
+    elements.chatList.innerHTML = `<div class="empty">临时讨论区还没有消息。</div>`;
+    return;
+  }
+  topMessages.forEach((message) => elements.chatList.append(createChatNode(message)));
+}
+
+function createChatNode(message, isReply = false) {
+  const author = profiles.get(message.owner_id);
+  const item = document.createElement("article");
+  item.className = isReply ? "chat-message chat-message--reply" : "chat-message";
+  item.innerHTML = `
+    <div class="chat-message__head">
+      <strong>${escapeHtml(author?.handle || "朋友")}</strong>
+      ${message.body ? moodBubble(message.body) : ""}
+      <small>${formatDate(message.created_at)}</small>
+    </div>
+    ${message.body ? `<p>${escapeHtml(message.body)}</p>` : ""}
+    ${message.image_url ? `<img src="${message.image_url}" alt="聊天贴图" />` : ""}
+    <div class="chat-message__actions"></div>
+  `;
+  const actions = item.querySelector(".chat-message__actions");
+  const likeButton = document.createElement("button");
+  likeButton.type = "button";
+  likeButton.className = isChatLiked(message.id) ? "is-liked" : "";
+  likeButton.textContent = `${isChatLiked(message.id) ? "已赞" : "点赞"} ${chatLikeCount(message.id)}`;
+  likeButton.disabled = !profile;
+  likeButton.addEventListener("click", () => toggleChatLike(message.id));
+  actions.append(likeButton);
+
+  if (profile) {
+    const replyButton = document.createElement("button");
+    replyButton.type = "button";
+    replyButton.textContent = "回复";
+    replyButton.addEventListener("click", () => showChatReplyForm(item, message));
+    actions.append(replyButton);
+  }
+
+  if (canDeleteChat(message)) {
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.textContent = "删除";
+    deleteButton.addEventListener("click", () => deleteChatMessage(message.id));
+    actions.append(deleteButton);
+  }
+
+  chatMessages
+    .filter((reply) => reply.parent_id === message.id)
+    .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+    .forEach((reply) => item.append(createChatNode(reply, true)));
+  return item;
+}
+
+function showChatReplyForm(node, message) {
+  const old = node.querySelector(".chat-reply-form");
+  if (old) old.remove();
+  const form = document.createElement("form");
+  form.className = "chat-reply-form";
+  form.innerHTML = `
+    <input maxlength="800" placeholder="回复 ${escapeHtml(profiles.get(message.owner_id)?.handle || "朋友")}" required />
+    <button type="submit">发送</button>
+  `;
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    await addChatMessage(form.querySelector("input").value.trim(), null, message.id);
+  });
+  node.append(form);
+}
+
+async function addChatMessage(body, imageUrl = null, parentId = null) {
+  if (!profile) {
+    setMessage("请先登录，再进入讨论区。", "error");
+    return false;
+  }
+  if (!body && !imageUrl) {
+    setSync("讨论区消息不能为空");
+    return false;
+  }
+  const { error } = await client.rpc("create_chat_message", {
+    session_token: sessionToken,
+    body_input: body,
+    image_input: imageUrl,
+    parent_uuid: parentId
+  });
+  if (error) {
+    setSync(rpcErrorText(error, "讨论区发送失败，请确认新版 SQL 已运行"));
+    return false;
+  }
+  setSync(parentId ? "回复已发送" : "已发送");
+  await loadBlog();
+  return true;
+}
+
+function renderEventLogs() {
+  if (!elements.eventLogList) return;
+  if (!eventLogs.length) {
+    elements.eventLogList.innerHTML = `<div class="empty">还没有事件记录。</div>`;
+    return;
+  }
+  elements.eventLogList.innerHTML = "";
+  eventLogs.forEach((record) => {
+    const author = profiles.get(record.owner_id);
+    const item = document.createElement("article");
+    item.className = "event-log-item";
+    const medicine = record.medicine_name ? escapeHtml(record.medicine_name) : "未填写药名";
+    item.innerHTML = `
+      <div class="event-log-item__head">
+        <strong>${medicine}</strong>
+        <small>${formatDate(record.event_time || record.created_at)}</small>
+      </div>
+      <p>${escapeHtml(record.note || "无备注")}</p>
+      <small>记录人：${escapeHtml(author?.handle || "站主")}</small>
+      <div class="event-log-item__actions"></div>
+    `;
+    const actions = item.querySelector(".event-log-item__actions");
+    if (profile && (profile.role === "owner" || record.owner_id === profile.user_id)) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = "删除";
+      button.addEventListener("click", () => deleteEventLog(record.id));
+      actions.append(button);
+    }
+    elements.eventLogList.append(item);
+  });
+}
+
+async function deleteEventLog(recordId) {
+  const { error } = await client.rpc("delete_health_event_log", {
+    session_token: sessionToken,
+    record_uuid: recordId
+  });
+  if (error) {
+    setSync(rpcErrorText(error, "删除记录失败"));
     return;
   }
   await loadBlog();
@@ -1109,6 +1259,67 @@ elements.chatForm.addEventListener("submit", async (event) => {
   setSync("已发送");
   await loadBlog();
 });
+
+elements.chatForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  if (!profile) {
+    setMessage("请先登录，再进入讨论区。", "error");
+    return;
+  }
+  const body = elements.chatBodyInput.value.trim();
+  const file = elements.chatImageInput.files?.[0] || null;
+  if (!body && !file) {
+    setSync("讨论区消息不能为空");
+    return;
+  }
+  setSync(file ? "处理贴图中" : "发送中");
+  let imageUrl = null;
+  try {
+    imageUrl = await compressPhoto(file, { maxSide: 720, quality: 0.7 });
+  } catch {
+    setSync("贴图处理失败，请换一张普通 JPG 或 PNG");
+    return;
+  }
+  if (imageUrl && imageUrl.length > 650000) {
+    setSync("贴图太大，请换一张较小的图片");
+    return;
+  }
+  const ok = await addChatMessage(body, imageUrl, null);
+  if (ok) elements.chatForm.reset();
+}, { capture: true });
+
+if (elements.eventLogForm) {
+  elements.eventLogForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!profile) {
+      setMessage("请先登录，再保存事件记录。", "error");
+      return;
+    }
+    const eventTime = elements.eventTimeInput.value
+      ? new Date(elements.eventTimeInput.value).toISOString()
+      : new Date().toISOString();
+    const medicine = elements.medicineInput.value.trim();
+    const note = elements.eventNoteInput.value.trim();
+    if (!medicine && !note) {
+      setSync("请填写药品种类或备注");
+      return;
+    }
+    const { error } = await client.rpc("create_health_event_log", {
+      session_token: sessionToken,
+      event_time_input: eventTime,
+      medicine_input: medicine,
+      note_input: note
+    });
+    if (error) {
+      setSync(rpcErrorText(error, "事件记录保存失败，请确认新版 SQL 已运行"));
+      return;
+    }
+    elements.eventLogForm.reset();
+    setSync("事件记录已保存");
+    await loadBlog();
+  });
+}
 
 elements.todayText.textContent = new Intl.DateTimeFormat("zh-CN", {
   year: "numeric",
