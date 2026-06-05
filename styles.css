@@ -164,62 +164,67 @@ label {
   z-index: 2;
   overflow: hidden;
   pointer-events: none;
-  mix-blend-mode: screen;
+  opacity: 0.95;
 }
 
 .hero__mist span {
   position: absolute;
-  left: 48%;
-  bottom: 18%;
-  width: clamp(90px, 14vw, 190px);
-  height: clamp(260px, 42vh, 560px);
-  border-radius: 50%;
+  left: 50%;
+  bottom: 10%;
+  width: clamp(150px, 20vw, 300px);
+  height: clamp(280px, 48vh, 620px);
+  border-radius: 48% 52% 46% 54%;
   background:
-    radial-gradient(ellipse at 50% 88%, rgba(255, 210, 126, 0.34), transparent 28%),
-    radial-gradient(ellipse at 48% 58%, rgba(255, 247, 220, 0.24), transparent 40%),
-    linear-gradient(0deg, rgba(255, 195, 105, 0.18), rgba(255, 255, 255, 0.05), transparent 76%);
-  filter: blur(16px);
+    radial-gradient(ellipse at 48% 88%, rgba(255, 226, 165, 0.42), transparent 24%),
+    radial-gradient(ellipse at 44% 62%, rgba(255, 255, 245, 0.5), transparent 34%),
+    radial-gradient(ellipse at 62% 38%, rgba(220, 238, 255, 0.22), transparent 36%),
+    linear-gradient(0deg, rgba(255, 212, 142, 0.26), rgba(255, 255, 255, 0.18), transparent 74%);
+  filter: blur(18px) saturate(1.08);
   opacity: 0;
-  transform: translate3d(-50%, 34%, 0) scaleX(0.48);
-  animation: humidifier-mist 9s ease-in-out infinite;
+  transform: translate3d(-50%, 30%, 0) scale(0.54, 0.76) rotate(-5deg);
+  animation: humidifier-mist 6.8s ease-in-out infinite;
+  will-change: transform, opacity, filter;
 }
 
 .hero__mist span:nth-child(2) {
-  left: 53%;
-  bottom: 16%;
-  width: clamp(120px, 18vw, 240px);
-  animation-delay: -3s;
-  animation-duration: 11s;
-  filter: blur(22px);
+  left: 56%;
+  bottom: 9%;
+  width: clamp(190px, 25vw, 360px);
+  animation-delay: -2.3s;
+  animation-duration: 8.4s;
+  filter: blur(24px) saturate(1.12);
 }
 
 .hero__mist span:nth-child(3) {
-  left: 57%;
-  bottom: 17%;
-  width: clamp(80px, 12vw, 160px);
-  animation-delay: -6s;
-  animation-duration: 12.5s;
-  filter: blur(18px);
+  left: 44%;
+  bottom: 12%;
+  width: clamp(120px, 17vw, 260px);
+  animation-delay: -4.7s;
+  animation-duration: 9.6s;
+  filter: blur(20px) saturate(1.05);
 }
 
 @keyframes humidifier-mist {
   0% {
     opacity: 0;
-    transform: translate3d(-50%, 38%, 0) scaleX(0.36) scaleY(0.74) rotate(-2deg);
+    transform: translate3d(-50%, 36%, 0) scale(0.42, 0.7) rotate(-7deg);
+    filter: blur(16px) saturate(1);
   }
 
-  18% {
-    opacity: 0.5;
+  16% {
+    opacity: 0.78;
   }
 
-  55% {
-    opacity: 0.38;
-    transform: translate3d(-54%, -16%, 0) scaleX(0.72) scaleY(1.08) rotate(3deg);
+  52% {
+    opacity: 0.62;
+    transform: translate3d(-58%, -20%, 0) scale(0.84, 1.18) rotate(5deg);
+    filter: blur(23px) saturate(1.12);
   }
 
   100% {
     opacity: 0;
-    transform: translate3d(-46%, -68%, 0) scaleX(1.05) scaleY(1.24) rotate(-5deg);
+    transform: translate3d(-42%, -78%, 0) scale(1.22, 1.42) rotate(-8deg);
+    filter: blur(34px) saturate(1.02);
   }
 }
 
