@@ -1708,7 +1708,7 @@ h2 {
 
 .hive-counter__buttons {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -1734,6 +1734,68 @@ h2 {
 
 .hive-counter small {
   color: rgba(37, 29, 32, 0.58);
+}
+
+.hive-month {
+  display: grid;
+  gap: 10px;
+  border-top: 1px dashed rgba(37, 29, 32, 0.16);
+  margin-top: 4px;
+  padding-top: 10px;
+}
+
+.hive-month__head {
+  display: grid;
+  gap: 4px;
+}
+
+.hive-month__head strong {
+  color: var(--rose);
+}
+
+.hive-month__head span {
+  line-height: 1.55;
+  color: rgba(37, 29, 32, 0.66);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.hive-month__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.hive-month__day,
+.hive-month__blank {
+  min-height: 36px;
+}
+
+.hive-month__day {
+  display: grid;
+  place-items: center;
+  gap: 1px;
+  border: 1px solid rgba(37, 29, 32, 0.1);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.46);
+  color: rgba(37, 29, 32, 0.72);
+}
+
+.hive-month__day b {
+  font-size: 0.76rem;
+}
+
+.hive-month__day em {
+  min-height: 16px;
+  color: var(--rose);
+  font-size: 0.82rem;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.hive-month__day.has-hives {
+  border-color: rgba(182, 37, 72, 0.28);
+  background: rgba(182, 37, 72, 0.12);
 }
 
 .event-log-list {
@@ -2058,6 +2120,7 @@ label,
 .lottery-entries small,
 .event-log-item small,
 .hive-counter small,
+.hive-month__head span,
 .comment small,
 .chat-message small {
   color: rgba(255, 245, 232, 0.62);
@@ -2104,6 +2167,7 @@ select {
 .daily-song,
 .featured-song,
 .hive-counter,
+.hive-month__day,
 .lottery-topic-card,
 .lottery-result,
 .lottery-entries article,
@@ -2124,6 +2188,23 @@ select {
   border-color: rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.08);
   color: rgba(255, 250, 245, 0.9);
+}
+
+.hive-month {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.hive-month__head strong {
+  color: #ffd9df;
+}
+
+.hive-month__day {
+  color: rgba(255, 250, 245, 0.72);
+}
+
+.hive-month__day.has-hives {
+  border-color: rgba(255, 217, 223, 0.26);
+  background: rgba(182, 37, 72, 0.18);
 }
 
 .wish-history article,

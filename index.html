@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Rose & Rainbow Blog</title>
-    <link rel="stylesheet" href="styles.css?v=lottery-fix-20260605" />
+    <link rel="stylesheet" href="styles.css?v=hive-month-20260605" />
   </head>
   <body>
     <div class="shell">
@@ -186,11 +186,20 @@
                 <span id="hiveTotalText">今日合计 0 次</span>
               </div>
               <div class="hive-counter__buttons">
-                <button type="button" data-hive-area="手">手 <span>0</span></button>
                 <button type="button" data-hive-area="脖子">脖子 <span>0</span></button>
                 <button type="button" data-hive-area="四肢">四肢 <span>0</span></button>
+                <button type="button" data-hive-area="躯干">躯干 <span>0</span></button>
+                <button type="button" data-hive-area="头">头 <span>0</span></button>
+                <button type="button" data-hive-area="脸">脸 <span>0</span></button>
               </div>
               <small>看到一次风团就点一次，数字会自动记入今天。</small>
+              <div class="hive-month" aria-label="本月风团月历">
+                <div class="hive-month__head">
+                  <strong>本月复诊摘要</strong>
+                  <span id="hiveMonthSummary">本月暂无记录</span>
+                </div>
+                <div id="hiveMonthGrid" class="hive-month__grid"></div>
+              </div>
             </div>
             <form id="eventLogForm" class="event-log-form">
               <label>
@@ -336,6 +345,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
-    <script src="app.js?v=lottery-fix-20260605"></script>
+    <script src="app.js?v=hive-month-20260605"></script>
   </body>
 </html>

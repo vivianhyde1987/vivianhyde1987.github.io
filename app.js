@@ -79,6 +79,8 @@ const elements = {
   eventNoteInput: $("#eventNoteInput"),
   eventLogList: $("#eventLogList"),
   hiveTotalText: $("#hiveTotalText"),
+  hiveMonthSummary: $("#hiveMonthSummary"),
+  hiveMonthGrid: $("#hiveMonthGrid"),
   soundToggle: $("#soundToggle"),
   todayText: $("#todayText"),
   syncStatus: $("#syncStatus"),
@@ -619,7 +621,7 @@ async function loadBlog() {
       client.from("koi_wishes").select("*").order("created_at", { ascending: false }).limit(80),
       client.from("lottery_topics").select("*").order("topic_date", { ascending: false }).limit(30),
       client.from("lottery_entries").select("*").order("created_at", { ascending: true }).limit(200),
-      client.from("health_event_logs").select("*").order("event_time", { ascending: false }).limit(80)
+      client.from("health_event_logs").select("*").order("event_time", { ascending: false }).limit(500)
     ]);
     for (const result of [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult]) {
       if (result.error) throw result.error;
@@ -1142,6 +1144,115 @@ async function addHiveCount(area) {
 $$(".auth-tabs button").forEach((button) => {
   button.addEventListener("click", () => switchAuthTab(button.dataset.authTab));
 });
+
+const hiveAreas = ["脖子", "四肢", "躯干", "头", "脸"];
+
+function hiveAreaFromNote(note = "") {
+  const match = note.match(/^\[风团计数\]\s*(脖子|四肢|躯干|头|脸)/);
+  return match ? match[1] : "";
+}
+
+function localDatePartsInShanghai(value) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Shanghai",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(new Date(value));
+  return Object.fromEntries(parts.map((part) => [part.type, part.value]));
+}
+
+function localDateKeyInShanghai(value) {
+  const parts = localDatePartsInShanghai(value);
+  return `${parts.year}-${parts.month}-${parts.day}`;
+}
+
+function hiveCountsForMonth() {
+  const now = shanghaiNow();
+  const monthPrefix = dateKeyFromLocal(now).slice(0, 7);
+  const days = {};
+  const areaTotals = Object.fromEntries(hiveAreas.map((area) => [area, 0]));
+  eventLogs.forEach((record) => {
+    const area = hiveAreaFromNote(record.note || "");
+    if (!area) return;
+    const key = localDateKeyInShanghai(record.event_time || record.created_at);
+    if (!key.startsWith(monthPrefix)) return;
+    if (!days[key]) days[key] = Object.fromEntries(hiveAreas.map((name) => [name, 0]));
+    days[key][area] += 1;
+    areaTotals[area] += 1;
+  });
+  return { monthPrefix, days, areaTotals };
+}
+
+function hiveCountsToday() {
+  const today = todayKey();
+  const counts = hiveCountsForMonth().days[today] || {};
+  return Object.fromEntries(hiveAreas.map((area) => [area, counts[area] || 0]));
+}
+
+function renderHiveCounter() {
+  const counts = hiveCountsToday();
+  const total = Object.values(counts).reduce((sum, value) => sum + value, 0);
+  if (elements.hiveTotalText) {
+    elements.hiveTotalText.textContent = `今日合计 ${total} 次`;
+  }
+  $$("[data-hive-area]").forEach((button) => {
+    const area = button.dataset.hiveArea;
+    const number = button.querySelector("span");
+    if (number) number.textContent = counts[area] || 0;
+  });
+  renderHiveMonthSummary();
+}
+
+function renderHiveMonthSummary() {
+  if (!elements.hiveMonthGrid || !elements.hiveMonthSummary) return;
+  const { monthPrefix, days, areaTotals } = hiveCountsForMonth();
+  const [year, month] = monthPrefix.split("-").map(Number);
+  const dayCount = new Date(year, month, 0).getDate();
+  const monthTotal = Object.values(areaTotals).reduce((sum, value) => sum + value, 0);
+  const activeDays = Object.values(days).filter((counts) => Object.values(counts).some(Boolean)).length;
+  const areaText = hiveAreas.map((area) => `${area}${areaTotals[area] || 0}`).join(" / ");
+  elements.hiveMonthSummary.textContent = monthTotal
+    ? `${month}月共 ${monthTotal} 次，${activeDays} 天有记录｜${areaText}`
+    : `${month}月暂无风团记录`;
+  const weekdayOffset = new Date(year, month - 1, 1).getDay();
+  const cells = Array.from({ length: weekdayOffset }, () => `<span class="hive-month__blank"></span>`);
+  for (let day = 1; day <= dayCount; day += 1) {
+    const key = `${monthPrefix}-${String(day).padStart(2, "0")}`;
+    const counts = days[key] || {};
+    const total = Object.values(counts).reduce((sum, value) => sum + value, 0);
+    const detail = hiveAreas
+      .filter((area) => counts[area])
+      .map((area) => `${area}${counts[area]}`)
+      .join(" ");
+    cells.push(`
+      <span class="hive-month__day ${total ? "has-hives" : ""}" title="${escapeHtml(detail || "无记录")}">
+        <b>${day}</b>
+        <em>${total || ""}</em>
+      </span>
+    `);
+  }
+  elements.hiveMonthGrid.innerHTML = cells.join("");
+}
+
+async function addHiveCount(area) {
+  if (!profile) {
+    setMessage("请先登录，再记录风团次数。", "error");
+    return;
+  }
+  const { error } = await client.rpc("create_health_event_log", {
+    session_token: sessionToken,
+    event_time_input: new Date().toISOString(),
+    medicine_input: "",
+    note_input: `[风团计数] ${area}`
+  });
+  if (error) {
+    setSync(rpcErrorText(error, "风团计数保存失败，请确认新版 SQL 已运行"));
+    return;
+  }
+  setSync(`${area} 风团 +1`);
+  await loadBlog();
+}
 
 $$("[data-hive-area]").forEach((button) => {
   button.addEventListener("click", () => addHiveCount(button.dataset.hiveArea));
