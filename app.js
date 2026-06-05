@@ -465,6 +465,59 @@ function renderLottery() {
   }).join("") : `<p>暂无参与留言。</p>`;
 }
 
+function renderLottery() {
+  const topic = currentLotteryTopic();
+  const entries = topic ? lotteryEntries.filter((entry) => entry.topic_id === topic.id) : [];
+  const drawn = isLotteryDrawn(topic);
+  const winner = drawn ? winnerForTopic(topic, entries) : null;
+  const hasEntered = Boolean(profile && entries.some((entry) => entry.owner_id === profile.user_id));
+
+  elements.lotteryTopicForm.hidden = profile?.role !== "owner";
+  elements.lotteryEntryForm.hidden = !profile || !topic || hasEntered || drawn;
+
+  if (!topic) {
+    elements.lotteryTopicCard.innerHTML = `
+      <p>本周还没有讨论话题。站主发布本周话题后，朋友们才能参与抽奖。</p>
+    `;
+    elements.lotteryResult.innerHTML = `<p>统一开奖时间：每周日 21:00。</p>`;
+    elements.lotteryEntries.innerHTML = "";
+    return;
+  }
+
+  elements.lotteryTopicCard.innerHTML = `
+    <span>本周开奖：${escapeHtml(formatLotteryDrawTime(topic.topic_date))}</span>
+    <strong>${escapeHtml(topic.topic_text)}</strong>
+    <small>每个 ID 本周可参与一次，奖品：站主邀请喝 Manner 一次。</small>
+  `;
+
+  if (!profile) {
+    elements.lotteryResult.innerHTML = `<p>登录 ID 后可以参与本周抽奖。</p>`;
+  } else if (hasEntered && !drawn) {
+    elements.lotteryResult.innerHTML = `<p>你已经参与本周抽奖。周日 21:00 自动公布获奖 ID。</p>`;
+  } else if (!drawn) {
+    elements.lotteryResult.innerHTML = `<p>本周已有 ${entries.length} 位朋友参与。周日 21:00 自动公布获奖 ID。</p>`;
+  } else if (winner) {
+    const winnerProfile = profiles.get(winner.owner_id);
+    elements.lotteryResult.innerHTML = `
+      <strong>本周获奖 ID：${escapeHtml(winnerProfile?.handle || "朋友")}</strong>
+      <span>奖品：站主邀请喝 Manner 一次</span>
+    `;
+  } else {
+    elements.lotteryResult.innerHTML = `<p>本周还没有朋友参与，所以这周暂不开奖。</p>`;
+  }
+
+  elements.lotteryEntries.innerHTML = entries.length ? entries.map((entry) => {
+    const author = profiles.get(entry.owner_id);
+    return `
+      <article>
+        <strong>${escapeHtml(author?.handle || "朋友")}</strong>
+        <p>${escapeHtml(entry.body)}</p>
+        <small>${formatDate(entry.created_at)}</small>
+      </article>
+    `;
+  }).join("") : `<p>暂无参与留言。</p>`;
+}
+
 function moodFromText(text = "") {
   const value = text.toLowerCase();
   const moodRules = [

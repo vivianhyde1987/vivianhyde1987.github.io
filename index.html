@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Rose & Rainbow Blog</title>
-    <link rel="stylesheet" href="styles.css?v=atmosphere-20260605" />
+    <link rel="stylesheet" href="styles.css?v=lottery-fix-20260605" />
   </head>
   <body>
     <div class="shell">
@@ -164,7 +164,7 @@
               <button type="submit">发布本周话题</button>
             </form>
             <div id="lotteryTopicCard" class="lottery-topic-card"></div>
-            <form id="lotteryEntryForm" class="lottery-entry-form">
+            <form id="lotteryEntryForm" class="lottery-entry-form" hidden>
               <label class="wide">
                 我的参与留言
                 <textarea id="lotteryEntryInput" rows="3" maxlength="300" placeholder="围绕本周话题写一句，就可以参与抽奖"></textarea>
@@ -336,6 +336,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
-    <script src="app.js?v=hive-counter-20260605"></script>
+    <script src="app.js?v=lottery-fix-20260605"></script>
   </body>
 </html>
