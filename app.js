@@ -81,6 +81,12 @@ const elements = {
   hiveTotalText: $("#hiveTotalText"),
   hiveMonthSummary: $("#hiveMonthSummary"),
   hiveMonthGrid: $("#hiveMonthGrid"),
+  sleepNowText: $("#sleepNowText"),
+  sleepAffirmation: $("#sleepAffirmation"),
+  sleepStartButton: $("#sleepStartButton"),
+  sleepRecordText: $("#sleepRecordText"),
+  sleepQuizForm: $("#sleepQuizForm"),
+  sleepSummary: $("#sleepSummary"),
   soundToggle: $("#soundToggle"),
   todayText: $("#todayText"),
   syncStatus: $("#syncStatus"),
@@ -1202,6 +1208,7 @@ function renderHiveCounter() {
     if (number) number.textContent = counts[area] || 0;
   });
   renderHiveMonthSummary();
+  renderSleepPanel();
 }
 
 function renderHiveMonthSummary() {
@@ -1254,9 +1261,115 @@ async function addHiveCount(area) {
   await loadBlog();
 }
 
+const sleepAffirmations = [
+  "今天已经走到这里，就已经很好。夜晚会替你把紧绷慢慢松开。",
+  "你不需要在睡前解决所有事，身体可以先回到安静里。",
+  "把今天交还给今天，把明天留给明天，此刻只需要呼吸。",
+  "你允许自己休息，也是在认真照顾正在努力的自己。",
+  "今晚的任务很简单：躺下，变轻，慢慢回到自己的节奏。",
+  "没有完成的事先放在门外，梦会替你把心擦亮一点。",
+  "你可以温柔地收尾，今天到这里就够了。"
+];
+
+function sleepNotePrefix(prefix) {
+  return `[${prefix}]`;
+}
+
+function sleepRecordToday(prefix) {
+  return eventLogs.find((record) => (
+    isTodayInShanghai(record.event_time || record.created_at)
+    && String(record.note || "").startsWith(sleepNotePrefix(prefix))
+  ));
+}
+
+function renderSleepPanel() {
+  if (!elements.sleepNowText) return;
+  const now = shanghaiNow();
+  elements.sleepNowText.textContent = new Intl.DateTimeFormat("zh-CN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  }).format(now);
+  const index = stableHash(todayKey()) % sleepAffirmations.length;
+  elements.sleepAffirmation.textContent = sleepAffirmations[index];
+
+  const sleepRecord = sleepRecordToday("睡眠记录");
+  if (sleepRecord) {
+    elements.sleepRecordText.textContent = `今晚准备睡觉时间：${formatDate(sleepRecord.event_time || sleepRecord.created_at)}`;
+    elements.sleepStartButton.textContent = "已记录今晚睡觉";
+    elements.sleepStartButton.disabled = true;
+  } else {
+    elements.sleepRecordText.textContent = profile ? "点击后记录今晚准备睡觉的时间。" : "登录后可以记录睡眠。";
+    elements.sleepStartButton.textContent = "准备睡觉";
+    elements.sleepStartButton.disabled = !profile;
+  }
+
+  const summaryRecord = sleepRecordToday("睡前收尾");
+  elements.sleepSummary.innerHTML = summaryRecord
+    ? `<p>${escapeHtml(String(summaryRecord.note || "").replace(/^\[睡前收尾\]\s*/, ""))}</p>`
+    : `<p>回答 5 个小问题，生成今天的睡前收尾句。</p>`;
+}
+
+function sleepClosingLine(score, need) {
+  if (need === "hope") {
+    return score >= 6
+      ? "今天的你没有被琐碎吞掉，还保留着一点明亮；请带着这点光睡去。"
+      : "就算今天不轻松，明天也仍然有可以重新开始的一小块地方。";
+  }
+  if (need === "release") {
+    return score >= 6
+      ? "今天可以收好了，不必再反复检查；你已经做了能做的部分。"
+      : "把压力先放在床边，今晚不审判自己，只允许身体慢慢松开。";
+  }
+  return score >= 6
+    ? "今天的你是稳的，柔软的，也值得被好好安放。"
+    : "辛苦的一天到这里结束，今晚你只需要被温柔接住。";
+}
+
+async function saveSleepNote(prefix, note) {
+  const { error } = await client.rpc("create_health_event_log", {
+    session_token: sessionToken,
+    event_time_input: new Date().toISOString(),
+    medicine_input: "",
+    note_input: `${sleepNotePrefix(prefix)} ${note}`
+  });
+  if (error) {
+    setSync(rpcErrorText(error, "睡眠记录保存失败，请确认新版 SQL 已运行"));
+    return false;
+  }
+  await loadBlog();
+  return true;
+}
+
 $$("[data-hive-area]").forEach((button) => {
   button.addEventListener("click", () => addHiveCount(button.dataset.hiveArea));
 });
+
+if (elements.sleepStartButton) {
+  elements.sleepStartButton.addEventListener("click", async () => {
+    if (!profile) {
+      setMessage("请先登录，再记录睡眠。", "error");
+      return;
+    }
+    const ok = await saveSleepNote("睡眠记录", "准备睡觉");
+    if (ok) setSync("今晚睡眠时间已记录");
+  });
+}
+
+if (elements.sleepQuizForm) {
+  elements.sleepQuizForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!profile) {
+      setMessage("请先登录，再生成睡前收尾。", "error");
+      return;
+    }
+    const form = new FormData(elements.sleepQuizForm);
+    const score = ["body", "mood", "done", "mind"].reduce((sum, key) => sum + Number(form.get(key) || 0), 0);
+    const need = String(form.get("need") || "soft");
+    const ok = await saveSleepNote("睡前收尾", sleepClosingLine(score, need));
+    if (ok) setSync("今晚收尾已生成");
+  });
+}
 
 $$("[data-category]").forEach((button) => {
   button.addEventListener("click", () => setCategory(button.dataset.category, true));

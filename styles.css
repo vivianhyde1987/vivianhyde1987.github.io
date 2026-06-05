@@ -1844,6 +1844,60 @@ h2 {
   box-shadow: none;
 }
 
+.sleep-panel {
+  overflow: hidden;
+}
+
+.sleep-ritual {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid rgba(108, 78, 163, 0.18);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 14% 16%, rgba(108, 78, 163, 0.2), transparent 30%),
+    rgba(255, 255, 255, 0.5);
+  padding: 12px;
+}
+
+.sleep-ritual p {
+  margin: 0;
+  line-height: 1.65;
+  font-weight: 800;
+}
+
+.sleep-ritual small {
+  grid-column: 1 / -1;
+  color: rgba(37, 29, 32, 0.58);
+}
+
+.sleep-quiz {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.sleep-quiz button {
+  grid-column: 1 / -1;
+}
+
+.sleep-summary {
+  margin-top: 12px;
+  border: 1px solid rgba(212, 167, 44, 0.22);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 12% 12%, rgba(212, 167, 44, 0.14), transparent 32%),
+    rgba(255, 255, 255, 0.54);
+  padding: 12px;
+}
+
+.sleep-summary p {
+  margin: 0;
+  line-height: 1.7;
+}
+
 .post__image[hidden] {
   display: none;
 }
@@ -2121,6 +2175,7 @@ label,
 .event-log-item small,
 .hive-counter small,
 .hive-month__head span,
+.sleep-ritual small,
 .comment small,
 .chat-message small {
   color: rgba(255, 245, 232, 0.62);
@@ -2156,7 +2211,8 @@ select {
 
 .wish-pool,
 .lottery-panel,
-.event-log {
+.event-log,
+.sleep-panel {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 120px),
     rgba(17, 13, 18, 0.68);
@@ -2168,6 +2224,8 @@ select {
 .featured-song,
 .hive-counter,
 .hive-month__day,
+.sleep-ritual,
+.sleep-summary,
 .lottery-topic-card,
 .lottery-result,
 .lottery-entries article,
@@ -2321,6 +2379,8 @@ select {
   .comment-form,
   .mood-quiz,
   .event-log-form,
+  .sleep-quiz,
+  .sleep-ritual,
   .chat-reply-form,
   .chat-form {
     grid-template-columns: 1fr;
