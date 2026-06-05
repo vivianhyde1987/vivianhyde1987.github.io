@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Rose & Rainbow Blog</title>
-    <link rel="stylesheet" href="styles.css?v=sleep-ritual-20260605" />
+    <link rel="stylesheet" href="styles.css?v=share-poster-20260605" />
   </head>
   <body>
     <div class="shell">
@@ -134,6 +134,19 @@
             <button type="button" data-category="相册">相册</button>
             <button type="button" data-category="心情">心情</button>
             <button type="button" data-category="兴趣">兴趣</button>
+          </section>
+
+          <section class="welcome-panel panel" aria-label="小站介绍和分享">
+            <div class="panel__head">
+              <h2>来小站坐一会</h2>
+              <span>分享入口</span>
+            </div>
+            <p>这里是一个私人博客，也是一间可以留言、抽奖、记录心情、相册、睡前收尾的小房间。朋友进来可以注册 ID，留下今天的一句话。</p>
+            <div class="share-actions">
+              <button id="copyInviteButton" type="button">复制邀请语</button>
+              <button id="posterButton" type="button">生成分享海报</button>
+            </div>
+            <div id="sharePoster" class="share-poster" hidden></div>
           </section>
 
           <section class="wish-pool panel" aria-label="许愿池">
@@ -401,6 +414,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
-    <script src="app.js?v=sleep-ritual-20260605"></script>
+    <script src="app.js?v=share-poster-20260605"></script>
   </body>
 </html>
