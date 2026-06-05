@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Rose & Rainbow Blog</title>
-    <link rel="stylesheet" href="styles.css?v=lottery-fix-20260605" />
+    <link rel="stylesheet" href="styles.css?v=sleep-ritual-20260605" />
   </head>
   <body>
     <div class="shell">
@@ -186,11 +186,20 @@
                 <span id="hiveTotalText">今日合计 0 次</span>
               </div>
               <div class="hive-counter__buttons">
-                <button type="button" data-hive-area="手">手 <span>0</span></button>
                 <button type="button" data-hive-area="脖子">脖子 <span>0</span></button>
                 <button type="button" data-hive-area="四肢">四肢 <span>0</span></button>
+                <button type="button" data-hive-area="躯干">躯干 <span>0</span></button>
+                <button type="button" data-hive-area="头">头 <span>0</span></button>
+                <button type="button" data-hive-area="脸">脸 <span>0</span></button>
               </div>
               <small>看到一次风团就点一次，数字会自动记入今天。</small>
+              <div class="hive-month" aria-label="本月风团月历">
+                <div class="hive-month__head">
+                  <strong>本月复诊摘要</strong>
+                  <span id="hiveMonthSummary">本月暂无记录</span>
+                </div>
+                <div id="hiveMonthGrid" class="hive-month__grid"></div>
+              </div>
             </div>
             <form id="eventLogForm" class="event-log-form">
               <label>
@@ -208,6 +217,62 @@
               <button type="submit">保存记录</button>
             </form>
             <div id="eventLogList" class="event-log-list" aria-live="polite"></div>
+          </section>
+
+          <section class="sleep-panel panel" aria-label="睡眠管理">
+            <div class="panel__head">
+              <h2>睡眠管理</h2>
+              <span id="sleepNowText">现在时间</span>
+            </div>
+            <div class="sleep-ritual">
+              <p id="sleepAffirmation">今晚也可以慢慢放下今天。</p>
+              <button id="sleepStartButton" type="button">准备睡觉</button>
+              <small id="sleepRecordText">点击后记录今晚准备睡觉的时间。</small>
+            </div>
+            <form id="sleepQuizForm" class="sleep-quiz">
+              <label>
+                今天身体感觉
+                <select name="body">
+                  <option value="2">比较放松</option>
+                  <option value="1">有一点紧</option>
+                  <option value="0">很疲惫</option>
+                </select>
+              </label>
+              <label>
+                今天情绪
+                <select name="mood">
+                  <option value="2">平稳</option>
+                  <option value="1">有起伏</option>
+                  <option value="0">比较沉</option>
+                </select>
+              </label>
+              <label>
+                今天完成感
+                <select name="done">
+                  <option value="2">有完成一些</option>
+                  <option value="1">普通</option>
+                  <option value="0">有点卡住</option>
+                </select>
+              </label>
+              <label>
+                睡前脑内声音
+                <select name="mind">
+                  <option value="2">安静</option>
+                  <option value="1">还在想事</option>
+                  <option value="0">停不下来</option>
+                </select>
+              </label>
+              <label>
+                此刻最需要
+                <select name="need">
+                  <option value="soft">被安抚</option>
+                  <option value="release">放下压力</option>
+                  <option value="hope">一点希望</option>
+                </select>
+              </label>
+              <button type="submit">生成今晚收尾</button>
+            </form>
+            <div id="sleepSummary" class="sleep-summary" aria-live="polite"></div>
           </section>
 
           <section class="composer panel">
@@ -336,6 +401,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
-    <script src="app.js?v=lottery-fix-20260605"></script>
+    <script src="app.js?v=sleep-ritual-20260605"></script>
   </body>
 </html>

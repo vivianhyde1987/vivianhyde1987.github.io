@@ -79,6 +79,14 @@ const elements = {
   eventNoteInput: $("#eventNoteInput"),
   eventLogList: $("#eventLogList"),
   hiveTotalText: $("#hiveTotalText"),
+  hiveMonthSummary: $("#hiveMonthSummary"),
+  hiveMonthGrid: $("#hiveMonthGrid"),
+  sleepNowText: $("#sleepNowText"),
+  sleepAffirmation: $("#sleepAffirmation"),
+  sleepStartButton: $("#sleepStartButton"),
+  sleepRecordText: $("#sleepRecordText"),
+  sleepQuizForm: $("#sleepQuizForm"),
+  sleepSummary: $("#sleepSummary"),
   soundToggle: $("#soundToggle"),
   todayText: $("#todayText"),
   syncStatus: $("#syncStatus"),
@@ -619,7 +627,7 @@ async function loadBlog() {
       client.from("koi_wishes").select("*").order("created_at", { ascending: false }).limit(80),
       client.from("lottery_topics").select("*").order("topic_date", { ascending: false }).limit(30),
       client.from("lottery_entries").select("*").order("created_at", { ascending: true }).limit(200),
-      client.from("health_event_logs").select("*").order("event_time", { ascending: false }).limit(80)
+      client.from("health_event_logs").select("*").order("event_time", { ascending: false }).limit(500)
     ]);
     for (const result of [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult]) {
       if (result.error) throw result.error;
@@ -1143,9 +1151,225 @@ $$(".auth-tabs button").forEach((button) => {
   button.addEventListener("click", () => switchAuthTab(button.dataset.authTab));
 });
 
+const hiveAreas = ["脖子", "四肢", "躯干", "头", "脸"];
+
+function hiveAreaFromNote(note = "") {
+  const match = note.match(/^\[风团计数\]\s*(脖子|四肢|躯干|头|脸)/);
+  return match ? match[1] : "";
+}
+
+function localDatePartsInShanghai(value) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Shanghai",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(new Date(value));
+  return Object.fromEntries(parts.map((part) => [part.type, part.value]));
+}
+
+function localDateKeyInShanghai(value) {
+  const parts = localDatePartsInShanghai(value);
+  return `${parts.year}-${parts.month}-${parts.day}`;
+}
+
+function hiveCountsForMonth() {
+  const now = shanghaiNow();
+  const monthPrefix = dateKeyFromLocal(now).slice(0, 7);
+  const days = {};
+  const areaTotals = Object.fromEntries(hiveAreas.map((area) => [area, 0]));
+  eventLogs.forEach((record) => {
+    const area = hiveAreaFromNote(record.note || "");
+    if (!area) return;
+    const key = localDateKeyInShanghai(record.event_time || record.created_at);
+    if (!key.startsWith(monthPrefix)) return;
+    if (!days[key]) days[key] = Object.fromEntries(hiveAreas.map((name) => [name, 0]));
+    days[key][area] += 1;
+    areaTotals[area] += 1;
+  });
+  return { monthPrefix, days, areaTotals };
+}
+
+function hiveCountsToday() {
+  const today = todayKey();
+  const counts = hiveCountsForMonth().days[today] || {};
+  return Object.fromEntries(hiveAreas.map((area) => [area, counts[area] || 0]));
+}
+
+function renderHiveCounter() {
+  const counts = hiveCountsToday();
+  const total = Object.values(counts).reduce((sum, value) => sum + value, 0);
+  if (elements.hiveTotalText) {
+    elements.hiveTotalText.textContent = `今日合计 ${total} 次`;
+  }
+  $$("[data-hive-area]").forEach((button) => {
+    const area = button.dataset.hiveArea;
+    const number = button.querySelector("span");
+    if (number) number.textContent = counts[area] || 0;
+  });
+  renderHiveMonthSummary();
+  renderSleepPanel();
+}
+
+function renderHiveMonthSummary() {
+  if (!elements.hiveMonthGrid || !elements.hiveMonthSummary) return;
+  const { monthPrefix, days, areaTotals } = hiveCountsForMonth();
+  const [year, month] = monthPrefix.split("-").map(Number);
+  const dayCount = new Date(year, month, 0).getDate();
+  const monthTotal = Object.values(areaTotals).reduce((sum, value) => sum + value, 0);
+  const activeDays = Object.values(days).filter((counts) => Object.values(counts).some(Boolean)).length;
+  const areaText = hiveAreas.map((area) => `${area}${areaTotals[area] || 0}`).join(" / ");
+  elements.hiveMonthSummary.textContent = monthTotal
+    ? `${month}月共 ${monthTotal} 次，${activeDays} 天有记录｜${areaText}`
+    : `${month}月暂无风团记录`;
+  const weekdayOffset = new Date(year, month - 1, 1).getDay();
+  const cells = Array.from({ length: weekdayOffset }, () => `<span class="hive-month__blank"></span>`);
+  for (let day = 1; day <= dayCount; day += 1) {
+    const key = `${monthPrefix}-${String(day).padStart(2, "0")}`;
+    const counts = days[key] || {};
+    const total = Object.values(counts).reduce((sum, value) => sum + value, 0);
+    const detail = hiveAreas
+      .filter((area) => counts[area])
+      .map((area) => `${area}${counts[area]}`)
+      .join(" ");
+    cells.push(`
+      <span class="hive-month__day ${total ? "has-hives" : ""}" title="${escapeHtml(detail || "无记录")}">
+        <b>${day}</b>
+        <em>${total || ""}</em>
+      </span>
+    `);
+  }
+  elements.hiveMonthGrid.innerHTML = cells.join("");
+}
+
+async function addHiveCount(area) {
+  if (!profile) {
+    setMessage("请先登录，再记录风团次数。", "error");
+    return;
+  }
+  const { error } = await client.rpc("create_health_event_log", {
+    session_token: sessionToken,
+    event_time_input: new Date().toISOString(),
+    medicine_input: "",
+    note_input: `[风团计数] ${area}`
+  });
+  if (error) {
+    setSync(rpcErrorText(error, "风团计数保存失败，请确认新版 SQL 已运行"));
+    return;
+  }
+  setSync(`${area} 风团 +1`);
+  await loadBlog();
+}
+
+const sleepAffirmations = [
+  "今天已经走到这里，就已经很好。夜晚会替你把紧绷慢慢松开。",
+  "你不需要在睡前解决所有事，身体可以先回到安静里。",
+  "把今天交还给今天，把明天留给明天，此刻只需要呼吸。",
+  "你允许自己休息，也是在认真照顾正在努力的自己。",
+  "今晚的任务很简单：躺下，变轻，慢慢回到自己的节奏。",
+  "没有完成的事先放在门外，梦会替你把心擦亮一点。",
+  "你可以温柔地收尾，今天到这里就够了。"
+];
+
+function sleepNotePrefix(prefix) {
+  return `[${prefix}]`;
+}
+
+function sleepRecordToday(prefix) {
+  return eventLogs.find((record) => (
+    isTodayInShanghai(record.event_time || record.created_at)
+    && String(record.note || "").startsWith(sleepNotePrefix(prefix))
+  ));
+}
+
+function renderSleepPanel() {
+  if (!elements.sleepNowText) return;
+  const now = shanghaiNow();
+  elements.sleepNowText.textContent = new Intl.DateTimeFormat("zh-CN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  }).format(now);
+  const index = stableHash(todayKey()) % sleepAffirmations.length;
+  elements.sleepAffirmation.textContent = sleepAffirmations[index];
+
+  const sleepRecord = sleepRecordToday("睡眠记录");
+  if (sleepRecord) {
+    elements.sleepRecordText.textContent = `今晚准备睡觉时间：${formatDate(sleepRecord.event_time || sleepRecord.created_at)}`;
+    elements.sleepStartButton.textContent = "已记录今晚睡觉";
+    elements.sleepStartButton.disabled = true;
+  } else {
+    elements.sleepRecordText.textContent = profile ? "点击后记录今晚准备睡觉的时间。" : "登录后可以记录睡眠。";
+    elements.sleepStartButton.textContent = "准备睡觉";
+    elements.sleepStartButton.disabled = !profile;
+  }
+
+  const summaryRecord = sleepRecordToday("睡前收尾");
+  elements.sleepSummary.innerHTML = summaryRecord
+    ? `<p>${escapeHtml(String(summaryRecord.note || "").replace(/^\[睡前收尾\]\s*/, ""))}</p>`
+    : `<p>回答 5 个小问题，生成今天的睡前收尾句。</p>`;
+}
+
+function sleepClosingLine(score, need) {
+  if (need === "hope") {
+    return score >= 6
+      ? "今天的你没有被琐碎吞掉，还保留着一点明亮；请带着这点光睡去。"
+      : "就算今天不轻松，明天也仍然有可以重新开始的一小块地方。";
+  }
+  if (need === "release") {
+    return score >= 6
+      ? "今天可以收好了，不必再反复检查；你已经做了能做的部分。"
+      : "把压力先放在床边，今晚不审判自己，只允许身体慢慢松开。";
+  }
+  return score >= 6
+    ? "今天的你是稳的，柔软的，也值得被好好安放。"
+    : "辛苦的一天到这里结束，今晚你只需要被温柔接住。";
+}
+
+async function saveSleepNote(prefix, note) {
+  const { error } = await client.rpc("create_health_event_log", {
+    session_token: sessionToken,
+    event_time_input: new Date().toISOString(),
+    medicine_input: "",
+    note_input: `${sleepNotePrefix(prefix)} ${note}`
+  });
+  if (error) {
+    setSync(rpcErrorText(error, "睡眠记录保存失败，请确认新版 SQL 已运行"));
+    return false;
+  }
+  await loadBlog();
+  return true;
+}
+
 $$("[data-hive-area]").forEach((button) => {
   button.addEventListener("click", () => addHiveCount(button.dataset.hiveArea));
 });
+
+if (elements.sleepStartButton) {
+  elements.sleepStartButton.addEventListener("click", async () => {
+    if (!profile) {
+      setMessage("请先登录，再记录睡眠。", "error");
+      return;
+    }
+    const ok = await saveSleepNote("睡眠记录", "准备睡觉");
+    if (ok) setSync("今晚睡眠时间已记录");
+  });
+}
+
+if (elements.sleepQuizForm) {
+  elements.sleepQuizForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!profile) {
+      setMessage("请先登录，再生成睡前收尾。", "error");
+      return;
+    }
+    const form = new FormData(elements.sleepQuizForm);
+    const score = ["body", "mood", "done", "mind"].reduce((sum, key) => sum + Number(form.get(key) || 0), 0);
+    const need = String(form.get("need") || "soft");
+    const ok = await saveSleepNote("睡前收尾", sleepClosingLine(score, need));
+    if (ok) setSync("今晚收尾已生成");
+  });
+}
 
 $$("[data-category]").forEach((button) => {
   button.addEventListener("click", () => setCategory(button.dataset.category, true));

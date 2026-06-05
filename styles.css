@@ -1708,7 +1708,7 @@ h2 {
 
 .hive-counter__buttons {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -1734,6 +1734,68 @@ h2 {
 
 .hive-counter small {
   color: rgba(37, 29, 32, 0.58);
+}
+
+.hive-month {
+  display: grid;
+  gap: 10px;
+  border-top: 1px dashed rgba(37, 29, 32, 0.16);
+  margin-top: 4px;
+  padding-top: 10px;
+}
+
+.hive-month__head {
+  display: grid;
+  gap: 4px;
+}
+
+.hive-month__head strong {
+  color: var(--rose);
+}
+
+.hive-month__head span {
+  line-height: 1.55;
+  color: rgba(37, 29, 32, 0.66);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.hive-month__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.hive-month__day,
+.hive-month__blank {
+  min-height: 36px;
+}
+
+.hive-month__day {
+  display: grid;
+  place-items: center;
+  gap: 1px;
+  border: 1px solid rgba(37, 29, 32, 0.1);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.46);
+  color: rgba(37, 29, 32, 0.72);
+}
+
+.hive-month__day b {
+  font-size: 0.76rem;
+}
+
+.hive-month__day em {
+  min-height: 16px;
+  color: var(--rose);
+  font-size: 0.82rem;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.hive-month__day.has-hives {
+  border-color: rgba(182, 37, 72, 0.28);
+  background: rgba(182, 37, 72, 0.12);
 }
 
 .event-log-list {
@@ -1780,6 +1842,60 @@ h2 {
   color: var(--rose);
   border: 1px solid rgba(182, 37, 72, 0.18);
   box-shadow: none;
+}
+
+.sleep-panel {
+  overflow: hidden;
+}
+
+.sleep-ritual {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid rgba(108, 78, 163, 0.18);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 14% 16%, rgba(108, 78, 163, 0.2), transparent 30%),
+    rgba(255, 255, 255, 0.5);
+  padding: 12px;
+}
+
+.sleep-ritual p {
+  margin: 0;
+  line-height: 1.65;
+  font-weight: 800;
+}
+
+.sleep-ritual small {
+  grid-column: 1 / -1;
+  color: rgba(37, 29, 32, 0.58);
+}
+
+.sleep-quiz {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.sleep-quiz button {
+  grid-column: 1 / -1;
+}
+
+.sleep-summary {
+  margin-top: 12px;
+  border: 1px solid rgba(212, 167, 44, 0.22);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 12% 12%, rgba(212, 167, 44, 0.14), transparent 32%),
+    rgba(255, 255, 255, 0.54);
+  padding: 12px;
+}
+
+.sleep-summary p {
+  margin: 0;
+  line-height: 1.7;
 }
 
 .post__image[hidden] {
@@ -2058,6 +2174,8 @@ label,
 .lottery-entries small,
 .event-log-item small,
 .hive-counter small,
+.hive-month__head span,
+.sleep-ritual small,
 .comment small,
 .chat-message small {
   color: rgba(255, 245, 232, 0.62);
@@ -2093,7 +2211,8 @@ select {
 
 .wish-pool,
 .lottery-panel,
-.event-log {
+.event-log,
+.sleep-panel {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 120px),
     rgba(17, 13, 18, 0.68);
@@ -2104,6 +2223,9 @@ select {
 .daily-song,
 .featured-song,
 .hive-counter,
+.hive-month__day,
+.sleep-ritual,
+.sleep-summary,
 .lottery-topic-card,
 .lottery-result,
 .lottery-entries article,
@@ -2124,6 +2246,23 @@ select {
   border-color: rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.08);
   color: rgba(255, 250, 245, 0.9);
+}
+
+.hive-month {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.hive-month__head strong {
+  color: #ffd9df;
+}
+
+.hive-month__day {
+  color: rgba(255, 250, 245, 0.72);
+}
+
+.hive-month__day.has-hives {
+  border-color: rgba(255, 217, 223, 0.26);
+  background: rgba(182, 37, 72, 0.18);
 }
 
 .wish-history article,
@@ -2240,6 +2379,8 @@ select {
   .comment-form,
   .mood-quiz,
   .event-log-form,
+  .sleep-quiz,
+  .sleep-ritual,
   .chat-reply-form,
   .chat-form {
     grid-template-columns: 1fr;
