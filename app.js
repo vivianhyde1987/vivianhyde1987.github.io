@@ -78,6 +78,7 @@ const elements = {
   medicineInput: $("#medicineInput"),
   eventNoteInput: $("#eventNoteInput"),
   eventLogList: $("#eventLogList"),
+  hiveTotalText: $("#hiveTotalText"),
   soundToggle: $("#soundToggle"),
   todayText: $("#todayText"),
   syncStatus: $("#syncStatus"),
@@ -122,6 +123,37 @@ function todayKey() {
     month: "2-digit",
     day: "2-digit"
   }).format(new Date());
+}
+
+function shanghaiNow() {
+  return new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Shanghai" }));
+}
+
+function dateKeyFromLocal(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function lotteryWeekKey() {
+  const now = shanghaiNow();
+  const daysUntilSunday = (7 - now.getDay()) % 7;
+  const drawDate = new Date(now);
+  drawDate.setDate(now.getDate() + daysUntilSunday);
+  return dateKeyFromLocal(drawDate);
+}
+
+function lotteryDrawTime(topicDate) {
+  return new Date(`${topicDate}T21:00:00+08:00`);
+}
+
+function isLotteryDrawn(topic) {
+  return Boolean(topic && Date.now() >= lotteryDrawTime(topic.topic_date).getTime());
+}
+
+function formatLotteryDrawTime(topicDate) {
+  return `${topicDate} 周日 21:00`;
 }
 
 function stableHash(text = "") {
@@ -366,6 +398,59 @@ function renderLottery() {
     `;
   } else {
     elements.lotteryResult.innerHTML = `<p>还没有朋友参与，第一条留言会点亮今日抽奖。</p>`;
+  }
+
+  elements.lotteryEntries.innerHTML = entries.length ? entries.map((entry) => {
+    const author = profiles.get(entry.owner_id);
+    return `
+      <article>
+        <strong>${escapeHtml(author?.handle || "朋友")}</strong>
+        <p>${escapeHtml(entry.body)}</p>
+        <small>${formatDate(entry.created_at)}</small>
+      </article>
+    `;
+  }).join("") : `<p>暂无参与留言。</p>`;
+}
+
+function currentLotteryTopic() {
+  const week = lotteryWeekKey();
+  return lotteryTopics.find((topic) => topic.topic_date === week) || null;
+}
+
+function renderLottery() {
+  const topic = currentLotteryTopic();
+  const entries = topic ? lotteryEntries.filter((entry) => entry.topic_id === topic.id) : [];
+  const winner = isLotteryDrawn(topic) ? winnerForTopic(topic, entries) : null;
+  const hasEntered = Boolean(profile && entries.some((entry) => entry.owner_id === profile.user_id));
+
+  elements.lotteryTopicForm.hidden = profile?.role !== "owner";
+  elements.lotteryEntryForm.hidden = !profile || !topic || hasEntered || isLotteryDrawn(topic);
+
+  if (!topic) {
+    elements.lotteryTopicCard.innerHTML = `<p>本周还没有讨论话题。站主发布后，朋友们就可以参与本周抽奖。</p>`;
+    elements.lotteryResult.innerHTML = `<p>统一开奖时间：每周日 21:00。</p>`;
+    elements.lotteryEntries.innerHTML = "";
+    return;
+  }
+
+  elements.lotteryTopicCard.innerHTML = `
+    <span>本周开奖：${escapeHtml(formatLotteryDrawTime(topic.topic_date))}</span>
+    <strong>${escapeHtml(topic.topic_text)}</strong>
+    <small>奖品：站主邀请喝 Manner 一次。每个 ID 本周可参与一次。</small>
+  `;
+
+  if (!profile) {
+    elements.lotteryResult.innerHTML = `<p>登录 ID 后可以参与本周抽奖。开奖时间：${escapeHtml(formatLotteryDrawTime(topic.topic_date))}。</p>`;
+  } else if (!isLotteryDrawn(topic)) {
+    elements.lotteryResult.innerHTML = `<p>本周已有 ${entries.length} 位朋友参与。周日 21:00 自动公布获奖 ID。</p>`;
+  } else if (winner) {
+    const winnerProfile = profiles.get(winner.owner_id);
+    elements.lotteryResult.innerHTML = `
+      <strong>本周获奖 ID：${escapeHtml(winnerProfile?.handle || "朋友")}</strong>
+      <span>奖品：站主邀请喝 Manner 一次</span>
+    `;
+  } else {
+    elements.lotteryResult.innerHTML = `<p>本周还没有朋友参与，所以这周暂不开奖。</p>`;
   }
 
   elements.lotteryEntries.innerHTML = entries.length ? entries.map((entry) => {
@@ -900,6 +985,7 @@ async function addChatMessage(body, imageUrl = null, parentId = null) {
 
 function renderEventLogs() {
   if (!elements.eventLogList) return;
+  renderHiveCounter();
   if (!eventLogs.length) {
     elements.eventLogList.innerHTML = `<div class="empty">还没有事件记录。</div>`;
     return;
@@ -943,8 +1029,69 @@ async function deleteEventLog(recordId) {
   await loadBlog();
 }
 
+function hiveAreaFromNote(note = "") {
+  const match = note.match(/^\[风团计数\]\s*(手|脖子|四肢)/);
+  return match ? match[1] : "";
+}
+
+function isTodayInShanghai(value) {
+  if (!value) return false;
+  const key = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Shanghai",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(new Date(value));
+  return key === todayKey();
+}
+
+function hiveCountsToday() {
+  return eventLogs.reduce((counts, record) => {
+    if (!isTodayInShanghai(record.event_time || record.created_at)) return counts;
+    const area = hiveAreaFromNote(record.note || "");
+    if (area) counts[area] = (counts[area] || 0) + 1;
+    return counts;
+  }, { 手: 0, 脖子: 0, 四肢: 0 });
+}
+
+function renderHiveCounter() {
+  const counts = hiveCountsToday();
+  const total = Object.values(counts).reduce((sum, value) => sum + value, 0);
+  if (elements.hiveTotalText) {
+    elements.hiveTotalText.textContent = `今日合计 ${total} 次`;
+  }
+  $$("[data-hive-area]").forEach((button) => {
+    const area = button.dataset.hiveArea;
+    const number = button.querySelector("span");
+    if (number) number.textContent = counts[area] || 0;
+  });
+}
+
+async function addHiveCount(area) {
+  if (!profile) {
+    setMessage("请先登录，再记录风团次数。", "error");
+    return;
+  }
+  const { error } = await client.rpc("create_health_event_log", {
+    session_token: sessionToken,
+    event_time_input: new Date().toISOString(),
+    medicine_input: "",
+    note_input: `[风团计数] ${area}`
+  });
+  if (error) {
+    setSync(rpcErrorText(error, "风团计数保存失败，请确认新版 SQL 已运行"));
+    return;
+  }
+  setSync(`${area} 风团 +1`);
+  await loadBlog();
+}
+
 $$(".auth-tabs button").forEach((button) => {
   button.addEventListener("click", () => switchAuthTab(button.dataset.authTab));
+});
+
+$$("[data-hive-area]").forEach((button) => {
+  button.addEventListener("click", () => addHiveCount(button.dataset.hiveArea));
 });
 
 $$("[data-category]").forEach((button) => {
@@ -1012,7 +1159,7 @@ elements.lotteryTopicForm.addEventListener("submit", async (event) => {
   }
   const { error } = await client.rpc("create_lottery_topic", {
     session_token: sessionToken,
-    topic_date_input: todayKey(),
+    topic_date_input: lotteryWeekKey(),
     topic_text_input: topic
   });
   if (error) {
