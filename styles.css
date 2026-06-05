@@ -1903,6 +1903,280 @@ h2 {
   line-height: 1.55;
 }
 
+/* Atmosphere pass: quieter structure, darker glass, less visual noise. */
+body {
+  background:
+    radial-gradient(circle at 50% -12%, rgba(182, 37, 72, 0.2), transparent 28rem),
+    radial-gradient(circle at 86% 12%, rgba(14, 138, 148, 0.14), transparent 22rem),
+    radial-gradient(circle at 12% 86%, rgba(212, 167, 44, 0.1), transparent 20rem),
+    linear-gradient(180deg, #09080a 0%, #161016 46%, #0d0b0e 100%);
+}
+
+body::before {
+  z-index: 0;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.025) 50%, transparent 50%),
+    radial-gradient(circle at center, transparent 36%, rgba(0, 0, 0, 0.58));
+  opacity: 0.42;
+}
+
+.shell {
+  position: relative;
+}
+
+.hero {
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.52),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.hero__shade {
+  background:
+    radial-gradient(circle at 52% 68%, rgba(255, 210, 142, 0.14), transparent 22%),
+    linear-gradient(90deg, rgba(5, 4, 6, 0.9), rgba(15, 10, 15, 0.5) 52%, rgba(5, 4, 6, 0.18)),
+    linear-gradient(0deg, rgba(5, 4, 6, 0.78), transparent 58%);
+}
+
+.hero::after {
+  height: 180px;
+  background:
+    radial-gradient(ellipse at 50% 100%, rgba(182, 37, 72, 0.42), transparent 55%),
+    linear-gradient(90deg, transparent, rgba(212, 167, 44, 0.22), rgba(14, 138, 148, 0.18), transparent);
+  opacity: 0.46;
+  filter: blur(32px);
+}
+
+.topbar {
+  padding: 16px 18px;
+}
+
+.brand__logo {
+  width: 50px;
+  height: 50px;
+  border-color: rgba(255, 255, 255, 0.24);
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.36),
+    0 0 30px rgba(182, 37, 72, 0.18),
+    inset 0 0 0 5px rgba(255, 255, 255, 0.05);
+}
+
+.hero__copy {
+  padding: 72px 28px 46px;
+}
+
+.hero__badges {
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.hero__badges button {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(8, 7, 10, 0.42);
+  color: rgba(255, 250, 245, 0.88);
+  box-shadow: none;
+}
+
+.notice-strip {
+  border-color: rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(90deg, rgba(9, 8, 11, 0.82), rgba(39, 18, 29, 0.62)),
+    rgba(255, 255, 255, 0.04);
+  box-shadow:
+    0 18px 52px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.layout {
+  gap: 18px;
+}
+
+.content {
+  gap: 22px;
+}
+
+.sidebar {
+  gap: 14px;
+}
+
+.panel,
+.post {
+  color: rgba(255, 250, 245, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), transparent 132px),
+    rgba(18, 14, 18, 0.76);
+  box-shadow:
+    0 18px 52px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(18px);
+}
+
+.panel::before,
+.post::before {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 231, 188, 0.58), rgba(182, 37, 72, 0.42), transparent);
+}
+
+.panel:hover,
+.post:hover {
+  box-shadow:
+    0 20px 56px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.panel__head {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 16px;
+  padding-bottom: 11px;
+}
+
+.panel__head h2,
+.post h3,
+.archive-title {
+  color: #fff8ef;
+}
+
+.panel__head span,
+.mood,
+.tag,
+.feed-tools span {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 245, 232, 0.74);
+}
+
+label,
+.post__meta p,
+.wish-pool__note,
+.lottery-topic-card span,
+.lottery-topic-card small,
+.lottery-entries small,
+.event-log-item small,
+.hive-counter small,
+.comment small,
+.chat-message small {
+  color: rgba(255, 245, 232, 0.62);
+}
+
+input,
+textarea,
+select {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 250, 245, 0.92);
+}
+
+.category-nav {
+  padding: 12px;
+}
+
+.category-nav button,
+.tabs button,
+.post-actions button,
+.comment__actions button,
+.chat-message__actions button,
+.event-log-item__actions button {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 250, 245, 0.86);
+}
+
+.category-nav button.active,
+.tabs button.active {
+  background: rgba(255, 250, 245, 0.9);
+  color: #171015;
+}
+
+.wish-pool,
+.lottery-panel,
+.event-log {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 120px),
+    rgba(17, 13, 18, 0.68);
+}
+
+.wish-pool__pond,
+.shaker-set,
+.daily-song,
+.featured-song,
+.hive-counter,
+.lottery-topic-card,
+.lottery-result,
+.lottery-entries article,
+.lottery-entries p,
+.event-log-item,
+.chat-message,
+.comment,
+.guestbook-message {
+  border-color: rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent),
+    rgba(255, 255, 255, 0.055);
+  color: rgba(255, 250, 245, 0.86);
+}
+
+.wish-option,
+.hive-counter__buttons button {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 250, 245, 0.9);
+}
+
+.wish-history article,
+.event-log-item,
+.chat-message,
+.comment {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.lottery-result {
+  border-color: rgba(212, 167, 44, 0.26);
+  background:
+    radial-gradient(circle at 14% 20%, rgba(212, 167, 44, 0.13), transparent 30%),
+    rgba(255, 255, 255, 0.06);
+}
+
+.lottery-topic-card strong,
+.lottery-result strong,
+.event-log-item__head strong,
+.people-card strong,
+.comment strong,
+.chat-message__head strong {
+  color: #ffd9df;
+}
+
+.composer {
+  border-color: rgba(255, 217, 223, 0.18);
+  background:
+    radial-gradient(circle at 10% 0%, rgba(182, 37, 72, 0.12), transparent 24%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 150px),
+    rgba(20, 15, 20, 0.82);
+}
+
+.feed-tools {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(10, 8, 11, 0.58);
+  padding: 10px 12px;
+  backdrop-filter: blur(14px);
+}
+
+.empty {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 250, 245, 0.72);
+}
+
+@media (min-width: 861px) {
+  .notice-strip {
+    margin-top: clamp(330px, 52vh, 560px);
+  }
+
+  .layout {
+    grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+  }
+}
+
 @keyframes mimi-breathe {
   0%,
   100% {
@@ -1951,7 +2225,7 @@ h2 {
   }
 
   .hero__copy {
-    padding-top: 92px;
+    padding: 86px 18px 34px;
   }
 
   .layout {
@@ -1972,7 +2246,7 @@ h2 {
     z-index: 2;
     align-items: stretch;
     flex-direction: column;
-    margin-top: min(58vh, 460px);
+    margin-top: min(60vh, 480px);
     backdrop-filter: blur(12px);
   }
 
@@ -1996,7 +2270,25 @@ h2 {
   }
 
   .wish-options {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
+  }
+
+  .hero__badges {
+    gap: 7px;
+  }
+
+  .hero__badges button {
+    min-height: 34px;
+    padding: 0 10px;
+    font-size: 0.8rem;
+  }
+
+  .panel {
+    padding: 15px;
+  }
+
+  .hive-counter__buttons {
+    grid-template-columns: 1fr;
   }
 
   .mimi-companion {
