@@ -151,23 +151,23 @@
             <div id="wishHistory" class="wish-history" aria-live="polite"></div>
           </section>
 
-          <section class="lottery-panel panel" aria-label="今日话题抽奖">
+          <section class="lottery-panel panel" aria-label="每周话题抽奖">
             <div class="panel__head">
-              <h2>今日话题抽奖</h2>
+              <h2>每周话题抽奖</h2>
               <span>仅限站主朋友</span>
             </div>
             <form id="lotteryTopicForm" class="lottery-topic-form" hidden>
               <label class="wide">
-                今日讨论话题
-                <input id="lotteryTopicInput" maxlength="120" placeholder="例如：今天最想稳住哪一件事？" />
+                本周讨论话题
+                <input id="lotteryTopicInput" maxlength="120" placeholder="例如：这周最想稳住哪一件事？" />
               </label>
-              <button type="submit">发布今日话题</button>
+              <button type="submit">发布本周话题</button>
             </form>
             <div id="lotteryTopicCard" class="lottery-topic-card"></div>
             <form id="lotteryEntryForm" class="lottery-entry-form">
               <label class="wide">
                 我的参与留言
-                <textarea id="lotteryEntryInput" rows="3" maxlength="300" placeholder="围绕今日话题写一句，就可以参与抽奖"></textarea>
+                <textarea id="lotteryEntryInput" rows="3" maxlength="300" placeholder="围绕本周话题写一句，就可以参与抽奖"></textarea>
               </label>
               <button type="submit">参与抽奖</button>
             </form>
@@ -324,6 +324,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
-    <script src="app.js?v=reply-event-20260605"></script>
+    <script src="app.js?v=weekly-lottery-20260605"></script>
   </body>
 </html>
