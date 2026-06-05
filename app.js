@@ -13,6 +13,8 @@ let chatLikes = [];
 let profiles = new Map();
 let pendingAvatarImage = null;
 let koiWishes = [];
+let lotteryTopics = [];
+let lotteryEntries = [];
 let activeInterest = "全部";
 let activeCategory = "日志";
 
@@ -63,6 +65,13 @@ const elements = {
   koiCoinText: $("#koiCoinText"),
   wishOptions: $("#wishOptions"),
   wishHistory: $("#wishHistory"),
+  lotteryTopicForm: $("#lotteryTopicForm"),
+  lotteryTopicInput: $("#lotteryTopicInput"),
+  lotteryTopicCard: $("#lotteryTopicCard"),
+  lotteryEntryForm: $("#lotteryEntryForm"),
+  lotteryEntryInput: $("#lotteryEntryInput"),
+  lotteryResult: $("#lotteryResult"),
+  lotteryEntries: $("#lotteryEntries"),
   soundToggle: $("#soundToggle"),
   todayText: $("#todayText"),
   syncStatus: $("#syncStatus"),
@@ -98,6 +107,23 @@ function formatDate(value) {
     hour: "2-digit",
     minute: "2-digit"
   }).format(new Date(value));
+}
+
+function todayKey() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Shanghai",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(new Date());
+}
+
+function stableHash(text = "") {
+  let hash = 0;
+  for (let index = 0; index < text.length; index += 1) {
+    hash = (hash * 31 + text.charCodeAt(index)) >>> 0;
+  }
+  return hash;
 }
 
 function normalizeHandle(handle) {
@@ -288,6 +314,66 @@ async function makeKoiWish(wish) {
   await loadBlog();
 }
 
+function currentLotteryTopic() {
+  const today = todayKey();
+  return lotteryTopics.find((topic) => topic.topic_date === today) || null;
+}
+
+function winnerForTopic(topic, entries) {
+  if (!topic || !entries.length) return null;
+  const uniqueEntries = [...new Map(entries.map((entry) => [entry.owner_id, entry])).values()]
+    .sort((a, b) => String(a.owner_id).localeCompare(String(b.owner_id)));
+  if (!uniqueEntries.length) return null;
+  const index = stableHash(`${topic.topic_date}:${topic.topic_text}`) % uniqueEntries.length;
+  return uniqueEntries[index];
+}
+
+function renderLottery() {
+  const topic = currentLotteryTopic();
+  const entries = topic ? lotteryEntries.filter((entry) => entry.topic_id === topic.id) : [];
+  const winner = winnerForTopic(topic, entries);
+  const hasEntered = Boolean(profile && entries.some((entry) => entry.owner_id === profile.user_id));
+
+  elements.lotteryTopicForm.hidden = profile?.role !== "owner";
+  elements.lotteryEntryForm.hidden = !profile || !topic || hasEntered;
+
+  if (!topic) {
+    elements.lotteryTopicCard.innerHTML = `<p>今天还没有讨论话题。等站主发布后，朋友们就可以参与抽奖。</p>`;
+    elements.lotteryResult.innerHTML = "";
+    elements.lotteryEntries.innerHTML = "";
+    return;
+  }
+
+  elements.lotteryTopicCard.innerHTML = `
+    <span>${escapeHtml(topic.topic_date)}</span>
+    <strong>${escapeHtml(topic.topic_text)}</strong>
+    <small>参与后将自动开奖，奖品：站主邀请喝 Manner 一次。</small>
+  `;
+
+  if (!profile) {
+    elements.lotteryResult.innerHTML = `<p>登录 ID 后可以参与今日抽奖。</p>`;
+  } else if (winner) {
+    const winnerProfile = profiles.get(winner.owner_id);
+    elements.lotteryResult.innerHTML = `
+      <strong>今日获奖 ID：${escapeHtml(winnerProfile?.handle || "朋友")}</strong>
+      <span>奖品：站主邀请喝 Manner 一次</span>
+    `;
+  } else {
+    elements.lotteryResult.innerHTML = `<p>还没有朋友参与，第一条留言会点亮今日抽奖。</p>`;
+  }
+
+  elements.lotteryEntries.innerHTML = entries.length ? entries.map((entry) => {
+    const author = profiles.get(entry.owner_id);
+    return `
+      <article>
+        <strong>${escapeHtml(author?.handle || "朋友")}</strong>
+        <p>${escapeHtml(entry.body)}</p>
+        <small>${formatDate(entry.created_at)}</small>
+      </article>
+    `;
+  }).join("") : `<p>暂无参与留言。</p>`;
+}
+
 function moodFromText(text = "") {
   const value = text.toLowerCase();
   const moodRules = [
@@ -319,8 +405,6 @@ function renderSession() {
     return;
   }
 
-  const avatarNode = document.createElement("span");
-  paintAvatar(avatarNode, avatarFromProfile(profile));
   const name = document.createElement("span");
   name.textContent = profile.handle;
   const logout = document.createElement("button");
@@ -332,9 +416,10 @@ function renderSession() {
     renderFeed();
     renderChat();
     renderWishPool();
+    renderLottery();
     setMessage("已退出。");
   });
-  elements.sessionArea.append(avatarNode, name, logout);
+  elements.sessionArea.append(name, logout);
 
   elements.profileCard.hidden = false;
   elements.profileCard.innerHTML = `
@@ -349,6 +434,7 @@ function renderSession() {
   elements.avatarImageInput.value = "";
   renderAvatarPreview();
   renderWishPool();
+  renderLottery();
 }
 
 function switchAuthTab(tab) {
@@ -379,14 +465,16 @@ async function loadBlog() {
   if (!client) return;
   setSync("同步中");
   try {
-    const [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult, wishResult] = await Promise.all([
+    const [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult, wishResult, lotteryTopicResult, lotteryEntryResult] = await Promise.all([
       client.from("blog_posts").select("*").order("created_at", { ascending: false }),
       client.from("blog_comments").select("*").order("created_at", { ascending: true }),
       client.from("blog_accounts").select("id, handle, avatar, role"),
       client.from("blog_post_likes").select("*"),
       client.from("chat_messages").select("*").order("created_at", { ascending: false }).limit(80),
       client.from("chat_message_likes").select("*"),
-      client.from("koi_wishes").select("*").order("created_at", { ascending: false }).limit(80)
+      client.from("koi_wishes").select("*").order("created_at", { ascending: false }).limit(80),
+      client.from("lottery_topics").select("*").order("topic_date", { ascending: false }).limit(30),
+      client.from("lottery_entries").select("*").order("created_at", { ascending: true }).limit(200)
     ]);
     for (const result of [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult]) {
       if (result.error) throw result.error;
@@ -398,11 +486,14 @@ async function loadBlog() {
     chatMessages = chatResult.data || [];
     chatLikes = chatLikeResult.data || [];
     koiWishes = wishResult.error ? [] : (wishResult.data || []);
+    lotteryTopics = lotteryTopicResult.error ? [] : (lotteryTopicResult.data || []);
+    lotteryEntries = lotteryEntryResult.error ? [] : (lotteryEntryResult.data || []);
     profiles = new Map((profileResult.data || []).map((item) => [item.id, { ...item, user_id: item.id }]));
     setSync("云端已同步");
     renderFeed();
     renderChat();
     renderWishPool();
+    renderLottery();
   } catch {
     setSync("需要运行新版 SQL");
     elements.feed.innerHTML = `<div class="empty">新增了栏目历史和临时讨论区。请把新版 supabase-setup.sql 复制到 Supabase 的 SQL Editor 再运行一次。</div>`;
@@ -756,6 +847,54 @@ elements.registerForm.addEventListener("submit", async (event) => {
   renderSession();
   await loadBlog();
   setMessage("注册成功，已经登录。", "ok");
+});
+
+elements.lotteryTopicForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!profile || profile.role !== "owner") {
+    setMessage("只有站主可以发布今日话题。", "error");
+    return;
+  }
+  const topic = elements.lotteryTopicInput.value.trim();
+  if (!topic) {
+    setMessage("请先写今日讨论话题。", "error");
+    return;
+  }
+  const { error } = await client.rpc("create_lottery_topic", {
+    session_token: sessionToken,
+    topic_date_input: todayKey(),
+    topic_text_input: topic
+  });
+  if (error) {
+    setMessage(rpcErrorText(error, "今日话题发布失败，请确认新版 SQL 已运行。"), "error");
+    return;
+  }
+  elements.lotteryTopicForm.reset();
+  setMessage("今日讨论话题已发布。", "ok");
+  await loadBlog();
+});
+
+elements.lotteryEntryForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!profile) {
+    setMessage("请先登录，再参与抽奖。", "error");
+    return;
+  }
+  const topic = currentLotteryTopic();
+  const body = elements.lotteryEntryInput.value.trim();
+  if (!topic || !body) return;
+  const { error } = await client.rpc("enter_lottery", {
+    session_token: sessionToken,
+    topic_uuid: topic.id,
+    body_input: body
+  });
+  if (error) {
+    setMessage(rpcErrorText(error, "参与抽奖失败，请确认新版 SQL 已运行。"), "error");
+    return;
+  }
+  elements.lotteryEntryForm.reset();
+  setMessage("已参与今日抽奖。", "ok");
+  await loadBlog();
 });
 
 elements.avatarForm.addEventListener("submit", async (event) => {
