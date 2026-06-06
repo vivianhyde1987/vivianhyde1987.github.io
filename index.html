@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Rose & Rainbow Blog</title>
-    <link rel="stylesheet" href="styles.css?v=merge-bookmarks-20260606" />
+    <link rel="stylesheet" href="styles.css?v=medicine-history-20260606" />
   </head>
   <body>
     <div class="shell">
@@ -205,6 +205,10 @@
               </label>
               <button type="submit">保存记录</button>
             </form>
+            <div class="medicine-history-tools">
+              <button id="medicineHistoryToggle" type="button">查看服药记录</button>
+              <button id="copyMedicineSummary" type="button">复制复诊摘要</button>
+            </div>
             <div id="eventLogList" class="event-log-list" aria-live="polite" hidden></div>
           </section>
 
@@ -386,6 +390,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
-    <script src="app.js?v=merge-bookmarks-20260606"></script>
+    <script src="app.js?v=medicine-history-20260606"></script>
   </body>
 </html>

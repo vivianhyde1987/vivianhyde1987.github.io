@@ -17,6 +17,7 @@ let lotteryTopics = [];
 let lotteryEntries = [];
 let eventLogs = [];
 let archiveOpen = false;
+let medicineHistoryOpen = false;
 let activeInterest = "全部";
 let activeCategory = "日志";
 
@@ -78,6 +79,8 @@ const elements = {
   eventTimeInput: $("#eventTimeInput"),
   medicineInput: $("#medicineInput"),
   eventNoteInput: $("#eventNoteInput"),
+  medicineHistoryToggle: $("#medicineHistoryToggle"),
+  copyMedicineSummary: $("#copyMedicineSummary"),
   eventLogList: $("#eventLogList"),
   hiveTotalText: $("#hiveTotalText"),
   hiveMonthSummary: $("#hiveMonthSummary"),
@@ -1114,10 +1117,95 @@ async function deleteEventLog(recordId) {
   await loadBlog();
 }
 
+function medicineRecords() {
+  return eventLogs
+    .filter((record) => String(record.medicine_name || "").trim())
+    .sort((a, b) => new Date(b.event_time || b.created_at) - new Date(a.event_time || a.created_at));
+}
+
+function renderMedicineHistory() {
+  if (!elements.eventLogList) return;
+  const records = medicineRecords();
+  if (elements.medicineHistoryToggle) {
+    elements.medicineHistoryToggle.textContent = medicineHistoryOpen ? "收起服药记录" : "查看服药记录";
+  }
+  elements.eventLogList.innerHTML = "";
+  elements.eventLogList.hidden = !medicineHistoryOpen;
+  if (!medicineHistoryOpen) return;
+  if (!records.length) {
+    elements.eventLogList.innerHTML = `<div class="empty">还没有服药记录。保存药品种类后，会自动出现在这里。</div>`;
+    return;
+  }
+  records.forEach((record) => {
+    const author = profiles.get(record.owner_id);
+    const item = document.createElement("article");
+    item.className = "event-log-item medicine-record";
+    item.innerHTML = `
+      <div class="event-log-item__head">
+        <strong>${escapeHtml(record.medicine_name)}</strong>
+        <small>${formatDate(record.event_time || record.created_at)}</small>
+      </div>
+      <p>${escapeHtml(record.note || "没有备注")}</p>
+      <small>记录人：${escapeHtml(author?.handle || "站主")}</small>
+      <div class="event-log-item__actions"></div>
+    `;
+    const actions = item.querySelector(".event-log-item__actions");
+    if (profile && (profile.role === "owner" || record.owner_id === profile.user_id)) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = "删除";
+      button.addEventListener("click", () => deleteEventLog(record.id));
+      actions.append(button);
+    }
+    elements.eventLogList.append(item);
+  });
+}
+
+function medicineSummaryText() {
+  const { monthPrefix, areaTotals } = hiveCountsForMonth();
+  const [year, month] = monthPrefix.split("-").map(Number);
+  const monthRecords = medicineRecords()
+    .filter((record) => localDateKeyInShanghai(record.event_time || record.created_at).startsWith(monthPrefix))
+    .sort((a, b) => new Date(a.event_time || a.created_at) - new Date(b.event_time || b.created_at));
+  const hiveText = hiveAreas.map((area) => `${area}${areaTotals[area] || 0}次`).join("，");
+  const medicineText = monthRecords.length
+    ? monthRecords.map((record) => {
+        const time = new Intl.DateTimeFormat("zh-CN", {
+          timeZone: "Asia/Shanghai",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false
+        }).format(new Date(record.event_time || record.created_at));
+        const note = record.note ? `；备注：${record.note}` : "";
+        return `${time} ${record.medicine_name}${note}`;
+      }).join("\n")
+    : "本月暂无服药记录。";
+  return [
+    `荨麻疹复诊摘要（${year}年${month}月）`,
+    `本月风团计数：${hiveText}`,
+    "服药记录：",
+    medicineText
+  ].join("\n");
+}
+
+async function copyMedicineSummary() {
+  const text = medicineSummaryText();
+  try {
+    await navigator.clipboard.writeText(text);
+    setSync("复诊摘要已复制，可以直接粘贴给医生或备忘录");
+  } catch {
+    medicineHistoryOpen = true;
+    renderMedicineHistory();
+    setSync("复制失败，已展开服药记录，请手动复制");
+  }
+}
+
 function renderEventLogs() {
   renderHiveCounter();
   renderSleepPanel();
-  if (elements.eventLogList) elements.eventLogList.innerHTML = "";
+  renderMedicineHistory();
 }
 
 function hiveAreaFromNote(note = "") {
@@ -1892,6 +1980,17 @@ if (elements.eventLogForm) {
     setSync("事件记录已保存");
     await loadBlog();
   });
+}
+
+if (elements.medicineHistoryToggle) {
+  elements.medicineHistoryToggle.addEventListener("click", () => {
+    medicineHistoryOpen = !medicineHistoryOpen;
+    renderMedicineHistory();
+  });
+}
+
+if (elements.copyMedicineSummary) {
+  elements.copyMedicineSummary.addEventListener("click", copyMedicineSummary);
 }
 
 elements.todayText.textContent = new Intl.DateTimeFormat("zh-CN", {
