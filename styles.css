@@ -389,15 +389,6 @@ label {
   font-size: 1.05rem;
 }
 
-.hero__badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 9px;
-  margin-top: 22px;
-}
-
-.hero__badges span,
-.hero__badges button,
 .notice-strip span {
   border: 1px solid rgba(255, 255, 255, 0.32);
   border-radius: 999px;
@@ -407,11 +398,6 @@ label {
   font-size: 0.86rem;
   font-weight: 800;
   backdrop-filter: blur(10px);
-}
-
-.hero__badges button {
-  min-height: 38px;
-  box-shadow: none;
 }
 
 .notice-strip {
@@ -1079,7 +1065,7 @@ h2 {
 
 .feed-tools {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 12px;
   align-items: center;
   color: white;
@@ -2215,18 +2201,6 @@ body::before {
   padding: 72px 28px 46px;
 }
 
-.hero__badges {
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.hero__badges button {
-  border-color: rgba(255, 255, 255, 0.18);
-  background: rgba(8, 7, 10, 0.42);
-  color: rgba(255, 250, 245, 0.88);
-  box-shadow: none;
-}
-
 .notice-strip {
   border-color: rgba(255, 255, 255, 0.1);
   background:
@@ -2439,9 +2413,28 @@ select {
 .feed-tools {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  background: rgba(10, 8, 11, 0.58);
-  padding: 10px 12px;
+  background: transparent;
+  padding: 0 2px;
+  border-color: transparent;
   backdrop-filter: blur(14px);
+}
+
+.category-nav {
+  position: relative;
+}
+
+.category-nav::after {
+  content: "文章栏目";
+  position: absolute;
+  top: -11px;
+  left: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(18, 14, 18, 0.88);
+  color: rgba(255, 245, 232, 0.68);
+  padding: 3px 9px;
+  font-size: 0.72rem;
+  font-weight: 900;
 }
 
 .empty {
@@ -2556,16 +2549,6 @@ select {
 
   .wish-options {
     grid-template-columns: 1fr;
-  }
-
-  .hero__badges {
-    gap: 7px;
-  }
-
-  .hero__badges button {
-    min-height: 34px;
-    padding: 0 10px;
-    font-size: 0.8rem;
   }
 
   .panel {

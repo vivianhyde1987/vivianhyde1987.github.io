@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Rose & Rainbow Blog</title>
-    <link rel="stylesheet" href="styles.css?v=bookmark-side-20260606" />
+    <link rel="stylesheet" href="styles.css?v=clean-tabs-20260606" />
   </head>
   <body>
     <div class="shell">
@@ -26,15 +26,7 @@
           </div>
           <div class="session" id="sessionArea"></div>
         </nav>
-        <section class="hero__copy">
-          <div class="hero__badges" aria-label="栏目入口">
-            <button type="button" data-category="日志">日志</button>
-            <button type="button" data-category="小说">小说</button>
-            <button type="button" data-category="相册">相册</button>
-            <button type="button" data-category="心情">心情</button>
-            <button type="button" data-category="兴趣">兴趣</button>
-          </div>
-        </section>
+        <section class="hero__copy" aria-hidden="true"></section>
       </header>
 
       <section class="notice-strip" aria-label="小站公告">
@@ -128,7 +120,7 @@
         </aside>
 
         <section class="content">
-          <section class="category-nav panel" aria-label="博客栏目">
+          <section class="category-nav panel" aria-label="文章栏目">
             <button class="active" type="button" data-category="日志">日志</button>
             <button type="button" data-category="小说">小说</button>
             <button type="button" data-category="相册">相册</button>
@@ -361,13 +353,6 @@
           </section>
 
           <section class="feed-tools">
-            <div class="tabs" role="tablist" aria-label="当前栏目">
-              <button class="active" type="button" data-category="日志">日志</button>
-              <button type="button" data-category="小说">小说</button>
-              <button type="button" data-category="相册">相册</button>
-              <button type="button" data-category="心情">心情</button>
-              <button type="button" data-category="兴趣">兴趣</button>
-            </div>
             <span id="syncStatus">准备同步</span>
           </section>
 
@@ -414,6 +399,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
-    <script src="app.js?v=bookmark-side-20260606"></script>
+    <script src="app.js?v=clean-tabs-20260606"></script>
   </body>
 </html>
