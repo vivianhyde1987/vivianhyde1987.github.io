@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Rose & Rainbow Blog</title>
-    <link rel="stylesheet" href="styles.css?v=fold-archive-20260606" />
+    <link rel="stylesheet" href="styles.css?v=merge-bookmarks-20260606" />
   </head>
   <body>
     <div class="shell">
@@ -29,7 +29,7 @@
         <section class="hero__copy" aria-hidden="true"></section>
       </header>
 
-      <section class="notice-strip" aria-label="小站公告">
+      <section class="notice-strip" aria-label="声音入口">
         <div class="sound-cluster" aria-label="疗愈声音">
           <button id="soundToggle" class="sound-toggle" type="button" data-sound-mode="bowl">
             <span class="sound-toggle__icon">◎</span>
@@ -85,14 +85,13 @@
 
             <div class="profile-card" id="profileCard" hidden></div>
             <p class="auth-note" id="authMessage">只需要记住自己的 ID 和密码。</p>
-          </section>
-
-          <section class="panel avatar-panel">
-            <div class="panel__head">
-              <h2>头像</h2>
-              <span>自己设计</span>
+            <div class="account-share">
+              <button id="copyInviteButton" type="button">复制邀请语</button>
+              <button id="posterButton" type="button">生成分享海报</button>
+              <div id="sharePoster" class="share-poster" hidden></div>
             </div>
             <form id="avatarForm" class="avatar-designer">
+              <strong>头像</strong>
               <div class="avatar-preview" id="avatarPreview" aria-label="头像预览"></div>
               <label>
                 颜色
@@ -128,39 +127,23 @@
             <button type="button" data-category="兴趣">兴趣</button>
           </section>
 
-          <section class="welcome-panel panel" aria-label="小站介绍和分享">
+          <section class="luck-panel panel" aria-label="好运">
             <div class="panel__head">
-              <h2>来小站坐一会</h2>
-              <span>分享入口</span>
-            </div>
-            <p>这里是一个私人博客，也是一间可以留言、抽奖、记录心情、相册、睡前收尾的小房间。朋友进来可以注册 ID，留下今天的一句话。</p>
-            <div class="share-actions">
-              <button id="copyInviteButton" type="button">复制邀请语</button>
-              <button id="posterButton" type="button">生成分享海报</button>
-            </div>
-            <div id="sharePoster" class="share-poster" hidden></div>
-          </section>
-
-          <section class="wish-pool panel" aria-label="许愿池">
-            <div class="panel__head">
-              <h2>许愿池</h2>
+              <h2>好运</h2>
               <span id="koiCoinText">锦鲤币 0</span>
             </div>
-            <div class="wish-pool__pond" aria-hidden="true">
+            <div class="wish-pool wish-pool__inside">
+              <div class="wish-pool__pond" aria-hidden="true">
               <span></span>
               <span></span>
               <span></span>
+              </div>
+              <p class="wish-pool__note">评论 +3，文章点赞 +1。攒够锦鲤币就可以投一个工作日愿望。</p>
+              <div id="wishOptions" class="wish-options"></div>
+              <div id="wishHistory" class="wish-history" aria-live="polite"></div>
             </div>
-            <p class="wish-pool__note">评论 +3，文章点赞 +1。攒够锦鲤币就可以在这里投一个工作日愿望。</p>
-            <div id="wishOptions" class="wish-options"></div>
-            <div id="wishHistory" class="wish-history" aria-live="polite"></div>
-          </section>
-
-          <section class="lottery-panel panel" aria-label="每周话题抽奖">
-            <div class="panel__head">
-              <h2>每周话题抽奖</h2>
-              <span>仅限站主朋友</span>
-            </div>
+            <div class="lottery-panel lottery-panel__inside">
+              <h3>每周话题抽奖</h3>
             <form id="lotteryTopicForm" class="lottery-topic-form" hidden>
               <label class="wide">
                 本周讨论话题
@@ -178,6 +161,7 @@
             </form>
             <div id="lotteryResult" class="lottery-result" aria-live="polite"></div>
             <div id="lotteryEntries" class="lottery-entries"></div>
+            </div>
           </section>
 
           <section class="event-log panel" aria-label="定向事件记录">
@@ -402,6 +386,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
-    <script src="app.js?v=fold-archive-20260606"></script>
+    <script src="app.js?v=merge-bookmarks-20260606"></script>
   </body>
 </html>
