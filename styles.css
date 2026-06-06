@@ -1522,6 +1522,71 @@ h2 {
   font-size: 1rem;
 }
 
+.mystery-box {
+  display: grid;
+  gap: 14px;
+}
+
+.mystery-box__tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mystery-box__tabs button {
+  min-height: 34px;
+  padding: 0 13px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 245, 232, 0.82);
+  box-shadow: none;
+  font-size: 0.9rem;
+}
+
+.mystery-box__tabs button.active {
+  border-color: rgba(182, 37, 72, 0.46);
+  background:
+    linear-gradient(135deg, rgba(182, 37, 72, 0.38), rgba(238, 192, 83, 0.14)),
+    rgba(20, 12, 18, 0.5);
+  color: #fff8ef;
+}
+
+.mystery-box__card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(238, 192, 83, 0.18);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(238, 192, 83, 0.16), transparent 26%),
+    linear-gradient(135deg, rgba(22, 14, 22, 0.76), rgba(75, 23, 40, 0.38)),
+    rgba(255, 255, 255, 0.055);
+  padding: 18px;
+  color: rgba(255, 246, 235, 0.92);
+}
+
+.mystery-box__card::before {
+  content: "";
+  position: absolute;
+  inset: -40% 58% auto -20%;
+  height: 120px;
+  transform: rotate(-18deg);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+  pointer-events: none;
+}
+
+.mystery-box__card small {
+  display: inline-block;
+  margin-bottom: 10px;
+  color: rgba(238, 192, 83, 0.86);
+  font-weight: 900;
+}
+
+.mystery-box__card p {
+  margin: 0;
+  line-height: 1.85;
+  font-size: 1rem;
+}
+
 .wish-pool__pond {
   position: relative;
   height: 92px;

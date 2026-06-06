@@ -20,6 +20,7 @@ let archiveOpen = false;
 let medicineHistoryOpen = false;
 let activeInterest = "全部";
 let activeCategory = "日志";
+let activeMysteryCategory = "健康";
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -34,6 +35,44 @@ const wishMenu = [
   { key: "roadshow-glow", text: "产品路演发光", cost: 24 },
   { key: "aum-steady", text: "本周稳住规模", cost: 36 }
 ];
+
+const mysteryBoxes = {
+  "健康": [
+    "人体的嗅觉和记忆联系很深，所以某一种气味常常能瞬间把人带回很多年前。",
+    "晒太阳不只是为了维生素 D，规律接触自然光也会帮助身体校准睡眠节律。",
+    "喝温水本身不神奇，但慢一点喝水会给身体一个“现在可以放松”的信号。",
+    "皮肤屏障也有自己的节律，睡眠不足时，皮肤更容易觉得干、痒、敏感。",
+    "深长呼气会轻轻拉动副交感神经，很多人会因此感觉身体慢慢降速。"
+  ],
+  "心理": [
+    "人脑会更容易记住未完成的事，所以睡前把待办写下来，反而可能让脑子安静。",
+    "把情绪命名出来，比如“我现在有点紧张”，常常会让情绪强度下降一点。",
+    "安全感不总是来自答案，有时来自一个稳定重复的小仪式。",
+    "怀旧不一定是逃避，它也可能是在帮人重新确认：自己曾经被爱过、被陪伴过。",
+    "人在疲惫时更容易把普通问题看成巨大问题，所以很多答案适合睡醒后再决定。"
+  ],
+  "世界": [
+    "冰岛没有蚊子，和当地气候、水体冻结方式以及蚊子生命周期很难衔接有关。",
+    "威尼斯的很多建筑靠木桩支撑，木头在缺氧的水下反而不容易腐烂。",
+    "日本有些车站会播放不同旋律，帮助乘客用声音辨认站点和方向。",
+    "撒哈拉沙漠的尘埃会漂洋过海，给亚马孙雨林带去一部分矿物养分。",
+    "世界上有些图书馆会收藏气味、种子和声音，不只收藏纸质书。"
+  ],
+  "政治": [
+    "很多国家的议会座位设计会影响辩论气氛：面对面更像交锋，半圆形更像协商。",
+    "“影子内阁”是一种反对党制度设计，用来对应监督现任政府各部门。",
+    "有些国家的选票故意设计得非常朴素，是为了减少视觉暗示对投票选择的影响。",
+    "政治仪式里的服装、旗帜、座位顺序，常常在无声表达权力关系。",
+    "地方自治的核心并不只是“离中央远”，而是让一部分公共事务更贴近日常生活。"
+  ],
+  "文学": [
+    "很多小说里真正推动故事的不是事件，而是人物心里不愿说出口的那句话。",
+    "日本私小说传统强调自我暴露，读起来常像作者把内心剖开给人看。",
+    "哥特文学里的古堡、暗廊、雾气，常常不是背景，而是人物心理的外化。",
+    "短篇小说很像一扇半开的门，厉害之处常在于它没有把所有房间都照亮。",
+    "很多作家会反复书写同一个主题，不是重复，而是在不同年纪重新回答同一个问题。"
+  ]
+};
 
 const elements = {
   sessionArea: $("#sessionArea"),
@@ -68,6 +107,8 @@ const elements = {
   koiCoinText: $("#koiCoinText"),
   wishOptions: $("#wishOptions"),
   wishHistory: $("#wishHistory"),
+  mysteryBoxTabs: $("#mysteryBoxTabs"),
+  mysteryBoxCard: $("#mysteryBoxCard"),
   lotteryTopicForm: $("#lotteryTopicForm"),
   lotteryTopicInput: $("#lotteryTopicInput"),
   lotteryTopicCard: $("#lotteryTopicCard"),
@@ -342,6 +383,33 @@ function renderWishPool() {
       </article>
     `;
   }).join("");
+}
+
+function dailyMysteryFor(category) {
+  const list = mysteryBoxes[category] || [];
+  if (!list.length) return "";
+  const index = stableHash(`${todayKey()}:${category}`) % list.length;
+  return list[index];
+}
+
+function renderMysteryBox() {
+  if (!elements.mysteryBoxTabs || !elements.mysteryBoxCard) return;
+  elements.mysteryBoxTabs.innerHTML = "";
+  Object.keys(mysteryBoxes).forEach((category) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = category;
+    button.classList.toggle("active", category === activeMysteryCategory);
+    button.addEventListener("click", () => {
+      activeMysteryCategory = category;
+      renderMysteryBox();
+    });
+    elements.mysteryBoxTabs.append(button);
+  });
+  elements.mysteryBoxCard.innerHTML = `
+    <small>${todayKey()} / ${escapeHtml(activeMysteryCategory)}</small>
+    <p>${escapeHtml(dailyMysteryFor(activeMysteryCategory))}</p>
+  `;
 }
 
 async function makeKoiWish(wish) {
@@ -2436,6 +2504,7 @@ function setupBlogBookmarks() {
   const panels = [
     { selector: ".auth-panel", label: "账号" },
     { selector: ".luck-panel", label: "好运" },
+    { selector: ".mystery-box", label: "盲盒" },
     { selector: ".event-log", label: "健康" },
     { selector: ".sleep-panel", label: "睡眠" },
     { selector: ".composer", label: "写文" },
@@ -2486,6 +2555,7 @@ elements.bodyCount.textContent = `${elements.bodyInput.value.length} / ${element
 updateMediaClearButtons();
 switchAuthTab("login");
 setCategory("日志");
+renderMysteryBox();
 setupBlogBookmarks();
 setupMimiDrag();
 setupAmbientSounds();

@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Rose & Rainbow Blog</title>
-    <link rel="stylesheet" href="styles.css?v=medicine-history-20260606" />
+    <link rel="stylesheet" href="styles.css?v=daily-mystery-20260606" />
   </head>
   <body>
     <div class="shell">
@@ -162,6 +162,15 @@
             <div id="lotteryResult" class="lottery-result" aria-live="polite"></div>
             <div id="lotteryEntries" class="lottery-entries"></div>
             </div>
+          </section>
+
+          <section class="mystery-box panel" aria-label="每日盲盒">
+            <div class="panel__head">
+              <h2>每日盲盒</h2>
+              <span>每天一条冷知识</span>
+            </div>
+            <div id="mysteryBoxTabs" class="mystery-box__tabs" aria-label="盲盒分类"></div>
+            <article id="mysteryBoxCard" class="mystery-box__card" aria-live="polite"></article>
           </section>
 
           <section class="event-log panel" aria-label="定向事件记录">
@@ -390,6 +399,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
-    <script src="app.js?v=medicine-history-20260606"></script>
+    <script src="app.js?v=daily-mystery-20260606"></script>
   </body>
 </html>
