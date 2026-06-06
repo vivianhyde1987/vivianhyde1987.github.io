@@ -16,6 +16,7 @@ let koiWishes = [];
 let lotteryTopics = [];
 let lotteryEntries = [];
 let eventLogs = [];
+let archiveOpen = false;
 let activeInterest = "全部";
 let activeCategory = "日志";
 
@@ -94,6 +95,7 @@ const elements = {
   todayText: $("#todayText"),
   syncStatus: $("#syncStatus"),
   archiveTitle: $("#archiveTitle"),
+  archiveToggle: $("#archiveToggle"),
   interestFilters: $("#interestFilters"),
   feed: $("#feed"),
   postTemplate: $("#postTemplate")
@@ -598,6 +600,20 @@ function switchAuthTab(tab) {
   elements.registerForm.hidden = tab !== "register";
 }
 
+function updateArchiveVisibility() {
+  if (!elements.feed || !elements.archiveToggle) return;
+  elements.feed.classList.toggle("is-collapsed", !archiveOpen);
+  elements.archiveToggle.textContent = archiveOpen ? "收起历史" : "展开历史";
+}
+
+function bindArchiveToggle() {
+  if (!elements.archiveToggle) return;
+  elements.archiveToggle.addEventListener("click", () => {
+    archiveOpen = !archiveOpen;
+    updateArchiveVisibility();
+  });
+}
+
 async function refreshSession() {
   if (!hasCloud) {
     setMessage("云端账号还没连接。请确认 config.js 已填 Supabase 地址和公开钥匙。", "error");
@@ -665,6 +681,11 @@ function setCategory(category, shouldScroll = false) {
   if (category !== "兴趣") activeInterest = "全部";
   if (elements.interestTypeWrap) elements.interestTypeWrap.hidden = category !== "兴趣";
   elements.archiveTitle.textContent = `${category}历史文章`;
+  elements.archiveTitle.innerHTML = `<span>${escapeHtml(category)}历史文章</span><button id="archiveToggle" type="button">${archiveOpen ? "收起历史" : "展开历史"}</button>`;
+  elements.archiveToggle = $("#archiveToggle");
+  archiveOpen = false;
+  updateArchiveVisibility();
+  bindArchiveToggle();
   $$("[data-category]").forEach((button) => {
     if (button.tagName === "BUTTON") button.classList.toggle("active", button.dataset.category === category);
   });
