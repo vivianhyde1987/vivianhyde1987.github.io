@@ -1184,6 +1184,31 @@ h2 {
   gap: 16px;
 }
 
+.feed.is-collapsed {
+  display: none;
+}
+
+.archive-title--folded {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(10, 8, 11, 0.58);
+  padding: 12px 14px;
+}
+
+.archive-title--folded button {
+  min-height: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 250, 245, 0.88);
+  padding: 0 12px;
+  box-shadow: none;
+  font-size: 0.82rem;
+}
+
 .post {
   padding: 20px;
 }
