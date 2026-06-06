@@ -1209,6 +1209,30 @@ h2 {
   font-size: 0.82rem;
 }
 
+.category-nav,
+.archive-title--folded,
+.post {
+  position: relative;
+}
+
+.category-nav::before,
+.archive-title--folded::before,
+.post::after {
+  position: absolute;
+  inset: 1px;
+  border-radius: 8px;
+  pointer-events: none;
+  content: "";
+  background:
+    radial-gradient(circle at 14% 0%, rgba(255, 217, 223, 0.1), transparent 32%),
+    radial-gradient(circle at 86% 100%, rgba(212, 167, 44, 0.08), transparent 34%);
+  opacity: 0.86;
+}
+
+.post {
+  transform: translateZ(0);
+}
+
 .post {
   padding: 20px;
 }
@@ -1436,6 +1460,15 @@ h2 {
   line-height: 1.75;
 }
 
+.account-share {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  border-top: 1px dashed rgba(37, 29, 32, 0.16);
+  margin-top: 14px;
+  padding-top: 14px;
+}
+
 .share-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1468,6 +1501,25 @@ h2 {
   padding: 9px 13px;
   text-decoration: none;
   font-weight: 900;
+}
+
+.luck-panel {
+  display: grid;
+  gap: 16px;
+}
+
+.wish-pool__inside,
+.lottery-panel__inside {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.055);
+  padding: 12px;
+}
+
+.lottery-panel__inside h3 {
+  margin: 0 0 12px;
+  color: rgba(255, 245, 232, 0.9);
+  font-size: 1rem;
 }
 
 .wish-pool__pond {
@@ -2350,6 +2402,7 @@ select {
 
 .wish-pool,
 .welcome-panel,
+.luck-panel,
 .lottery-panel,
 .event-log,
 .sleep-panel {
@@ -2591,7 +2644,7 @@ select {
     right: 8px;
     bottom: 8px;
     left: 8px;
-    grid-template-columns: repeat(9, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 5px;
     transform: none;
   }

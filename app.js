@@ -1407,7 +1407,7 @@ function siteUrl() {
 
 function currentInviteText() {
   const topic = currentLotteryTopic();
-  const topicText = topic?.topic_text ? `本周话题：${topic.topic_text}` : "来我的小站坐一会，留下今天的一句话。";
+  const topicText = topic?.topic_text ? `本周话题：${topic.topic_text}` : "来这间私人博客坐一会，留下今天的一句话。";
   return `${topicText}\n可以注册 ID、留言、参加每周抽奖，也可以看看日志和相册。\n${siteUrl()}`;
 }
 
@@ -1479,7 +1479,7 @@ function generateSharePoster() {
 
   ctx.fillStyle = "rgba(255, 245, 232, 0.92)";
   ctx.font = "700 48px Microsoft YaHei, sans-serif";
-  ctx.fillText("来小站坐一会", 96, 170);
+  ctx.fillText("来博客坐一会", 96, 170);
   ctx.font = "400 25px Microsoft YaHei, sans-serif";
   ctx.fillStyle = "rgba(255, 245, 232, 0.68)";
   ctx.fillText("留言、日志、相册、每周话题抽奖", 98, 220);
@@ -1492,7 +1492,7 @@ function generateSharePoster() {
 
   ctx.font = "400 27px Microsoft YaHei, sans-serif";
   ctx.fillStyle = "rgba(255, 245, 232, 0.74)";
-  y = wrapCanvasText(ctx, "这里是一间私人博客小房间。注册 ID 后，可以留言、互动，也可以参与每周日 21:00 的抽奖。", 98, y + 52, 704, 42);
+  y = wrapCanvasText(ctx, "这里是一间私人博客。注册 ID 后，可以留言、互动，也可以参与每周日 21:00 的抽奖。", 98, y + 52, 704, 42);
 
   ctx.fillStyle = "rgba(255, 245, 232, 0.12)";
   ctx.fillRect(98, 980, 704, 118);
@@ -2333,12 +2333,61 @@ function setupBookmarkPanels() {
   });
 }
 
+function setupBlogBookmarks() {
+  const panels = [
+    { selector: ".auth-panel", label: "账号" },
+    { selector: ".luck-panel", label: "好运" },
+    { selector: ".event-log", label: "健康" },
+    { selector: ".sleep-panel", label: "睡眠" },
+    { selector: ".composer", label: "写文" },
+    { selector: ".chat", label: "讨论" }
+  ];
+  const rail = document.createElement("nav");
+  rail.className = "bookmark-rail";
+  rail.setAttribute("aria-label", "功能书签");
+  document.body.append(rail);
+
+  const closeAll = () => {
+    document.querySelectorAll(".bookmark-panel.is-bookmark-open").forEach((panel) => panel.classList.remove("is-bookmark-open"));
+    rail.querySelectorAll("button").forEach((button) => button.classList.remove("active"));
+  };
+
+  panels.forEach(({ selector, label }) => {
+    const panel = document.querySelector(selector);
+    const head = panel?.querySelector(".panel__head");
+    if (!panel || !head) return;
+    document.body.append(panel);
+    panel.classList.add("bookmark-panel");
+    panel.classList.remove("is-bookmark-open");
+    if (!head.querySelector(".panel-close")) {
+      const close = document.createElement("button");
+      close.type = "button";
+      close.className = "panel-close";
+      close.textContent = "关闭";
+      close.addEventListener("click", closeAll);
+      head.append(close);
+    }
+    const tab = document.createElement("button");
+    tab.type = "button";
+    tab.textContent = label;
+    tab.addEventListener("click", () => {
+      const isOpen = panel.classList.contains("is-bookmark-open");
+      closeAll();
+      if (!isOpen) {
+        panel.classList.add("is-bookmark-open");
+        tab.classList.add("active");
+      }
+    });
+    rail.append(tab);
+  });
+}
+
 renderAvatarPreview();
 elements.bodyCount.textContent = `${elements.bodyInput.value.length} / ${elements.bodyInput.maxLength} 字`;
 updateMediaClearButtons();
 switchAuthTab("login");
 setCategory("日志");
-setupBookmarkPanels();
+setupBlogBookmarks();
 setupMimiDrag();
 setupAmbientSounds();
 refreshSession();
