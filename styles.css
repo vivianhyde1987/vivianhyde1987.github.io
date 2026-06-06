@@ -669,6 +669,72 @@ label {
   padding-bottom: 0;
 }
 
+.bookmark-rail {
+  position: fixed;
+  top: 50%;
+  right: 10px;
+  z-index: 30;
+  display: grid;
+  gap: 7px;
+  transform: translateY(-50%);
+}
+
+.bookmark-rail button {
+  width: 46px;
+  min-height: 54px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px 0 0 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(182, 37, 72, 0.2)),
+    rgba(16, 11, 16, 0.82);
+  color: rgba(255, 250, 245, 0.9);
+  padding: 8px 6px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
+  writing-mode: vertical-rl;
+  letter-spacing: 0;
+}
+
+.bookmark-rail button.active {
+  background:
+    linear-gradient(180deg, rgba(255, 217, 223, 0.22), rgba(182, 37, 72, 0.42)),
+    rgba(16, 11, 16, 0.94);
+  color: #fff8ef;
+}
+
+.bookmark-panel {
+  position: fixed;
+  top: 8vh;
+  right: 64px;
+  z-index: 29;
+  display: block;
+  width: min(520px, calc(100vw - 92px));
+  max-height: 84vh;
+  overflow: auto;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(28px);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.bookmark-panel.is-bookmark-open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+}
+
+.panel-close {
+  min-height: 30px;
+  margin-left: auto;
+  border: 1px solid rgba(37, 29, 32, 0.12);
+  background: rgba(37, 29, 32, 0.08);
+  color: var(--ink);
+  padding: 0 10px;
+  box-shadow: none;
+  font-size: 0.78rem;
+}
+
 h2,
 h3,
 p {
@@ -2259,10 +2325,17 @@ select {
 .category-nav button,
 .tabs button,
 .panel-toggle,
+.panel-close,
 .post-actions button,
 .comment__actions button,
 .chat-message__actions button,
 .event-log-item__actions button {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 250, 245, 0.86);
+}
+
+.bookmark-panel .panel-close {
   border-color: rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.08);
   color: rgba(255, 250, 245, 0.86);
@@ -2503,8 +2576,41 @@ select {
     grid-template-columns: 1fr;
   }
 
+  .bookmark-rail {
+    top: auto;
+    right: 8px;
+    bottom: 8px;
+    left: 8px;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 5px;
+    transform: none;
+  }
+
+  .bookmark-rail button {
+    width: auto;
+    min-height: 42px;
+    border-radius: 8px;
+    writing-mode: horizontal-tb;
+    padding: 0 4px;
+    font-size: 0.78rem;
+  }
+
+  .bookmark-panel {
+    top: auto;
+    right: 8px;
+    bottom: 62px;
+    left: 8px;
+    width: auto;
+    max-height: min(72vh, 620px);
+    transform: translateY(22px);
+  }
+
+  .bookmark-panel.is-bookmark-open {
+    transform: translateY(0);
+  }
+
   .mimi-companion {
     right: 12px;
-    bottom: 12px;
+    bottom: 62px;
   }
 }

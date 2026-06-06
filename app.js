@@ -2258,12 +2258,63 @@ function setupPanelToggles() {
   });
 }
 
+function setupBookmarkPanels() {
+  const panels = [
+    { selector: ".welcome-panel", label: "小站" },
+    { selector: ".wish-pool", label: "许愿" },
+    { selector: ".lottery-panel", label: "抽奖" },
+    { selector: ".event-log", label: "健康" },
+    { selector: ".sleep-panel", label: "睡眠" },
+    { selector: ".composer", label: "写文" },
+    { selector: ".chat", label: "讨论" }
+  ];
+  const rail = document.createElement("nav");
+  rail.className = "bookmark-rail";
+  rail.setAttribute("aria-label", "功能书签");
+  document.body.append(rail);
+
+  const closeAll = () => {
+    document.querySelectorAll(".bookmark-panel.is-bookmark-open").forEach((panel) => {
+      panel.classList.remove("is-bookmark-open");
+    });
+    rail.querySelectorAll("button").forEach((button) => button.classList.remove("active"));
+  };
+
+  panels.forEach(({ selector, label }) => {
+    const panel = document.querySelector(selector);
+    const head = panel?.querySelector(".panel__head");
+    if (!panel || !head) return;
+    panel.classList.remove("collapsible-panel", "is-collapsed");
+    panel.classList.add("bookmark-panel");
+
+    const close = document.createElement("button");
+    close.type = "button";
+    close.className = "panel-close";
+    close.textContent = "关闭";
+    close.addEventListener("click", closeAll);
+    head.append(close);
+
+    const tab = document.createElement("button");
+    tab.type = "button";
+    tab.textContent = label;
+    tab.addEventListener("click", () => {
+      const isOpen = panel.classList.contains("is-bookmark-open");
+      closeAll();
+      if (!isOpen) {
+        panel.classList.add("is-bookmark-open");
+        tab.classList.add("active");
+      }
+    });
+    rail.append(tab);
+  });
+}
+
 renderAvatarPreview();
 elements.bodyCount.textContent = `${elements.bodyInput.value.length} / ${elements.bodyInput.maxLength} 字`;
 updateMediaClearButtons();
 switchAuthTab("login");
 setCategory("日志");
-setupPanelToggles();
+setupBookmarkPanels();
 setupMimiDrag();
 setupAmbientSounds();
 refreshSession();
