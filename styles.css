@@ -644,6 +644,31 @@ label {
   font-weight: 800;
 }
 
+.panel-toggle {
+  min-height: 30px;
+  margin-left: auto;
+  border: 1px solid rgba(37, 29, 32, 0.12);
+  background: rgba(37, 29, 32, 0.08);
+  color: var(--ink);
+  padding: 0 10px;
+  box-shadow: none;
+  font-size: 0.78rem;
+}
+
+.collapsible-panel.is-collapsed {
+  padding-bottom: 12px;
+}
+
+.collapsible-panel.is-collapsed > :not(.panel__head) {
+  display: none !important;
+}
+
+.collapsible-panel.is-collapsed .panel__head {
+  margin-bottom: 0;
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
 h2,
 h3,
 p {
@@ -2233,6 +2258,7 @@ select {
 
 .category-nav button,
 .tabs button,
+.panel-toggle,
 .post-actions button,
 .comment__actions button,
 .chat-message__actions button,

@@ -2229,11 +2229,41 @@ function setupAmbientSounds() {
   updateButtons();
 }
 
+function setupPanelToggles() {
+  const panels = [
+    ".welcome-panel",
+    ".wish-pool",
+    ".lottery-panel",
+    ".event-log",
+    ".sleep-panel",
+    ".composer",
+    ".chat"
+  ];
+  panels.forEach((selector) => {
+    const panel = document.querySelector(selector);
+    const head = panel?.querySelector(".panel__head");
+    if (!panel || !head || head.querySelector(".panel-toggle")) return;
+    panel.classList.add("collapsible-panel", "is-collapsed");
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "panel-toggle";
+    button.textContent = "展开";
+    button.setAttribute("aria-expanded", "false");
+    button.addEventListener("click", () => {
+      const collapsed = panel.classList.toggle("is-collapsed");
+      button.textContent = collapsed ? "展开" : "收起";
+      button.setAttribute("aria-expanded", String(!collapsed));
+    });
+    head.append(button);
+  });
+}
+
 renderAvatarPreview();
 elements.bodyCount.textContent = `${elements.bodyInput.value.length} / ${elements.bodyInput.maxLength} 字`;
 updateMediaClearButtons();
 switchAuthTab("login");
 setCategory("日志");
+setupPanelToggles();
 setupMimiDrag();
 setupAmbientSounds();
 refreshSession();
