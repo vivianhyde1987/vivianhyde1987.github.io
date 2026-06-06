@@ -517,13 +517,16 @@ label {
 
 .layout {
   display: grid;
-  grid-template-columns: 340px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 20px;
   margin-top: 20px;
   align-items: start;
 }
 
-.sidebar,
+.sidebar {
+  display: none;
+}
+
 .content {
   display: grid;
   gap: 18px;
@@ -572,7 +575,6 @@ label {
     padding-bottom: 34px;
   }
 
-  .sidebar,
   .content {
     overflow: visible;
   }
@@ -2564,7 +2566,7 @@ select {
     right: 8px;
     bottom: 8px;
     left: 8px;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-template-columns: repeat(9, minmax(0, 1fr));
     gap: 5px;
     transform: none;
   }
@@ -2596,4 +2598,12 @@ select {
     right: 12px;
     bottom: 62px;
   }
+}
+
+.layout {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.sidebar {
+  display: none;
 }

@@ -2260,6 +2260,8 @@ function setupPanelToggles() {
 
 function setupBookmarkPanels() {
   const panels = [
+    { selector: ".auth-panel", label: "账号" },
+    { selector: ".avatar-panel", label: "头像" },
     { selector: ".welcome-panel", label: "小站" },
     { selector: ".wish-pool", label: "许愿" },
     { selector: ".lottery-panel", label: "抽奖" },
@@ -2284,6 +2286,7 @@ function setupBookmarkPanels() {
     const panel = document.querySelector(selector);
     const head = panel?.querySelector(".panel__head");
     if (!panel || !head) return;
+    document.body.append(panel);
     panel.classList.remove("collapsible-panel", "is-collapsed");
     panel.classList.add("bookmark-panel");
 
