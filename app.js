@@ -81,6 +81,7 @@ const elements = {
   loginForm: $("#loginForm"),
   registerForm: $("#registerForm"),
   profileCard: $("#profileCard"),
+  accountShare: $(".account-share"),
   avatarForm: $("#avatarForm"),
   avatarPreview: $("#avatarPreview"),
   avatarColorInput: $("#avatarColorInput"),
@@ -625,16 +626,24 @@ function renderSession() {
   elements.authStatus.textContent = profile ? `已登录：${profile.handle}` : "未登录";
 
   if (!profile) {
-    const label = document.createElement("span");
-    label.textContent = hasCloud ? "请登录" : "需要先配置云端";
-    elements.sessionArea.append(label);
+    const accountButton = document.createElement("button");
+    accountButton.type = "button";
+    accountButton.className = "quick-account-button";
+    accountButton.textContent = hasCloud ? "登录" : "云端未连接";
+    accountButton.addEventListener("click", openAccountBookmark);
+    elements.sessionArea.append(accountButton);
     elements.profileCard.hidden = true;
+    elements.avatarForm.hidden = true;
+    if (elements.accountShare) elements.accountShare.hidden = true;
     renderWishPool();
     return;
   }
 
-  const name = document.createElement("span");
+  const name = document.createElement("button");
+  name.type = "button";
+  name.className = "quick-account-button";
   name.textContent = profile.handle;
+  name.addEventListener("click", openAccountBookmark);
   const logout = document.createElement("button");
   logout.type = "button";
   logout.textContent = "退出";
@@ -650,6 +659,8 @@ function renderSession() {
   elements.sessionArea.append(name, logout);
 
   elements.profileCard.hidden = false;
+  elements.avatarForm.hidden = false;
+  if (elements.accountShare) elements.accountShare.hidden = false;
   elements.profileCard.innerHTML = `
     <strong>${escapeHtml(profile.handle)}</strong>
     <p>${profile.role === "owner" ? "站主账号" : "朋友账号"}</p>
@@ -669,6 +680,11 @@ function switchAuthTab(tab) {
   $$(".auth-tabs button").forEach((button) => button.classList.toggle("active", button.dataset.authTab === tab));
   elements.loginForm.hidden = tab !== "login";
   elements.registerForm.hidden = tab !== "register";
+}
+
+function openAccountBookmark() {
+  const accountTab = document.querySelector('[data-bookmark-target=".auth-panel"]');
+  if (accountTab) accountTab.click();
 }
 
 function updateArchiveVisibility() {
@@ -2488,6 +2504,7 @@ function setupBookmarkPanels() {
     const tab = document.createElement("button");
     tab.type = "button";
     tab.textContent = label;
+    tab.dataset.bookmarkTarget = selector;
     tab.addEventListener("click", () => {
       const isOpen = panel.classList.contains("is-bookmark-open");
       closeAll();
@@ -2538,6 +2555,7 @@ function setupBlogBookmarks() {
     const tab = document.createElement("button");
     tab.type = "button";
     tab.textContent = label;
+    tab.dataset.bookmarkTarget = selector;
     tab.addEventListener("click", () => {
       const isOpen = panel.classList.contains("is-bookmark-open");
       closeAll();
