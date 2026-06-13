@@ -1731,6 +1731,7 @@ h2 {
 
 .wish-pool__pond {
   position: relative;
+  isolation: isolate;
   height: 150px;
   margin: 12px 0;
   overflow: hidden;
@@ -1747,8 +1748,44 @@ h2 {
     0 10px 28px rgba(0, 0, 0, 0.16);
 }
 
+.wish-pool__pond::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse at 8% 88%, rgba(55, 47, 40, 0.62) 0 11px, transparent 12px),
+    radial-gradient(ellipse at 17% 94%, rgba(91, 78, 58, 0.5) 0 8px, transparent 9px),
+    radial-gradient(ellipse at 88% 92%, rgba(51, 57, 48, 0.58) 0 14px, transparent 15px),
+    radial-gradient(ellipse at 76% 98%, rgba(99, 82, 58, 0.38) 0 10px, transparent 11px),
+    radial-gradient(ellipse at 48% 104%, rgba(39, 43, 39, 0.66) 0 20px, transparent 21px),
+    radial-gradient(ellipse at 25% 20%, rgba(154, 226, 218, 0.1), transparent 24%),
+    linear-gradient(180deg, rgba(26, 113, 119, 0.2), rgba(2, 29, 39, 0.18));
+  content: "";
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.wish-pool__pond::after {
+  position: absolute;
+  inset: -18% -12%;
+  z-index: 3;
+  background:
+    linear-gradient(112deg, transparent 12%, rgba(220, 255, 249, 0.12) 19%, transparent 27%),
+    linear-gradient(68deg, transparent 18%, rgba(181, 233, 229, 0.085) 25%, transparent 34%),
+    radial-gradient(ellipse at 22% 35%, rgba(222, 255, 250, 0.13), transparent 25%),
+    radial-gradient(ellipse at 76% 66%, rgba(168, 230, 225, 0.1), transparent 28%);
+  background-size: 150px 92px, 190px 118px, 100% 100%, 100% 100%;
+  content: "";
+  filter: blur(0.7px);
+  mix-blend-mode: screen;
+  opacity: 0.55;
+  pointer-events: none;
+  animation: pond-water-flow 8s ease-in-out infinite alternate;
+}
+
 .wish-pool__pond span {
   position: absolute;
+  z-index: 2;
   width: 104px;
   height: 50px;
   border-radius: 50%;
@@ -2117,6 +2154,23 @@ h2 {
   100% {
     opacity: 0;
     transform: scale(1.28);
+  }
+}
+
+@keyframes pond-water-flow {
+  0% {
+    background-position: 0 0, 15px 8px, 0 0, 0 0;
+    transform: translate3d(-1.5%, -1%, 0) scale(1.02);
+  }
+
+  45% {
+    opacity: 0.68;
+    background-position: 42px 13px, -28px 19px, 0 0, 0 0;
+  }
+
+  100% {
+    background-position: 84px 24px, -66px 34px, 0 0, 0 0;
+    transform: translate3d(1.5%, 1%, 0) scale(1.04);
   }
 }
 
@@ -3283,6 +3337,10 @@ select {
 
   .wish-pool__pond span::after {
     animation: koi-ripple 8s ease-out infinite;
+  }
+
+  .wish-pool__pond::after {
+    animation: pond-water-flow 16s ease-in-out infinite alternate;
   }
 
   .hero__enso {
