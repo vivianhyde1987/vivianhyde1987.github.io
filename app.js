@@ -815,8 +815,14 @@ function setCategory(category, shouldScroll = false) {
   elements.categoryInput.value = "文章";
   activeInterest = "全部";
   if (elements.interestTypeWrap) elements.interestTypeWrap.hidden = true;
-  elements.archiveTitle.textContent = "文章历史";
-  elements.archiveTitle.innerHTML = `<span>文章历史</span><button id="archiveToggle" type="button">${archiveOpen ? "收起历史" : "展开历史"}</button>`;
+  elements.archiveTitle.innerHTML = `
+    <div class="archive-title__copy">
+      <span>文章手记</span>
+      <small id="syncStatus">${escapeHtml(elements.syncStatus?.textContent || "准备同步")}</small>
+    </div>
+    <button id="archiveToggle" type="button">${archiveOpen ? "收起历史" : "展开历史"}</button>
+  `;
+  elements.syncStatus = $("#syncStatus");
   elements.archiveToggle = $("#archiveToggle");
   archiveOpen = false;
   updateArchiveVisibility();
