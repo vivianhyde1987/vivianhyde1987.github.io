@@ -1731,6 +1731,7 @@ h2 {
 
 .wish-pool__pond {
   position: relative;
+  isolation: isolate;
   height: 150px;
   margin: 12px 0;
   overflow: hidden;
@@ -1747,12 +1748,47 @@ h2 {
     0 10px 28px rgba(0, 0, 0, 0.16);
 }
 
+.wish-pool__pond::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse at 8% 88%, rgba(55, 47, 40, 0.62) 0 11px, transparent 12px),
+    radial-gradient(ellipse at 17% 94%, rgba(91, 78, 58, 0.5) 0 8px, transparent 9px),
+    radial-gradient(ellipse at 88% 92%, rgba(51, 57, 48, 0.58) 0 14px, transparent 15px),
+    radial-gradient(ellipse at 76% 98%, rgba(99, 82, 58, 0.38) 0 10px, transparent 11px),
+    radial-gradient(ellipse at 48% 104%, rgba(39, 43, 39, 0.66) 0 20px, transparent 21px),
+    radial-gradient(ellipse at 25% 20%, rgba(154, 226, 218, 0.1), transparent 24%),
+    linear-gradient(180deg, rgba(26, 113, 119, 0.2), rgba(2, 29, 39, 0.18));
+  content: "";
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.wish-pool__pond::after {
+  position: absolute;
+  inset: -18% -12%;
+  z-index: 3;
+  background:
+    linear-gradient(112deg, transparent 12%, rgba(220, 255, 249, 0.12) 19%, transparent 27%),
+    linear-gradient(68deg, transparent 18%, rgba(181, 233, 229, 0.085) 25%, transparent 34%),
+    radial-gradient(ellipse at 22% 35%, rgba(222, 255, 250, 0.13), transparent 25%),
+    radial-gradient(ellipse at 76% 66%, rgba(168, 230, 225, 0.1), transparent 28%);
+  background-size: 150px 92px, 190px 118px, 100% 100%, 100% 100%;
+  content: "";
+  filter: blur(0.7px);
+  mix-blend-mode: screen;
+  opacity: 0.55;
+  pointer-events: none;
+  animation: pond-water-flow 8s ease-in-out infinite alternate;
+}
+
 .wish-pool__pond span {
   position: absolute;
+  z-index: 2;
   width: 104px;
   height: 50px;
   border-radius: 50%;
-  animation: koi-swim 11s ease-in-out infinite;
   will-change: transform;
 }
 
@@ -1790,13 +1826,15 @@ h2 {
     drop-shadow(0 2px 2px rgba(0, 0, 0, 0.22));
   transform: translate(-50%, -50%) rotate(var(--fish-angle, 90deg));
   transform-origin: center;
-  animation: koi-tail 2.8s ease-in-out infinite;
+  animation: koi-tail 1.35s ease-in-out infinite;
 }
 
 .wish-pool__pond span:nth-child(1) {
   --koi-scale: 0.94;
+  --fish-angle: -90deg;
   left: 5%;
   top: 19px;
+  animation: koi-swim-one 10s ease-in-out infinite;
 }
 
 .wish-pool__pond span:nth-child(2) {
@@ -1804,16 +1842,14 @@ h2 {
   --fish-angle: -90deg;
   right: 19%;
   top: 76px;
-  animation-delay: -4.2s;
-  animation-duration: 13.5s;
+  animation: koi-swim-two 12.5s ease-in-out -4.2s infinite;
 }
 
 .wish-pool__pond span:nth-child(3) {
   --koi-scale: 0.68;
   left: 38%;
   top: 88px;
-  animation-delay: -7.4s;
-  animation-duration: 15s;
+  animation: koi-swim-three 14s ease-in-out -7.4s infinite;
 }
 
 .wish-pool__pond span:nth-child(2) img {
@@ -2033,31 +2069,75 @@ h2 {
   line-height: 1.7;
 }
 
-@keyframes koi-swim {
+@keyframes koi-swim-one {
   0%, 100% {
-    transform: translate3d(-5px, 1px, 0) scale(var(--koi-scale, 1)) rotate(-2deg);
+    transform: translate3d(-4px, 2px, 0) scale(var(--koi-scale)) rotate(-5deg);
   }
 
-  28% {
-    transform: translate3d(22px, -7px, 0) scale(var(--koi-scale, 1)) rotate(3deg);
+  18% {
+    transform: translate3d(28px, -9px, 0) scale(var(--koi-scale)) rotate(3deg);
   }
 
-  58% {
-    transform: translate3d(44px, 3px, 0) scale(var(--koi-scale, 1)) rotate(-1deg);
+  43% {
+    transform: translate3d(76px, 3px, 0) scale(var(--koi-scale)) rotate(9deg);
   }
 
-  78% {
-    transform: translate3d(19px, 9px, 0) scale(var(--koi-scale, 1)) rotate(-4deg);
+  66% {
+    transform: translate3d(112px, 18px, 0) scale(var(--koi-scale)) rotate(-2deg);
+  }
+
+  84% {
+    transform: translate3d(48px, 15px, 0) scale(var(--koi-scale)) rotate(-10deg);
+  }
+}
+
+@keyframes koi-swim-two {
+  0%, 100% {
+    transform: translate3d(4px, 1px, 0) scale(var(--koi-scale)) rotate(4deg);
+  }
+
+  24% {
+    transform: translate3d(-38px, -18px, 0) scale(var(--koi-scale)) rotate(-8deg);
+  }
+
+  48% {
+    transform: translate3d(-88px, -32px, 0) scale(var(--koi-scale)) rotate(3deg);
+  }
+
+  73% {
+    transform: translate3d(-52px, 5px, 0) scale(var(--koi-scale)) rotate(11deg);
+  }
+}
+
+@keyframes koi-swim-three {
+  0%, 100% {
+    transform: translate3d(-20px, 4px, 0) scale(var(--koi-scale)) rotate(-7deg);
+  }
+
+  21% {
+    transform: translate3d(18px, -24px, 0) scale(var(--koi-scale)) rotate(7deg);
+  }
+
+  47% {
+    transform: translate3d(70px, -42px, 0) scale(var(--koi-scale)) rotate(-4deg);
+  }
+
+  72% {
+    transform: translate3d(98px, -8px, 0) scale(var(--koi-scale)) rotate(10deg);
+  }
+
+  88% {
+    transform: translate3d(36px, 8px, 0) scale(var(--koi-scale)) rotate(-3deg);
   }
 }
 
 @keyframes koi-tail {
   0%, 100% {
-    transform: translate(-50%, -50%) rotate(var(--fish-angle, 90deg)) skewX(-1.2deg);
+    transform: translate(-50%, -50%) rotate(var(--fish-angle, 90deg)) skewX(-2.8deg) rotateX(1deg);
   }
 
   50% {
-    transform: translate(-50%, -50%) rotate(var(--fish-angle, 90deg)) skewX(1.8deg) scaleX(0.985);
+    transform: translate(-50%, -50%) rotate(var(--fish-angle, 90deg)) skewX(3.8deg) scaleX(0.975) rotateX(-1deg);
   }
 }
 
@@ -2074,6 +2154,23 @@ h2 {
   100% {
     opacity: 0;
     transform: scale(1.28);
+  }
+}
+
+@keyframes pond-water-flow {
+  0% {
+    background-position: 0 0, 15px 8px, 0 0, 0 0;
+    transform: translate3d(-1.5%, -1%, 0) scale(1.02);
+  }
+
+  45% {
+    opacity: 0.68;
+    background-position: 42px 13px, -28px 19px, 0 0, 0 0;
+  }
+
+  100% {
+    background-position: 84px 24px, -66px 34px, 0 0, 0 0;
+    transform: translate3d(1.5%, 1%, 0) scale(1.04);
   }
 }
 
@@ -3218,11 +3315,32 @@ select {
   .hero__ripple,
   .hero__mist span,
   .mimi-companion__photo,
-  .mimi-companion__glow,
-  .wish-pool__pond span,
-  .wish-pool__pond span img,
-  .wish-pool__pond span::after {
+  .mimi-companion__glow {
     animation: none !important;
+  }
+
+  .wish-pool__pond span:nth-child(1) {
+    animation: koi-swim-one 20s ease-in-out infinite;
+  }
+
+  .wish-pool__pond span:nth-child(2) {
+    animation: koi-swim-two 24s ease-in-out -6s infinite;
+  }
+
+  .wish-pool__pond span:nth-child(3) {
+    animation: koi-swim-three 27s ease-in-out -12s infinite;
+  }
+
+  .wish-pool__pond span img {
+    animation: koi-tail 3.2s ease-in-out infinite;
+  }
+
+  .wish-pool__pond span::after {
+    animation: koi-ripple 8s ease-out infinite;
+  }
+
+  .wish-pool__pond::after {
+    animation: pond-water-flow 16s ease-in-out infinite alternate;
   }
 
   .hero__enso {
