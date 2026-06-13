@@ -173,10 +173,10 @@ label {
 
 .hero__mist span {
   position: absolute;
-  left: 50%;
-  bottom: 10%;
-  width: clamp(150px, 20vw, 300px);
-  height: clamp(280px, 48vh, 620px);
+  left: 65%;
+  bottom: 25%;
+  width: clamp(120px, 17vw, 250px);
+  height: clamp(240px, 42vh, 520px);
   border-radius: 48% 52% 46% 54%;
   background:
     radial-gradient(ellipse at 48% 88%, rgba(255, 226, 165, 0.42), transparent 24%),
@@ -191,18 +191,18 @@ label {
 }
 
 .hero__mist span:nth-child(2) {
-  left: 56%;
-  bottom: 9%;
-  width: clamp(190px, 25vw, 360px);
+  left: 68%;
+  bottom: 24%;
+  width: clamp(150px, 21vw, 300px);
   animation-delay: -2.3s;
   animation-duration: 8.4s;
   filter: blur(24px) saturate(1.12);
 }
 
 .hero__mist span:nth-child(3) {
-  left: 44%;
-  bottom: 12%;
-  width: clamp(120px, 17vw, 260px);
+  left: 62%;
+  bottom: 27%;
+  width: clamp(105px, 15vw, 220px);
   animation-delay: -4.7s;
   animation-duration: 9.6s;
   filter: blur(20px) saturate(1.05);
