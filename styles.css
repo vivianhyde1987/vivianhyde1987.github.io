@@ -1731,54 +1731,97 @@ h2 {
 
 .wish-pool__pond {
   position: relative;
-  height: 92px;
+  height: 150px;
   margin: 12px 0;
   overflow: hidden;
-  border: 1px solid rgba(14, 138, 148, 0.18);
+  border: 1px solid rgba(118, 196, 190, 0.2);
   border-radius: 8px;
   background:
-    radial-gradient(circle at 18% 32%, rgba(238, 192, 83, 0.28), transparent 10%),
-    radial-gradient(circle at 76% 64%, rgba(182, 37, 72, 0.18), transparent 12%),
-    linear-gradient(135deg, rgba(17, 86, 98, 0.2), rgba(255, 255, 255, 0.62));
+    radial-gradient(ellipse at 18% 28%, rgba(255, 241, 188, 0.16), transparent 18%),
+    radial-gradient(ellipse at 74% 68%, rgba(146, 214, 207, 0.12), transparent 24%),
+    repeating-radial-gradient(ellipse at 38% 42%, transparent 0 17px, rgba(255, 255, 255, 0.035) 18px 19px, transparent 20px 29px),
+    linear-gradient(145deg, rgba(7, 57, 65, 0.92), rgba(5, 32, 43, 0.96) 58%, rgba(21, 67, 65, 0.88));
+  box-shadow:
+    inset 0 12px 30px rgba(255, 255, 255, 0.04),
+    inset 0 -22px 34px rgba(0, 0, 0, 0.28),
+    0 10px 28px rgba(0, 0, 0, 0.16);
 }
 
 .wish-pool__pond span {
   position: absolute;
-  width: 42px;
-  height: 18px;
-  border-radius: 50% 55% 48% 58%;
-  background: linear-gradient(90deg, var(--gold), #fff2b5);
-  box-shadow: 0 0 18px rgba(238, 192, 83, 0.44);
-  animation: koi-swim 9s ease-in-out infinite;
+  width: 104px;
+  height: 50px;
+  border-radius: 50%;
+  animation: koi-swim 11s ease-in-out infinite;
+  will-change: transform;
+}
+
+.wish-pool__pond span::before {
+  content: "";
+  position: absolute;
+  inset: 17px 9px 5px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.32);
+  filter: blur(7px);
+  transform: translateY(5px) scaleX(0.86);
 }
 
 .wish-pool__pond span::after {
-  content: "";
   position: absolute;
-  right: -10px;
-  top: 4px;
-  border-left: 12px solid #f7d779;
-  border-top: 5px solid transparent;
-  border-bottom: 5px solid transparent;
+  inset: 4px -4px;
+  border: 1px solid rgba(211, 245, 239, 0.14);
+  border-radius: 50%;
+  content: "";
+  opacity: 0;
+  animation: koi-ripple 4.8s ease-out infinite;
+}
+
+.wish-pool__pond span img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  width: auto;
+  height: 98px;
+  filter:
+    saturate(0.94)
+    brightness(0.9)
+    contrast(1.04)
+    drop-shadow(0 2px 2px rgba(0, 0, 0, 0.22));
+  transform: translate(-50%, -50%) rotate(var(--fish-angle, 90deg));
+  transform-origin: center;
+  animation: koi-tail 2.8s ease-in-out infinite;
 }
 
 .wish-pool__pond span:nth-child(1) {
-  left: 10%;
-  top: 24px;
+  --koi-scale: 0.94;
+  left: 5%;
+  top: 19px;
 }
 
 .wish-pool__pond span:nth-child(2) {
-  left: 54%;
-  top: 54px;
-  animation-delay: -2.6s;
-  transform: scale(0.8);
+  --koi-scale: 0.76;
+  --fish-angle: -90deg;
+  right: 19%;
+  top: 76px;
+  animation-delay: -4.2s;
+  animation-duration: 13.5s;
 }
 
 .wish-pool__pond span:nth-child(3) {
-  left: 30%;
-  top: 68px;
-  animation-delay: -5.1s;
-  transform: scale(0.64);
+  --koi-scale: 0.68;
+  left: 38%;
+  top: 88px;
+  animation-delay: -7.4s;
+  animation-duration: 15s;
+}
+
+.wish-pool__pond span:nth-child(2) img {
+  animation-delay: -0.9s;
+}
+
+.wish-pool__pond span:nth-child(3) img {
+  animation-delay: -1.8s;
 }
 
 .wish-pool__note {
@@ -1991,13 +2034,46 @@ h2 {
 }
 
 @keyframes koi-swim {
-  0%,
-  100% {
-    transform: translateX(-8px) translateY(0);
+  0%, 100% {
+    transform: translate3d(-5px, 1px, 0) scale(var(--koi-scale, 1)) rotate(-2deg);
+  }
+
+  28% {
+    transform: translate3d(22px, -7px, 0) scale(var(--koi-scale, 1)) rotate(3deg);
+  }
+
+  58% {
+    transform: translate3d(44px, 3px, 0) scale(var(--koi-scale, 1)) rotate(-1deg);
+  }
+
+  78% {
+    transform: translate3d(19px, 9px, 0) scale(var(--koi-scale, 1)) rotate(-4deg);
+  }
+}
+
+@keyframes koi-tail {
+  0%, 100% {
+    transform: translate(-50%, -50%) rotate(var(--fish-angle, 90deg)) skewX(-1.2deg);
   }
 
   50% {
-    transform: translateX(34px) translateY(-7px);
+    transform: translate(-50%, -50%) rotate(var(--fish-angle, 90deg)) skewX(1.8deg) scaleX(0.985);
+  }
+}
+
+@keyframes koi-ripple {
+  0% {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+
+  22% {
+    opacity: 0.24;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.28);
   }
 }
 
@@ -2835,6 +2911,15 @@ select {
   color: rgba(255, 250, 245, 0.86);
 }
 
+.wish-pool__pond {
+  border-color: rgba(118, 196, 190, 0.2);
+  background:
+    radial-gradient(ellipse at 18% 28%, rgba(255, 241, 188, 0.16), transparent 18%),
+    radial-gradient(ellipse at 74% 68%, rgba(146, 214, 207, 0.12), transparent 24%),
+    repeating-radial-gradient(ellipse at 38% 42%, transparent 0 17px, rgba(255, 255, 255, 0.035) 18px 19px, transparent 20px 29px),
+    linear-gradient(145deg, rgba(7, 57, 65, 0.92), rgba(5, 32, 43, 0.96) 58%, rgba(21, 67, 65, 0.88));
+}
+
 .wish-option,
 .hive-counter__buttons button {
   border-color: rgba(255, 255, 255, 0.1);
@@ -3133,7 +3218,10 @@ select {
   .hero__ripple,
   .hero__mist span,
   .mimi-companion__photo,
-  .mimi-companion__glow {
+  .mimi-companion__glow,
+  .wish-pool__pond span,
+  .wish-pool__pond span img,
+  .wish-pool__pond span::after {
     animation: none !important;
   }
 
