@@ -380,6 +380,7 @@ function koiStatsFor(userId) {
 }
 
 function renderWishPool() {
+  if (!elements.koiCoinText || !elements.wishOptions || !elements.wishHistory) return;
   const stats = koiStatsFor(profile?.user_id);
   elements.koiCoinText.textContent = profile ? `锦鲤币 ${stats.balance}` : "登录后积累";
   elements.wishOptions.innerHTML = "";
@@ -2630,7 +2631,7 @@ function setupBookmarkPanels() {
 function setupBlogBookmarks() {
   const panels = [
     { selector: ".auth-panel", label: "账号" },
-    { selector: ".luck-panel", label: "好运" },
+    { selector: ".luck-panel", label: "抽奖" },
     { selector: ".mystery-box", label: "盲盒" },
     { selector: ".event-log", label: "健康" },
     { selector: ".sleep-panel", label: "睡眠" },
