@@ -142,6 +142,7 @@ const elements = {
   lotteryEntryInput: $("#lotteryEntryInput"),
   lotteryResult: $("#lotteryResult"),
   lotteryEntries: $("#lotteryEntries"),
+  lotteryHistory: $("#lotteryHistory"),
   eventLogForm: $("#eventLogForm"),
   eventTimeInput: $("#eventTimeInput"),
   medicineInput: $("#medicineInput"),
@@ -499,6 +500,61 @@ function winnerForTopic(topic, entries) {
   return uniqueEntries[index];
 }
 
+const lotteryBlessings = [
+  "本周所行皆有回声，认真种下的事，会在合适的时候开花。",
+  "愿你这一周判断清醒、行动轻盈，好消息沿着来路慢慢靠近。",
+  "本周的好运不必喧哗，它会藏在一次顺利沟通和一个意外机会里。",
+  "愿你手里的事情稳稳落地，想见的人有回应，想做的事有进展。",
+  "这一周请相信自己的节奏，慢一点也没有关系，方向正确就会抵达。",
+  "愿本周的你被善意照亮，也有余力把温柔留给身边的人。",
+  "本周宜向前一步：新的连接、新的答案，正在比想象中更近的地方。",
+  "愿你本周少一些内耗，多一些笃定；每一次选择都更靠近心里的光。",
+  "这一周会有一件小事替你证明，耐心并没有被辜负。",
+  "愿你本周遇事有解、忙中有闲，所有努力都落在值得的地方。",
+  "本周的风向正在变好，保持敏锐，也记得给自己留一点松弛。",
+  "愿这一周的你既有赢得结果的锋芒，也有安放自己的柔软。"
+];
+
+function blessingForTopic(topic, winner) {
+  const key = `${topic?.topic_date || ""}:${topic?.topic_text || ""}:${winner?.owner_id || ""}`;
+  return lotteryBlessings[stableHash(key) % lotteryBlessings.length];
+}
+
+function renderLotteryHistory() {
+  if (!elements.lotteryHistory) return;
+  const drawnTopics = lotteryTopics
+    .filter((topic) => isLotteryDrawn(topic))
+    .sort((a, b) => String(b.topic_date).localeCompare(String(a.topic_date)))
+    .slice(0, 12);
+  if (!drawnTopics.length) {
+    elements.lotteryHistory.innerHTML = "";
+    return;
+  }
+  elements.lotteryHistory.innerHTML = `
+    <div class="lottery-history__head">
+      <strong>往期开奖</strong>
+      <small>中奖名单会一直保留</small>
+    </div>
+    ${drawnTopics.map((topic) => {
+      const entries = lotteryEntries.filter((entry) => entry.topic_id === topic.id);
+      const winner = winnerForTopic(topic, entries);
+      const winnerProfile = winner ? profiles.get(winner.owner_id) : null;
+      return `
+        <article class="lottery-history__item">
+          <div>
+            <time>${escapeHtml(topic.topic_date)}</time>
+            <span>${escapeHtml(topic.topic_text || "本周话题")}</span>
+          </div>
+          ${winner ? `
+            <strong>中奖 ID：${escapeHtml(winnerProfile?.handle || "朋友")}</strong>
+            <p>${escapeHtml(blessingForTopic(topic, winner))}</p>
+          ` : `<p>本期无人参与，未产生中奖者。</p>`}
+        </article>
+      `;
+    }).join("")}
+  `;
+}
+
 function renderLottery() {
   const topic = currentLotteryTopic();
   const entries = topic ? lotteryEntries.filter((entry) => entry.topic_id === topic.id) : [];
@@ -604,6 +660,7 @@ function renderLottery() {
   const drawn = isLotteryDrawn(topic);
   const winner = drawn ? winnerForTopic(topic, entries) : null;
   const hasEntered = Boolean(profile && entries.some((entry) => entry.owner_id === profile.user_id));
+  renderLotteryHistory();
 
   elements.lotteryTopicForm.hidden = profile?.role !== "owner";
   elements.lotteryEntryForm.hidden = !profile || !topic || hasEntered || drawn;
@@ -634,6 +691,7 @@ function renderLottery() {
     elements.lotteryResult.innerHTML = `
       <strong>本周获奖 ID：${escapeHtml(winnerProfile?.handle || "朋友")}</strong>
       <span>奖品：站主邀请喝 Manner 一次</span>
+      <p class="lottery-blessing">${escapeHtml(blessingForTopic(topic, winner))}</p>
     `;
   } else {
     elements.lotteryResult.innerHTML = `<p>本周还没有朋友参与，所以这周暂不开奖。</p>`;
@@ -815,8 +873,14 @@ function setCategory(category, shouldScroll = false) {
   elements.categoryInput.value = "文章";
   activeInterest = "全部";
   if (elements.interestTypeWrap) elements.interestTypeWrap.hidden = true;
-  elements.archiveTitle.textContent = "文章历史";
-  elements.archiveTitle.innerHTML = `<span>文章历史</span><button id="archiveToggle" type="button">${archiveOpen ? "收起历史" : "展开历史"}</button>`;
+  elements.archiveTitle.innerHTML = `
+    <div class="archive-title__copy">
+      <span>文章手记</span>
+      <small id="syncStatus">${escapeHtml(elements.syncStatus?.textContent || "准备同步")}</small>
+    </div>
+    <button id="archiveToggle" type="button">${archiveOpen ? "收起历史" : "展开历史"}</button>
+  `;
+  elements.syncStatus = $("#syncStatus");
   elements.archiveToggle = $("#archiveToggle");
   archiveOpen = false;
   updateArchiveVisibility();

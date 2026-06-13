@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Rose & Rainbow Blog</title>
-    <link rel="stylesheet" href="styles.css?v=article-frame-20260613" />
+    <link rel="stylesheet" href="styles.css?v=lottery-history-20260613" />
   </head>
   <body>
     <div class="shell">
@@ -119,10 +119,6 @@
         </aside>
 
         <section class="content">
-          <section class="category-nav panel" aria-label="文章栏目">
-            <button class="active" type="button" data-category="文章">文章</button>
-          </section>
-
           <section class="luck-panel panel" aria-label="好运">
             <div class="panel__head">
               <h2>好运</h2>
@@ -157,6 +153,7 @@
             </form>
             <div id="lotteryResult" class="lottery-result" aria-live="polite"></div>
             <div id="lotteryEntries" class="lottery-entries"></div>
+            <div id="lotteryHistory" class="lottery-history" aria-live="polite"></div>
             </div>
           </section>
 
@@ -279,13 +276,8 @@
               <span id="todayText"></span>
             </div>
             <form id="postForm" class="post-form">
-              <label>
-                栏目
-                <select id="categoryInput">
-                  <option>文章</option>
-                </select>
-              </label>
-              <label>
+              <input id="categoryInput" type="hidden" value="文章" />
+              <label class="wide">
                 标题
                 <input id="titleInput" maxlength="80" placeholder="写下文章标题" />
               </label>
@@ -330,12 +322,11 @@
             <div id="chatList" class="chat-list" aria-live="polite"></div>
           </section>
 
-          <section class="feed-tools">
-            <span id="syncStatus">准备同步</span>
-          </section>
-
           <div class="archive-title archive-title--folded" id="archiveTitle">
-            <span>文章历史</span>
+            <div class="archive-title__copy">
+              <span>文章手记</span>
+              <small id="syncStatus">准备同步</small>
+            </div>
             <button id="archiveToggle" type="button">展开历史</button>
           </div>
           <section id="feed" class="feed is-collapsed" aria-live="polite"></section>
@@ -381,6 +372,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
-    <script src="app.js?v=article-frame-20260613"></script>
+    <script src="app.js?v=lottery-history-20260613"></script>
   </body>
 </html>
