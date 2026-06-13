@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Rose & Rainbow Blog</title>
-    <link rel="stylesheet" href="styles.css?v=mobile-login-20260613" />
+    <link rel="stylesheet" href="styles.css?v=article-frame-20260613" />
   </head>
   <body>
     <div class="shell">
@@ -120,11 +120,7 @@
 
         <section class="content">
           <section class="category-nav panel" aria-label="文章栏目">
-            <button class="active" type="button" data-category="日志">日志</button>
-            <button type="button" data-category="小说">小说</button>
-            <button type="button" data-category="相册">相册</button>
-            <button type="button" data-category="心情">心情</button>
-            <button type="button" data-category="兴趣">兴趣</button>
+            <button class="active" type="button" data-category="文章">文章</button>
           </section>
 
           <section class="luck-panel panel" aria-label="好运">
@@ -286,31 +282,16 @@
               <label>
                 栏目
                 <select id="categoryInput">
-                  <option>日志</option>
-                  <option>小说</option>
-                  <option>相册</option>
-                  <option>心情</option>
-                  <option>兴趣</option>
-                </select>
-              </label>
-              <label id="interestTypeWrap">
-                兴趣类型
-                <select id="interestTypeInput">
-                  <option>艺术</option>
-                  <option>音乐</option>
-                  <option>电影</option>
-                  <option>阅读</option>
-                  <option>展览</option>
-                  <option>生活灵感</option>
+                  <option>文章</option>
                 </select>
               </label>
               <label>
                 标题
-                <input id="titleInput" maxlength="80" placeholder="相册可以不填，会自动命名" />
+                <input id="titleInput" maxlength="80" placeholder="写下文章标题" />
               </label>
               <label class="wide">
                 正文
-                <textarea id="bodyInput" rows="7" maxlength="4000" placeholder="相册可以只上传照片"></textarea>
+                <textarea id="bodyInput" rows="7" maxlength="4000" placeholder="写下正文"></textarea>
                 <small id="bodyCount" class="field-meter">0 / 4000 字</small>
               </label>
               <label class="wide media-upload">
@@ -353,9 +334,8 @@
             <span id="syncStatus">准备同步</span>
           </section>
 
-          <section id="interestFilters" class="interest-filters" aria-label="兴趣分类"></section>
           <div class="archive-title archive-title--folded" id="archiveTitle">
-            <span>日志历史文章</span>
+            <span>文章历史</span>
             <button id="archiveToggle" type="button">展开历史</button>
           </div>
           <section id="feed" class="feed is-collapsed" aria-live="polite"></section>
@@ -386,7 +366,9 @@
           </div>
           <span class="mood"></span>
         </div>
-        <img class="post__image" alt="" hidden />
+        <div class="post__image-frame" hidden>
+          <img class="post__image" alt="文章插图" />
+        </div>
         <video class="post__video" controls playsinline preload="metadata" hidden></video>
         <p class="post__body"></p>
         <div class="comments"></div>
@@ -399,6 +381,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
-    <script src="app.js?v=mobile-login-20260613"></script>
+    <script src="app.js?v=article-frame-20260613"></script>
   </body>
 </html>
