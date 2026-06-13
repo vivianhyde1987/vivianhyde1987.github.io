@@ -19,7 +19,7 @@ let eventLogs = [];
 let archiveOpen = false;
 let medicineHistoryOpen = false;
 let activeInterest = "全部";
-let activeCategory = "日志";
+let activeCategory = "文章";
 let activeMysteryCategory = "健康";
 
 const $ = (selector) => document.querySelector(selector);
@@ -42,35 +42,60 @@ const mysteryBoxes = {
     "晒太阳不只是为了维生素 D，规律接触自然光也会帮助身体校准睡眠节律。",
     "喝温水本身不神奇，但慢一点喝水会给身体一个“现在可以放松”的信号。",
     "皮肤屏障也有自己的节律，睡眠不足时，皮肤更容易觉得干、痒、敏感。",
-    "深长呼气会轻轻拉动副交感神经，很多人会因此感觉身体慢慢降速。"
+    "深长呼气会轻轻拉动副交感神经，很多人会因此感觉身体慢慢降速。",
+    "人在安静坐下后仍需要一点时间才感觉放松，因为身体的紧张通常比念头退得更慢。",
+    "规律吃饭会给身体提供时间线索，因此饮食节奏也会间接影响睡眠和精神状态。",
+    "轻微活动能帮助静脉把血液送回心脏，久坐时偶尔抬脚或走动会更舒服。",
+    "皮肤的温度感受器会把冷暖信息传给大脑，所以温暖的触感常与安心感联系在一起。",
+    "打哈欠不一定只是困，它也可能出现在大脑切换状态、调节警觉度的时候。"
   ],
   "心理": [
     "人脑会更容易记住未完成的事，所以睡前把待办写下来，反而可能让脑子安静。",
     "把情绪命名出来，比如“我现在有点紧张”，常常会让情绪强度下降一点。",
     "安全感不总是来自答案，有时来自一个稳定重复的小仪式。",
     "怀旧不一定是逃避，它也可能是在帮人重新确认：自己曾经被爱过、被陪伴过。",
-    "人在疲惫时更容易把普通问题看成巨大问题，所以很多答案适合睡醒后再决定。"
+    "人在疲惫时更容易把普通问题看成巨大问题，所以很多答案适合睡醒后再决定。",
+    "比起笼统地说“我很糟”，描述具体感受更容易找到可以处理的那一小部分。",
+    "熟悉的音乐能降低环境的不确定感，因此有些歌会像一个随身携带的房间。",
+    "人们往往高估别人对自己小失误的关注，这种现象被称为聚光灯效应。",
+    "完成一个很小的动作也会增强掌控感，所以低落时整理桌面的一角可能真的有用。",
+    "心理恢复并不总是向上直线，有时状态反复只是身体仍在学习新的安全感。"
   ],
   "世界": [
     "冰岛没有蚊子，和当地气候、水体冻结方式以及蚊子生命周期很难衔接有关。",
     "威尼斯的很多建筑靠木桩支撑，木头在缺氧的水下反而不容易腐烂。",
     "日本有些车站会播放不同旋律，帮助乘客用声音辨认站点和方向。",
     "撒哈拉沙漠的尘埃会漂洋过海，给亚马孙雨林带去一部分矿物养分。",
-    "世界上有些图书馆会收藏气味、种子和声音，不只收藏纸质书。"
+    "世界上有些图书馆会收藏气味、种子和声音，不只收藏纸质书。",
+    "南极洲其实是世界上最大的沙漠，因为判断沙漠的关键是降水少，而不是炎热。",
+    "有些古老森林里的树会通过地下真菌网络交换养分和化学信号。",
+    "地球上的大部分火山活动发生在海底，只是人类很少能直接看到。",
+    "芬兰部分地区冬天会设置专门的积雪储存区，让积雪在夏季也能用于降温。",
+    "海水看起来是蓝色，不只是反射天空，也因为水会吸收更多偏红波段的光。"
   ],
   "政治": [
     "很多国家的议会座位设计会影响辩论气氛：面对面更像交锋，半圆形更像协商。",
     "“影子内阁”是一种反对党制度设计，用来对应监督现任政府各部门。",
     "有些国家的选票故意设计得非常朴素，是为了减少视觉暗示对投票选择的影响。",
     "政治仪式里的服装、旗帜、座位顺序，常常在无声表达权力关系。",
-    "地方自治的核心并不只是“离中央远”，而是让一部分公共事务更贴近日常生活。"
+    "地方自治的核心并不只是“离中央远”，而是让一部分公共事务更贴近日常生活。",
+    "一些议会用抽签决定发言顺序，是为了减少资历和派系对程序的影响。",
+    "现代预算公开制度的意义之一，是让公众能看见政策承诺最终流向了哪些具体支出。",
+    "公民投票与普通选举不同，它通常让选民直接回答某一个具体公共议题。",
+    "两院制议会常让两组代表以不同方式产生，用来增加决策中的复核与平衡。",
+    "许多公共政策会设置试点期，是为了在全面实施前观察真实世界里的副作用。"
   ],
   "文学": [
     "很多小说里真正推动故事的不是事件，而是人物心里不愿说出口的那句话。",
     "日本私小说传统强调自我暴露，读起来常像作者把内心剖开给人看。",
     "哥特文学里的古堡、暗廊、雾气，常常不是背景，而是人物心理的外化。",
     "短篇小说很像一扇半开的门，厉害之处常在于它没有把所有房间都照亮。",
-    "很多作家会反复书写同一个主题，不是重复，而是在不同年纪重新回答同一个问题。"
+    "很多作家会反复书写同一个主题，不是重复，而是在不同年纪重新回答同一个问题。",
+    "书信体小说会故意让读者只看到人物愿意写下的部分，因此沉默也构成情节。",
+    "诗歌里的换行不仅控制节奏，也能让同一个词在句尾获得额外重量。",
+    "不可靠叙述者并不一定说谎，也可能只是无法理解自己正在经历的事情。",
+    "文学中的留白会邀请读者参与补全，所以没有写出的部分有时比结局更长久。",
+    "同一个故事被不同人物讲述时，事实未必改变，但读者对真相的感觉会改变。"
   ]
 };
 
@@ -387,10 +412,33 @@ function renderWishPool() {
 }
 
 function dailyMysteryFor(category) {
-  const list = mysteryBoxes[category] || [];
-  if (!list.length) return "";
-  const index = stableHash(`${todayKey()}:${category}`) % list.length;
-  return list[index];
+  const facts = mysteryBoxes[category] || [];
+  if (!facts.length) return "";
+  const pairedFacts = facts.flatMap((fact, index) => (
+    facts.slice(index + 1).map((second) => `${fact} 还有一个相关的小发现：${second}`)
+  ));
+  const list = [...facts, ...pairedFacts];
+  const storageKey = "rose-blog-mystery-history-v1";
+  let history = {};
+  try {
+    history = JSON.parse(localStorage.getItem(storageKey) || "{}") || {};
+  } catch {
+    history = {};
+  }
+  const categoryHistory = history[category] || {};
+  const date = todayKey();
+  if (categoryHistory[date] && list.includes(categoryHistory[date])) return categoryHistory[date];
+  const seen = new Set(Object.values(categoryHistory));
+  const available = list.filter((fact) => !seen.has(fact));
+  const pool = available.length ? available : list;
+  const fact = pool[stableHash(`${date}:${category}`) % pool.length];
+  history[category] = { ...categoryHistory, [date]: fact };
+  try {
+    localStorage.setItem(storageKey, JSON.stringify(history));
+  } catch {
+    // The daily fact still works when private browsing blocks storage.
+  }
+  return fact;
 }
 
 function renderMysteryBox() {
@@ -763,18 +811,18 @@ async function loadBlog() {
 }
 
 function setCategory(category, shouldScroll = false) {
-  activeCategory = category;
-  elements.categoryInput.value = category;
-  if (category !== "兴趣") activeInterest = "全部";
-  if (elements.interestTypeWrap) elements.interestTypeWrap.hidden = category !== "兴趣";
-  elements.archiveTitle.textContent = `${category}历史文章`;
-  elements.archiveTitle.innerHTML = `<span>${escapeHtml(category)}历史文章</span><button id="archiveToggle" type="button">${archiveOpen ? "收起历史" : "展开历史"}</button>`;
+  activeCategory = "文章";
+  elements.categoryInput.value = "文章";
+  activeInterest = "全部";
+  if (elements.interestTypeWrap) elements.interestTypeWrap.hidden = true;
+  elements.archiveTitle.textContent = "文章历史";
+  elements.archiveTitle.innerHTML = `<span>文章历史</span><button id="archiveToggle" type="button">${archiveOpen ? "收起历史" : "展开历史"}</button>`;
   elements.archiveToggle = $("#archiveToggle");
   archiveOpen = false;
   updateArchiveVisibility();
   bindArchiveToggle();
   $$("[data-category]").forEach((button) => {
-    if (button.tagName === "BUTTON") button.classList.toggle("active", button.dataset.category === category);
+    if (button.tagName === "BUTTON") button.classList.toggle("active", button.dataset.category === "文章");
   });
   renderInterestFilters();
   renderFeed();
@@ -803,13 +851,11 @@ function renderInterestFilters() {
 }
 
 function renderFeed() {
-  const visible = posts.filter((post) => (
-    post.category === activeCategory
-    && (activeCategory !== "兴趣" || activeInterest === "全部" || (post.interest_type || "生活灵感") === activeInterest)
-  ));
+  const articleCategories = new Set(["文章", "日志", "小说"]);
+  const visible = posts.filter((post) => articleCategories.has(post.category));
   elements.feed.innerHTML = "";
   if (!visible.length) {
-    elements.feed.innerHTML = `<div class="empty">${activeCategory} 里还没有历史文章。</div>`;
+    elements.feed.innerHTML = `<div class="empty">还没有历史文章。</div>`;
     return;
   }
 
@@ -819,13 +865,13 @@ function renderFeed() {
     paintAvatar(node.querySelector(".user-avatar"), avatarFromProfile(author));
     node.querySelector("h3").textContent = post.title;
     node.querySelector(".post__meta p").textContent = `${author?.handle || "朋友"} / ${formatDate(post.created_at)}`;
-    node.querySelector(".mood").textContent = post.category === "兴趣" ? (post.interest_type || "生活灵感") : post.category;
+    node.querySelector(".mood").textContent = "文章";
     node.querySelector(".post__body").textContent = post.body;
 
     const image = node.querySelector(".post__image");
     if (post.image_url) {
       image.src = post.image_url;
-      image.hidden = false;
+      image.closest(".post__image-frame").hidden = false;
     }
     const video = node.querySelector(".post__video");
     if (post.video_url) {
@@ -850,7 +896,7 @@ function renderFeed() {
       const deletePostButton = document.createElement("button");
       deletePostButton.type = "button";
       deletePostButton.className = "danger-button";
-      deletePostButton.textContent = post.category === "相册" ? "删除照片" : "删除";
+      deletePostButton.textContent = "删除";
       deletePostButton.addEventListener("click", () => deletePost(post.id));
       postActions.append(deletePostButton);
     }
@@ -1580,7 +1626,7 @@ function siteUrl() {
 function currentInviteText() {
   const topic = currentLotteryTopic();
   const topicText = topic?.topic_text ? `本周话题：${topic.topic_text}` : "来这间私人博客坐一会，留下今天的一句话。";
-  return `${topicText}\n可以注册 ID、留言、参加每周抽奖，也可以看看日志和相册。\n${siteUrl()}`;
+  return `${topicText}\n可以注册 ID、留言、参加每周抽奖，也可以看看文章。\n${siteUrl()}`;
 }
 
 async function copyInviteText() {
@@ -1654,7 +1700,7 @@ function generateSharePoster() {
   ctx.fillText("来博客坐一会", 96, 170);
   ctx.font = "400 25px Microsoft YaHei, sans-serif";
   ctx.fillStyle = "rgba(255, 245, 232, 0.68)";
-  ctx.fillText("留言、日志、相册、每周话题抽奖", 98, 220);
+  ctx.fillText("留言、文章、每周话题抽奖", 98, 220);
 
   ctx.font = "700 34px Microsoft YaHei, sans-serif";
   ctx.fillStyle = "rgba(255, 217, 223, 0.95)";
@@ -1697,7 +1743,7 @@ $$("[data-category]").forEach((button) => {
 });
 
 elements.categoryInput.addEventListener("change", () => {
-  if (elements.interestTypeWrap) elements.interestTypeWrap.hidden = elements.categoryInput.value !== "兴趣";
+  if (elements.interestTypeWrap) elements.interestTypeWrap.hidden = true;
 });
 
 elements.loginForm.addEventListener("submit", async (event) => {
@@ -2572,7 +2618,7 @@ renderAvatarPreview();
 elements.bodyCount.textContent = `${elements.bodyInput.value.length} / ${elements.bodyInput.maxLength} 字`;
 updateMediaClearButtons();
 switchAuthTab("login");
-setCategory("日志");
+setCategory("文章");
 renderMysteryBox();
 setupBlogBookmarks();
 setupMimiDrag();
