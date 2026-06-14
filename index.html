@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Rose & Rainbow Blog</title>
-    <link rel="stylesheet" href="styles.css?v=cabin-gallery-treasure-v2-20260614" />
+    <link rel="stylesheet" href="styles.css?v=mimi-pet-v2-20260614" />
   </head>
   <body>
     <div class="shell">
@@ -421,16 +421,32 @@
       </main>
     </div>
 
-    <details class="mimi-companion" aria-label="眯眯陪伴组件">
-      <summary class="mimi-companion__photo">
-        <img src="assets/mimi-face-v2.jpg" alt="眯眯的脸" />
-        <span class="mimi-companion__glow"></span>
-      </summary>
-      <div class="mimi-companion__note">
-        <strong>眯眯</strong>
-        <p>今天也在这里陪你写博客。</p>
-      </div>
-    </details>
+    <div class="mimi-pet" aria-label="眯眯，12岁的棕虎斑母猫">
+      <button class="mimi-pet__cat" type="button" aria-label="和眯眯互动">
+        <img src="assets/mimi-pet/mimi-sit-cutout.jpg" alt="棕虎斑猫眯眯" />
+        <span class="mimi-pet__shadow"></span>
+      </button>
+      <div class="mimi-pet__bubble" aria-live="polite">眯眯在这里。</div>
+      <section class="mimi-pet__panel" hidden>
+        <div class="mimi-pet__head"><div><strong>眯眯</strong><small>棕虎斑母猫 · 12岁</small></div><button class="mimi-pet__close" type="button" aria-label="关闭">×</button></div>
+        <div class="mimi-pet__status">
+          <span>饱腹 <i data-mimi-stat="hunger"></i></span>
+          <span>心情 <i data-mimi-stat="mood"></i></span>
+          <span>健康 <i data-mimi-stat="health"></i></span>
+          <span>猫砂 <i data-mimi-stat="litter"></i></span>
+        </div>
+        <div class="mimi-pet__actions">
+          <button type="button" data-mimi-action="food">猫粮</button>
+          <button type="button" data-mimi-action="treat">猫条</button>
+          <button type="button" data-mimi-action="wand">逗猫棒</button>
+          <button type="button" data-mimi-action="pet">摸摸</button>
+          <button type="button" data-mimi-action="hold">抱起</button>
+          <button type="button" data-mimi-action="litter">铲猫砂</button>
+          <button type="button" data-mimi-action="doctor">去医院</button>
+        </div>
+        <p class="mimi-pet__message">她不太爱叫，但会安静地待在你附近。</p>
+      </section>
+    </div>
 
     <template id="postTemplate">
       <article class="post">
@@ -466,6 +482,6 @@
       <p id="cabinTreasureMessage"></p>
     </dialog>
 
-    <script src="app.js?v=cabin-gallery-treasure-v2-20260614"></script>
+    <script src="app.js?v=mimi-pet-v2-20260614"></script>
   </body>
 </html>

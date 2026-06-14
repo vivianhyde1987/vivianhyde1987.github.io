@@ -3030,6 +3030,140 @@ function setupPanelToggles() {
   });
 }
 
+function setupMimiPet() {
+  const pet = document.querySelector(".mimi-pet");
+  if (!pet) return;
+  const catButton = pet.querySelector(".mimi-pet__cat");
+  const catImage = catButton.querySelector("img");
+  const panel = pet.querySelector(".mimi-pet__panel");
+  const bubble = pet.querySelector(".mimi-pet__bubble");
+  const message = pet.querySelector(".mimi-pet__message");
+  const storageKey = "mimi-pet-care-v1";
+  const poses = [
+    "assets/mimi-pet/mimi-sit-cutout.jpg",
+    "assets/mimi-pet/mimi-alert.jpg",
+    "assets/mimi-pet/mimi-lean.jpg",
+    "assets/mimi-pet/mimi-play.jpg"
+  ];
+  const now = Date.now();
+  let state = { hunger: 78, mood: 82, health: 88, litter: 86, lastUpdate: now, lastDoctor: 0, pose: 0 };
+  try { state = { ...state, ...JSON.parse(localStorage.getItem(storageKey) || "{}") }; } catch {}
+  const elapsedHours = Math.max(0, (now - Number(state.lastUpdate || now)) / 3600000);
+  state.hunger = Math.max(24, state.hunger - elapsedHours * 1.4);
+  state.mood = Math.max(35, state.mood - elapsedHours * 0.45);
+  state.litter = Math.max(18, state.litter - elapsedHours * 0.9);
+  state.lastUpdate = now;
+  let audioContext = null;
+  let moveTimer = null;
+
+  const save = () => localStorage.setItem(storageKey, JSON.stringify(state));
+  const render = () => {
+    ["hunger", "mood", "health", "litter"].forEach((key) => {
+      const bar = pet.querySelector(`[data-mimi-stat="${key}"]`);
+      if (bar) bar.style.setProperty("--mimi-value", `${Math.max(0, Math.min(100, state[key]))}%`);
+    });
+    save();
+  };
+  const speak = (text, duration = 2600) => {
+    bubble.textContent = text;
+    bubble.classList.add("is-visible");
+    message.textContent = text;
+    window.clearTimeout(speak.timer);
+    speak.timer = window.setTimeout(() => bubble.classList.remove("is-visible"), duration);
+  };
+  const sound = (type) => {
+    try {
+      audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+      if (audioContext.state === "suspended") audioContext.resume();
+      const nowTime = audioContext.currentTime;
+      if (type === "step") {
+        [0, 0.16, 0.33, 0.5].forEach((delay) => {
+          const oscillator = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          oscillator.type = "triangle";
+          oscillator.frequency.value = 72 + Math.random() * 22;
+          gain.gain.setValueAtTime(0.035, nowTime + delay);
+          gain.gain.exponentialRampToValueAtTime(0.0001, nowTime + delay + 0.08);
+          oscillator.connect(gain).connect(audioContext.destination);
+          oscillator.start(nowTime + delay);
+          oscillator.stop(nowTime + delay + 0.09);
+        });
+      } else if (type === "purr") {
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        oscillator.type = "sawtooth";
+        oscillator.frequency.value = 27;
+        gain.gain.setValueAtTime(0.018, nowTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, nowTime + 1.5);
+        oscillator.connect(gain).connect(audioContext.destination);
+        oscillator.start(nowTime);
+        oscillator.stop(nowTime + 1.6);
+      } else if (type === "meow") {
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(530, nowTime);
+        oscillator.frequency.exponentialRampToValueAtTime(310, nowTime + 0.38);
+        gain.gain.setValueAtTime(0.035, nowTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, nowTime + 0.42);
+        oscillator.connect(gain).connect(audioContext.destination);
+        oscillator.start(nowTime);
+        oscillator.stop(nowTime + 0.45);
+      }
+    } catch {}
+  };
+  const move = () => {
+    if (!panel.hidden || pet.classList.contains("is-held")) return;
+    const safeWidth = Math.max(40, window.innerWidth - 150);
+    const safeHeight = Math.max(120, window.innerHeight - 230);
+    const x = 18 + Math.random() * safeWidth;
+    const y = 90 + Math.random() * safeHeight;
+    pet.style.setProperty("--mimi-x", `${x}px`);
+    pet.style.setProperty("--mimi-y", `${y}px`);
+    pet.classList.add("is-walking");
+    sound("step");
+    window.setTimeout(() => {
+      pet.classList.remove("is-walking");
+      state.pose = (state.pose + 1 + Math.floor(Math.random() * (poses.length - 1))) % poses.length;
+      catImage.src = poses[state.pose];
+      save();
+      if (Math.random() < 0.08) sound("meow");
+    }, 1800);
+  };
+  const scheduleMove = () => {
+    window.clearTimeout(moveTimer);
+    moveTimer = window.setTimeout(() => { move(); scheduleMove(); }, 14000 + Math.random() * 16000);
+  };
+
+  catButton.addEventListener("click", () => {
+    panel.hidden = !panel.hidden;
+    if (!panel.hidden) speak("你找到眯眯了。她正安静地看着你。", 2200);
+  });
+  pet.querySelector(".mimi-pet__close").addEventListener("click", () => { panel.hidden = true; });
+  pet.querySelectorAll("[data-mimi-action]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const action = button.dataset.mimiAction;
+      const reactions = {
+        food: () => { state.hunger = Math.min(100, state.hunger + 25); state.health = Math.min(100, state.health + 2); speak("眯眯认真地吃了几口猫粮。"); },
+        treat: () => { state.hunger = Math.min(100, state.hunger + 12); state.mood = Math.min(100, state.mood + 18); speak("猫条很好吃。她舔了舔鼻子。"); },
+        wand: () => { state.mood = Math.min(100, state.mood + 22); catImage.src = poses[3]; pet.classList.add("is-playing"); window.setTimeout(() => pet.classList.remove("is-playing"), 1800); speak("她盯紧逗猫棒，还是很有精神。"); },
+        pet: () => { state.mood = Math.min(100, state.mood + 12); sound("purr"); speak("她眯起眼睛，发出很轻的呼噜声。噢，是一只小猫咪"); },
+        hold: () => { state.mood = Math.min(100, state.mood + 8); pet.classList.toggle("is-held"); speak(pet.classList.contains("is-held") ? "你把眯眯抱起来了。她安静地靠着你。" : "你轻轻把她放回地上。"); },
+        litter: () => { state.litter = 100; speak("猫砂盆干净了。眯眯过来检查了一遍。"); },
+        doctor: () => { state.health = 100; state.lastDoctor = Date.now(); speak("完成了一次温柔的健康检查，一切都被好好记挂着。"); }
+      };
+      reactions[action]?.();
+      if (["treat", "wand"].includes(action) && Math.random() < 0.15) sound("meow");
+      render();
+    });
+  });
+  catImage.src = poses[state.pose % poses.length];
+  render();
+  scheduleMove();
+  document.body.append(panel);
+  window.addEventListener("resize", () => move());
+}
+
 function setupBookmarkPanels() {
   const panels = [
     { selector: ".auth-panel", label: "账号" },
@@ -3309,6 +3443,6 @@ renderMysteryBox();
 setupBlogBookmarks();
 setupCabinExperience();
 renderCabinGallery();
-setupMimiDrag();
+setupMimiPet();
 setupAmbientSounds();
 refreshSession();
