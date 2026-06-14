@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Rose & Rainbow Blog</title>
-    <link rel="stylesheet" href="styles.css?v=podcast-music-v3-20260614" />
+    <link rel="stylesheet" href="styles.css?v=cabin-room-v1-20260614" />
   </head>
   <body>
     <div class="shell">
@@ -311,6 +311,35 @@
             <div id="podcastList" class="podcast-list" aria-live="polite"></div>
           </section>
 
+          <section class="cabin-panel panel" aria-label="小木屋">
+            <div class="panel__head">
+              <h2>小木屋</h2>
+              <span>沿着脚印去开灯</span>
+            </div>
+            <div class="cabin-experience" data-cabin-room="studio">
+              <nav class="cabin-map" aria-label="小木屋地图">
+                <button class="active" type="button" data-room="studio"><span>画室</span><small>01</small></button>
+                <button type="button" data-room="water"><span>水边</span><small>02</small></button>
+                <button type="button" data-room="flowers"><span>花房</span><small>03</small></button>
+                <button type="button" data-room="hearth"><span>炉边</span><small>04</small></button>
+                <div class="cabin-footprints" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+              </nav>
+              <div class="cabin-room">
+                <div class="cabin-room__scene">
+                  <img id="cabinRoomImage" src="assets/cabin/painting-night.jpg" alt="小木屋画室" />
+                  <img id="cabinRoomDetail" class="cabin-room__detail" src="assets/cabin/desk-lamp.jpg" alt="画室里的台灯" />
+                  <div class="cabin-room__darkness"></div>
+                  <div class="cabin-room__lamp-glow"></div>
+                  <div class="cabin-furniture" aria-hidden="true"><span class="cabin-chair"></span><span class="cabin-table"></span></div>
+                </div>
+                <div class="cabin-room__controls">
+                  <div><small id="cabinRoomNumber">ROOM 01</small><h3 id="cabinRoomTitle">夜色画室</h3><p id="cabinRoomNote">灯亮以后，街巷里的星星才慢慢出现。</p></div>
+                  <button id="cabinLightToggle" class="cabin-light-toggle" type="button" aria-pressed="false"><span>灯</span><strong>开灯</strong></button>
+                </div>
+              </div>
+            </div>
+          </section>
+
           <section class="composer panel">
             <div class="panel__head">
               <h2>写一篇</h2>
@@ -413,6 +442,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
-    <script src="app.js?v=remove-home-rain-20260614"></script>
+    <script src="app.js?v=cabin-room-v1-20260614"></script>
   </body>
 </html>
