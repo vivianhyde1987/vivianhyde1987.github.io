@@ -4,7 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Rose & Rainbow Blog</title>
-    <link rel="stylesheet" href="styles.css?v=cabin-pet-room-v3-20260614" />
+    <link rel="stylesheet" href="styles.css?v=blog-materials-cabin-v2-20260614" />
+    <link rel="stylesheet" href="materials.css?v=blog-materials-cabin-v2-20260614" />
   </head>
   <body>
     <div class="shell">
@@ -330,9 +331,11 @@
               <div class="cabin-room">
                 <div class="cabin-room__scene">
                   <div class="cabin-wall-lines" aria-hidden="true"></div>
-                  <img id="cabinRoomImage" class="cabin-room__painting" data-aspect="portrait" src="cabin-art-night.jpg" alt="小木屋画室" />
-                  <img id="cabinRoomDetail" class="cabin-room__prop" data-prop="lamp" src="cabin-lamp-cutout.png" alt="画室里的台灯" />
-                  <img id="cabinPendant" class="cabin-room__pendant" src="cabin-pendant-cutout.png" alt="木质吊灯" hidden />
+                  <img id="cabinRoomImage" class="cabin-room__painting" data-aspect="portrait" src="cabin-art-night.jpg" alt="小木屋画室" loading="lazy" decoding="async" />
+                  <img id="cabinRoomDetail" class="cabin-room__prop" data-prop="lamp" src="cabin-lamp-cutout.png" alt="画室里的台灯" loading="lazy" decoding="async" />
+                  <img id="cabinRoomPlant" class="cabin-room__plant" alt="房间里的植物" loading="lazy" decoding="async" hidden />
+                  <img id="cabinRoomAccent" class="cabin-room__accent" alt="房间里的装饰" loading="lazy" decoding="async" hidden />
+                  <img id="cabinPendant" class="cabin-room__pendant" src="cabin-pendant-cutout.png" alt="木质吊灯" loading="lazy" decoding="async" hidden />
                   <div class="cabin-room__darkness"></div>
                   <div class="cabin-room__lamp-glow"></div>
                   <div class="cabin-furniture" aria-hidden="true"><span class="cabin-chair"></span><span class="cabin-table"></span></div>
@@ -454,7 +457,7 @@
 
     <div class="mimi-pet" aria-label="眯眯，12岁的棕虎斑母猫">
       <button class="mimi-pet__cat" type="button" aria-label="和眯眯互动">
-        <img src="mimi-sit-transparent.png" alt="棕虎斑猫眯眯" />
+        <img src="assets/blog-materials/vector/cats/mimi-main-sitting.png" alt="棕虎斑猫眯眯" loading="lazy" decoding="async" />
         <span class="mimi-pet__shadow"></span>
       </button>
       <div class="mimi-pet__bubble" aria-live="polite">眯眯在这里。</div>
@@ -496,7 +499,7 @@
           <span class="mood"></span>
         </div>
         <div class="post__image-frame" hidden>
-          <img class="post__image" alt="文章插图" />
+          <img class="post__image" alt="文章插图" loading="lazy" decoding="async" />
         </div>
         <video class="post__video" controls playsinline preload="metadata" hidden></video>
         <p class="post__body"></p>
@@ -517,6 +520,7 @@
       <p id="cabinTreasureMessage"></p>
     </dialog>
 
-    <script src="app.js?v=cabin-pet-room-v3-20260614"></script>
+    <script src="assets/blog-materials/manifest.js?v=blog-materials-v2-20260614"></script>
+    <script src="app.js?v=blog-materials-cabin-v2-20260614"></script>
   </body>
 </html>
