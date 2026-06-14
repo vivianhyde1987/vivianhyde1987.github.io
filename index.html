@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Rose & Rainbow Blog</title>
-    <link rel="stylesheet" href="styles.css?v=podcast-recording-v2-20260614" />
+    <link rel="stylesheet" href="styles.css?v=podcast-music-v3-20260614" />
   </head>
   <body>
     <div class="shell">
@@ -42,10 +42,6 @@
           <button class="sound-toggle" type="button" data-sound-mode="cosmos">
             <span class="sound-toggle__icon">✦</span>
             <span class="sound-toggle__label">宇宙的声音</span>
-          </button>
-          <button class="sound-toggle" type="button" data-sound-mode="rain">
-            <span class="sound-toggle__icon">☂</span>
-            <span class="sound-toggle__label">雨声</span>
           </button>
         </div>
       </section>
@@ -294,9 +290,21 @@
                 <small id="podcastAudioHint" class="file-hint">未选择音频</small>
               </label>
               <label class="wide media-upload">
-                背景音乐（可选）
-                <input id="podcastMusicInput" type="file" accept="audio/mpeg,audio/mp4,audio/wav,audio/ogg,audio/*" />
-                <small id="podcastMusicHint" class="file-hint">未选择背景音乐</small>
+                背景音乐
+                <div class="podcast-music-choice" role="group" aria-label="是否需要背景乐">
+                  <button class="active" type="button" data-podcast-music-mode="off">关闭背景乐</button>
+                  <button type="button" data-podcast-music-mode="on">需要背景乐</button>
+                </div>
+                <div id="podcastMusicOptions" class="podcast-music-options" hidden>
+                  <select id="podcastMusicPreset" aria-label="选择背景音乐">
+                    <option value="assets/audio/nut-shell-sleep.wav">夜间摇铃</option>
+                    <option value="assets/audio/nut-shell-rain.wav">雨后微光</option>
+                    <option value="assets/audio/flower.wav">清晨花音</option>
+                    <option value="upload">上传自己的音乐</option>
+                  </select>
+                  <input id="podcastMusicInput" type="file" accept="audio/mpeg,audio/mp4,audio/wav,audio/ogg,audio/*" hidden />
+                </div>
+                <small id="podcastMusicHint" class="file-hint">背景乐已关闭</small>
               </label>
               <button type="submit">发布这一期</button>
             </form>
@@ -405,6 +413,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
-    <script src="app.js?v=podcast-recording-v2-20260614"></script>
+    <script src="app.js?v=remove-home-rain-20260614"></script>
   </body>
 </html>

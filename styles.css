@@ -715,6 +715,54 @@ label {
   color: rgba(255, 245, 232, 0.52);
 }
 
+.podcast-music-choice {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin: 9px 0;
+  padding: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.16);
+}
+
+.podcast-music-choice button {
+  min-height: 38px;
+  background: transparent;
+  color: rgba(255, 245, 232, 0.62);
+}
+
+.podcast-music-choice button.active {
+  background: rgba(182, 37, 72, 0.72);
+  color: #fff;
+}
+
+.podcast-music-options {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.podcast-music-options[hidden] {
+  display: none;
+}
+
+.podcast-music-toggle {
+  min-height: 28px;
+  margin-left: auto;
+  padding: 0 10px;
+  border-color: rgba(212, 167, 44, 0.26);
+  background: transparent;
+  color: rgba(255, 245, 232, 0.66);
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.podcast-music-toggle.active {
+  background: rgba(212, 167, 44, 0.13);
+  color: #ead18b;
+}
+
 .podcast-social {
   display: flex;
   align-items: center;

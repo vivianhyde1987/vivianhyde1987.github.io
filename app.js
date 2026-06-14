@@ -20,6 +20,7 @@ let podcasts = [];
 let podcastComments = [];
 let podcastLikes = [];
 let pendingPodcastRecording = null;
+let podcastMusicMode = "off";
 let archiveOpen = false;
 let medicineHistoryOpen = false;
 let activeInterest = "全部";
@@ -169,6 +170,8 @@ const elements = {
   podcastTopicInput: $("#podcastTopicInput"),
   podcastAudioInput: $("#podcastAudioInput"),
   podcastMusicInput: $("#podcastMusicInput"),
+  podcastMusicPreset: $("#podcastMusicPreset"),
+  podcastMusicOptions: $("#podcastMusicOptions"),
   podcastAudioHint: $("#podcastAudioHint"),
   podcastMusicHint: $("#podcastMusicHint"),
   podcastRecordStart: $("#podcastRecordStart"),
@@ -1239,6 +1242,8 @@ function bindPodcastPlayer(card, podcast) {
   const timeText = card.querySelector(".podcast-time");
   const speed = card.querySelector(".podcast-speed");
   const volume = card.querySelector(".podcast-volume");
+  const musicToggle = card.querySelector(".podcast-music-toggle");
+  let musicEnabled = Boolean(music);
   voice.preload = "metadata";
   if (music) {
     music.preload = "auto";
@@ -1266,7 +1271,7 @@ function bindPodcastPlayer(card, podcast) {
       return;
     }
     document.querySelectorAll(".podcast-play.is-playing").forEach((button) => button.click());
-    if (music) {
+    if (music && musicEnabled) {
       music.currentTime = voice.currentTime % Math.max(music.duration || voice.duration || 1, 1);
       music.playbackRate = voice.playbackRate;
       music.volume = Number(volume.value) * 0.24;
@@ -1298,6 +1303,19 @@ function bindPodcastPlayer(card, podcast) {
   volume.addEventListener("input", () => {
     voice.volume = Number(volume.value);
     if (music) music.volume = Number(volume.value) * 0.24;
+  });
+  musicToggle?.addEventListener("click", async () => {
+    musicEnabled = !musicEnabled;
+    musicToggle.textContent = musicEnabled ? "关闭背景乐" : "开启背景乐";
+    musicToggle.classList.toggle("active", musicEnabled);
+    if (!musicEnabled) {
+      music.pause();
+    } else if (!voice.paused) {
+      music.currentTime = voice.currentTime % Math.max(music.duration || voice.duration || 1, 1);
+      music.playbackRate = voice.playbackRate;
+      music.volume = Number(volume.value) * 0.24;
+      await music.play().catch(() => {});
+    }
   });
   voice.addEventListener("loadedmetadata", syncTime);
   voice.addEventListener("timeupdate", syncTime);
@@ -1417,7 +1435,7 @@ function renderPodcasts() {
         <div class="podcast-player__foot">
           <span class="podcast-time">00:00 / 00:00</span>
           <label class="podcast-volume-wrap">音量 <input class="podcast-volume" type="range" min="0" max="1" value="0.8" step="0.05" aria-label="音量" /></label>
-          ${podcast.music_url ? `<span class="podcast-music-mark">含背景音乐</span>` : ""}
+          ${podcast.music_url ? `<button class="podcast-music-toggle active" type="button">关闭背景乐</button>` : ""}
         </div>
       </div>
       <div class="podcast-social">
@@ -2238,7 +2256,15 @@ function updatePodcastFileHints() {
   if (elements.podcastAudioHint) elements.podcastAudioHint.textContent = pendingPodcastRecording
     ? `录音已完成：${formatFileSize(pendingPodcastRecording.size)}`
     : audioFile ? `已选择：${formatFileSize(audioFile.size)}` : "未选择音频";
-  if (elements.podcastMusicHint) elements.podcastMusicHint.textContent = musicFile ? `已选择：${formatFileSize(musicFile.size)}` : "未选择背景音乐";
+  if (elements.podcastMusicHint) {
+    if (podcastMusicMode === "off") {
+      elements.podcastMusicHint.textContent = "背景乐已关闭";
+    } else if (elements.podcastMusicPreset?.value === "upload") {
+      elements.podcastMusicHint.textContent = musicFile ? `已选择：${formatFileSize(musicFile.size)}` : "请选择自己的背景音乐";
+    } else {
+      elements.podcastMusicHint.textContent = `已选择：${elements.podcastMusicPreset?.selectedOptions?.[0]?.textContent || "站内背景乐"}`;
+    }
+  }
 }
 
 elements.podcastAudioInput?.addEventListener("change", () => {
@@ -2248,6 +2274,20 @@ elements.podcastAudioInput?.addEventListener("change", () => {
   updatePodcastFileHints();
 });
 elements.podcastMusicInput?.addEventListener("change", updatePodcastFileHints);
+document.querySelectorAll("[data-podcast-music-mode]").forEach((button) => {
+  button.addEventListener("click", () => {
+    podcastMusicMode = button.dataset.podcastMusicMode;
+    document.querySelectorAll("[data-podcast-music-mode]").forEach((item) => item.classList.toggle("active", item === button));
+    elements.podcastMusicOptions.hidden = podcastMusicMode === "off";
+    updatePodcastFileHints();
+  });
+});
+elements.podcastMusicPreset?.addEventListener("change", () => {
+  const uploadMode = elements.podcastMusicPreset.value === "upload";
+  elements.podcastMusicInput.hidden = !uploadMode;
+  if (!uploadMode) elements.podcastMusicInput.value = "";
+  updatePodcastFileHints();
+});
 
 if (elements.podcastRecordStart && elements.podcastRecordStop) {
   let recorder = null;
@@ -2309,7 +2349,15 @@ elements.podcastForm?.addEventListener("submit", async (event) => {
   setSync("上传播客中");
   try {
     const audioUrl = await uploadPodcastAudio(audioFile, "episode");
-    const musicUrl = musicFile ? await uploadPodcastAudio(musicFile, "music") : null;
+    let musicUrl = null;
+    if (podcastMusicMode === "on") {
+      if (elements.podcastMusicPreset.value === "upload") {
+        if (!musicFile) throw new Error("music required");
+        musicUrl = await uploadPodcastAudio(musicFile, "music");
+      } else {
+        musicUrl = new URL(elements.podcastMusicPreset.value, window.location.href).href;
+      }
+    }
     const { error } = await client.rpc("create_blog_podcast", {
       session_token: sessionToken,
       publish_date_input: elements.podcastDateInput.value,
@@ -2324,12 +2372,18 @@ elements.podcastForm?.addEventListener("submit", async (event) => {
     elements.podcastRecordPreview.hidden = true;
     elements.podcastRecordPreview.removeAttribute("src");
     elements.podcastRecordTime.textContent = "00:00";
+    podcastMusicMode = "off";
+    document.querySelectorAll("[data-podcast-music-mode]").forEach((button) => button.classList.toggle("active", button.dataset.podcastMusicMode === "off"));
+    elements.podcastMusicOptions.hidden = true;
+    elements.podcastMusicInput.hidden = true;
     elements.podcastDateInput.value = new Date().toISOString().slice(0, 10);
     updatePodcastFileHints();
     setSync("播客已发布");
     await loadBlog();
   } catch (error) {
-    const message = error.message === "audio too large" ? "音频太大，请换 100MB 以内的文件" : "播客发布失败，请先运行新版 SQL";
+    const message = error.message === "audio too large"
+      ? "音频太大，请换 100MB 以内的文件"
+      : error.message === "music required" ? "请选择背景音乐文件" : "播客发布失败，请先运行新版 SQL";
     setSync(message);
     setMessage(message, "error");
   }
