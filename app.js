@@ -22,6 +22,7 @@ let podcastLikes = [];
 let pendingPodcastRecording = null;
 let podcastMusicMode = "off";
 let cabinArtworks = [];
+let cabinRecordings = [];
 let mimiCareLogs = [];
 let activeCabinArtFilter = "oil";
 let archiveOpen = false;
@@ -874,7 +875,7 @@ async function loadBlog() {
   if (!client) return;
   setSync("同步中");
   try {
-    const [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult, wishResult, lotteryTopicResult, lotteryEntryResult, eventLogResult, podcastResult, podcastCommentResult, podcastLikeResult, cabinArtworkResult, mimiCareResult] = await Promise.all([
+    const [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult, wishResult, lotteryTopicResult, lotteryEntryResult, eventLogResult, podcastResult, podcastCommentResult, podcastLikeResult, cabinArtworkResult, mimiCareResult, cabinRecordingResult] = await Promise.all([
       client.from("blog_posts").select("*").order("created_at", { ascending: false }),
       client.from("blog_comments").select("*").order("created_at", { ascending: true }),
       client.from("blog_accounts").select("id, handle, avatar, role"),
@@ -889,7 +890,8 @@ async function loadBlog() {
       client.from("podcast_comments").select("*").order("created_at", { ascending: true }),
       client.from("podcast_likes").select("*"),
       client.from("cabin_artworks").select("*").order("created_at", { ascending: false }),
-      client.from("mimi_care_logs").select("*").order("created_at", { ascending: false }).limit(60)
+      client.from("mimi_care_logs").select("*").order("created_at", { ascending: false }).limit(60),
+      client.from("cabin_music_recordings").select("*").order("created_at", { ascending: false }).limit(40)
     ]);
     for (const result of [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult]) {
       if (result.error) throw result.error;
@@ -909,6 +911,7 @@ async function loadBlog() {
     podcastLikes = podcastLikeResult.error ? [] : (podcastLikeResult.data || []);
     cabinArtworks = cabinArtworkResult.error ? [] : (cabinArtworkResult.data || []);
     mimiCareLogs = mimiCareResult.error ? [] : (mimiCareResult.data || []);
+    cabinRecordings = cabinRecordingResult.error ? [] : (cabinRecordingResult.data || []);
     profiles = new Map((profileResult.data || []).map((item) => [item.id, { ...item, user_id: item.id }]));
     setSync("云端已同步");
     renderFeed();
@@ -919,6 +922,7 @@ async function loadBlog() {
     renderPodcasts();
     renderCabinGallery();
     renderMimiCareLogs();
+    renderCabinRecordings();
   } catch {
     setSync("需要运行新版 SQL");
     elements.feed.innerHTML = `<div class="empty">新增了栏目历史和临时讨论区。请把新版 supabase-setup.sql 复制到 Supabase 的 SQL Editor 再运行一次。</div>`;
@@ -3362,6 +3366,8 @@ function setupCabinExperience() {
   const image = $("#cabinRoomImage");
   const detailImage = $("#cabinRoomDetail");
   const pendantImage = $("#cabinPendant");
+  const musicStudio = $("#cabinMusicStudio");
+  const gallery = document.querySelector(".cabin-gallery");
   const title = $("#cabinRoomTitle");
   const note = $("#cabinRoomNote");
   const number = $("#cabinRoomNumber");
@@ -3426,12 +3432,20 @@ function setupCabinExperience() {
   document.querySelectorAll("[data-room]").forEach((button) => {
     button.addEventListener("click", () => {
       const room = rooms[button.dataset.room];
-      if (!room) return;
+      const isMusicRoom = button.dataset.room === "music";
+      if (!room && !isMusicRoom) return;
       playFootsteps();
       experience.classList.add("is-walking");
       window.setTimeout(() => experience.classList.remove("is-walking"), 650);
       experience.dataset.cabinRoom = button.dataset.room;
       document.querySelectorAll("[data-room]").forEach((item) => item.classList.toggle("active", item === button));
+      experience.classList.toggle("is-music-room", isMusicRoom);
+      musicStudio.hidden = !isMusicRoom;
+      gallery.hidden = isMusicRoom;
+      if (isMusicRoom) {
+        setLight(false);
+        return;
+      }
       image.src = room.image;
       image.alt = room.alt;
       image.dataset.aspect = room.aspect;
@@ -3453,6 +3467,158 @@ function setupCabinExperience() {
     localStorage.setItem("cabin-treasure-found", dayKey);
   });
   treasureDialog.querySelector(".cabin-treasure-dialog__close").addEventListener("click", () => treasureDialog.close());
+}
+
+function renderCabinRecordings() {
+  const list = $("#cabinRecordingList");
+  if (!list) return;
+  if (!cabinRecordings.length) {
+    list.innerHTML = '<p class="cabin-recordings__empty">还没有作品留在这里。</p>';
+    return;
+  }
+  list.innerHTML = cabinRecordings.map((recording) => {
+    const author = profiles.get(recording.owner_id);
+    return `<article><div><strong>${escapeHtml(recording.title)}</strong><small>${escapeHtml(author?.handle || recording.performer_name || "访客")} · ${formatDate(recording.created_at)}</small></div><audio controls preload="none" src="${recording.audio_url}"></audio></article>`;
+  }).join("");
+}
+
+function setupCabinMusicRoom() {
+  const studio = $("#cabinMusicStudio");
+  if (!studio) return;
+  const startButton = $("#cabinRecordStart");
+  const stopButton = $("#cabinRecordStop");
+  const saveButton = $("#cabinRecordSave");
+  const timeLabel = $("#cabinRecordTime");
+  const preview = $("#cabinRecordPreview");
+  const titleInput = $("#cabinRecordingTitle");
+  let context = null;
+  let master = null;
+  let recordDestination = null;
+  let recorder = null;
+  let chunks = [];
+  let pendingRecording = null;
+  let startedAt = 0;
+  let timer = null;
+
+  const ensureAudio = async () => {
+    if (!context) {
+      context = new (window.AudioContext || window.webkitAudioContext)();
+      master = context.createGain();
+      master.gain.value = 0.72;
+      recordDestination = context.createMediaStreamDestination();
+      master.connect(context.destination);
+      master.connect(recordDestination);
+    }
+    if (context.state === "suspended") await context.resume();
+  };
+  const animateButton = (button) => {
+    button.classList.remove("is-playing");
+    void button.offsetWidth;
+    button.classList.add("is-playing");
+    window.setTimeout(() => button.classList.remove("is-playing"), 500);
+  };
+  const playPiano = async (frequency, button) => {
+    await ensureAudio();
+    const now = context.currentTime;
+    [1, 2, 3.01].forEach((multiple, index) => {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.type = index === 0 ? "triangle" : "sine";
+      oscillator.frequency.value = frequency * multiple;
+      gain.gain.setValueAtTime(index === 0 ? 0.22 : 0.055 / index, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.2 - index * 0.35);
+      oscillator.connect(gain).connect(master);
+      oscillator.start(now);
+      oscillator.stop(now + 2.3);
+    });
+    animateButton(button);
+  };
+  const playBowl = async (frequency, button) => {
+    await ensureAudio();
+    const now = context.currentTime;
+    [1, 2.71, 4.16, 5.43].forEach((multiple, index) => {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.type = "sine";
+      oscillator.frequency.value = frequency * multiple;
+      gain.gain.setValueAtTime(0.12 / (index + 1), now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 7 - index * 0.75);
+      oscillator.connect(gain).connect(master);
+      oscillator.start(now);
+      oscillator.stop(now + 7.2);
+    });
+    animateButton(button);
+  };
+  const playGuitar = async (frequency, button) => {
+    await ensureAudio();
+    const length = Math.max(2, Math.round(context.sampleRate / frequency));
+    const buffer = context.createBuffer(1, context.sampleRate * 3, context.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let index = 0; index < length; index += 1) data[index] = Math.random() * 2 - 1;
+    for (let index = length; index < data.length; index += 1) data[index] = 0.994 * 0.5 * (data[index - length] + data[index - length + 1]);
+    const source = context.createBufferSource();
+    const gain = context.createGain();
+    gain.gain.value = 0.34;
+    source.buffer = buffer;
+    source.connect(gain).connect(master);
+    source.start();
+    animateButton(button);
+  };
+
+  studio.querySelectorAll("[data-note]").forEach((button) => button.addEventListener("click", () => playPiano(Number(button.dataset.note), button)));
+  studio.querySelectorAll("[data-bowl]").forEach((button) => button.addEventListener("click", () => playBowl(Number(button.dataset.bowl), button)));
+  studio.querySelectorAll("[data-string]").forEach((button) => button.addEventListener("click", () => playGuitar(Number(button.dataset.string), button)));
+
+  startButton.addEventListener("click", async () => {
+    await ensureAudio();
+    if (!window.MediaRecorder) return setMessage("当前浏览器可以演奏，但不支持房间录音。", "error");
+    const preferredType = ["audio/webm;codecs=opus", "audio/mp4", "audio/webm"].find((type) => MediaRecorder.isTypeSupported(type)) || "";
+    recorder = preferredType ? new MediaRecorder(recordDestination.stream, { mimeType: preferredType }) : new MediaRecorder(recordDestination.stream);
+    chunks = [];
+    recorder.addEventListener("dataavailable", (event) => { if (event.data.size) chunks.push(event.data); });
+    recorder.addEventListener("stop", () => {
+      const mimeType = recorder.mimeType || "audio/webm";
+      const extension = mimeType.includes("mp4") ? "m4a" : "webm";
+      pendingRecording = new File(chunks, `cabin-music-${Date.now()}.${extension}`, { type: mimeType });
+      preview.src = URL.createObjectURL(pendingRecording);
+      preview.hidden = false;
+      saveButton.disabled = false;
+      startButton.disabled = false;
+      stopButton.disabled = true;
+      stopButton.classList.remove("is-recording");
+      window.clearInterval(timer);
+    });
+    recorder.start(300);
+    startedAt = Date.now();
+    timeLabel.textContent = "00:00";
+    timer = window.setInterval(() => { timeLabel.textContent = formatPodcastTime((Date.now() - startedAt) / 1000); }, 500);
+    startButton.disabled = true;
+    stopButton.disabled = false;
+    stopButton.classList.add("is-recording");
+  });
+  stopButton.addEventListener("click", () => { if (recorder?.state === "recording") recorder.stop(); });
+  saveButton.addEventListener("click", async () => {
+    if (!profile) return setMessage("请先登录 ID，再把作品留在乐器房。", "error");
+    if (!pendingRecording) return;
+    const title = titleInput.value.trim() || `即兴片段 ${new Date().toLocaleDateString("zh-CN")}`;
+    setSync("正在保存乐器房作品");
+    try {
+      const audioUrl = await uploadPodcastAudio(pendingRecording, "cabin-music");
+      const { error } = await client.rpc("create_cabin_music_recording", { session_token: sessionToken, title_input: title, audio_url_input: audioUrl });
+      if (error) throw error;
+      pendingRecording = null;
+      preview.hidden = true;
+      preview.removeAttribute("src");
+      saveButton.disabled = true;
+      titleInput.value = "";
+      timeLabel.textContent = "00:00";
+      await loadBlog();
+      setSync("作品已经留在乐器房");
+    } catch {
+      setSync("保存失败，请先运行乐器房新版 SQL");
+    }
+  });
+  renderCabinRecordings();
 }
 
 const defaultCabinArtworks = [
@@ -3531,6 +3697,7 @@ setCategory("文章");
 renderMysteryBox();
 setupBlogBookmarks();
 setupCabinExperience();
+setupCabinMusicRoom();
 renderCabinGallery();
 setupMimiPet();
 setupAmbientSounds();

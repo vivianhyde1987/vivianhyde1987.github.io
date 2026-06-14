@@ -1059,6 +1059,159 @@ label {
   animation: cabin-step 220ms ease-in-out 3;
 }
 
+.cabin-experience.is-music-room .cabin-room {
+  display: none;
+}
+
+.cabin-music-studio {
+  margin-top: 14px;
+  padding: 18px;
+  border: 1px solid rgba(211, 174, 112, 0.2);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 72% 18%, rgba(186, 111, 50, 0.13), transparent 32%),
+    repeating-linear-gradient(90deg, #24160f 0 42px, #1d120c 43px 46px);
+  color: #edd2ab;
+}
+
+.music-studio__head,
+.cabin-recordings__head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.music-studio__head small { color: #9f7042; letter-spacing: 0.12em; }
+.music-studio__head h3 { margin: 2px 0 0; color: #f3d5a8; }
+.music-studio__head span,
+.cabin-recordings__head span { color: rgba(240, 218, 185, 0.46); font-size: 0.74rem; }
+
+.music-instruments {
+  display: grid;
+  grid-template-columns: 1.5fr 0.8fr 1fr;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.instrument {
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid rgba(211, 174, 112, 0.14);
+  border-radius: 6px;
+  background: rgba(7, 4, 3, 0.46);
+}
+
+.instrument h4 { margin: 0 0 11px; color: rgba(248, 224, 188, 0.72); font-size: 0.82rem; }
+
+.piano-keys {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(24px, 1fr));
+  align-items: start;
+  height: 136px;
+  overflow: hidden;
+}
+
+.piano-keys button {
+  position: relative;
+  min-width: 0;
+  min-height: 132px;
+  padding: 0 2px 8px;
+  align-items: end;
+  border: 1px solid #7e6d5d;
+  border-radius: 0 0 4px 4px;
+  background: linear-gradient(90deg, #e8e0d5, #fffdf8 48%, #c9bfb1);
+  color: #3b2b22;
+  font-size: 0.62rem;
+  box-shadow: inset 0 -10px 14px rgba(82, 54, 36, 0.12);
+}
+
+.piano-keys button.black {
+  z-index: 2;
+  min-height: 84px;
+  margin-right: -11px;
+  margin-left: -11px;
+  border-color: #080707;
+  background: linear-gradient(90deg, #0b0908, #33271f 55%, #090706);
+  color: #dec49f;
+}
+
+.piano-keys button.is-playing { transform: translateY(4px); filter: brightness(1.2); }
+
+.singing-bowls {
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: 8px;
+  min-height: 136px;
+}
+
+.singing-bowls button {
+  width: 72px;
+  min-height: 48px;
+  padding: 0 5px;
+  border: 2px solid #c99951;
+  border-radius: 6px 6px 50% 50%;
+  background: radial-gradient(circle at 50% 18%, #f3c66e, #936124 58%, #392312);
+  color: #fff0c9;
+  font-size: 0.68rem;
+  box-shadow: inset 0 7px 9px rgba(255, 235, 174, 0.25), 0 8px 14px rgba(0, 0, 0, 0.36);
+}
+
+.singing-bowls button:nth-child(1) { width: 82px; min-height: 58px; }
+.singing-bowls button:nth-child(3) { width: 62px; min-height: 42px; }
+.singing-bowls button.is-playing { animation: bowl-ring 520ms ease-in-out; }
+
+.guitar-strings {
+  display: grid;
+  gap: 7px;
+  min-height: 136px;
+  padding: 10px 8px;
+  border-radius: 44% 44% 8px 8px;
+  background: linear-gradient(90deg, #74431f, #ba7b3d 46%, #633719);
+  box-shadow: inset 0 0 0 3px #3b2113;
+}
+
+.guitar-strings button {
+  position: relative;
+  min-height: 12px;
+  padding: 0 6px;
+  border: 0;
+  background: linear-gradient(180deg, transparent 44%, #d4c1a5 45% 55%, transparent 56%);
+  color: #f6dfbd;
+  text-align: right;
+  font-size: 0.65rem;
+}
+
+.guitar-strings button.is-playing { transform: translateX(4px); filter: brightness(1.6); }
+
+@keyframes bowl-ring { 25% { transform: rotate(-2deg); } 75% { transform: rotate(2deg); } }
+
+.music-recorder {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto auto auto;
+  gap: 8px;
+  align-items: center;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid rgba(211, 174, 112, 0.14);
+  background: rgba(5, 3, 2, 0.4);
+}
+
+.music-recorder audio { grid-column: 1 / -2; width: 100%; height: 34px; }
+.music-recorder button { min-height: 38px; }
+#cabinRecordStop.is-recording { background: #9e2945; color: #fff; }
+#cabinRecordTime { color: #d9aa68; font-variant-numeric: tabular-nums; }
+
+.cabin-recordings { margin-top: 15px; }
+.cabin-recordings__head { margin-bottom: 9px; }
+#cabinRecordingList { display: grid; gap: 8px; }
+#cabinRecordingList article { display: grid; grid-template-columns: minmax(130px, 0.6fr) 1fr; gap: 10px; align-items: center; padding: 9px; background: rgba(255,255,255,0.035); }
+#cabinRecordingList article div { display: grid; }
+#cabinRecordingList small { color: rgba(240,218,185,0.43); font-size: 0.68rem; }
+#cabinRecordingList audio { width: 100%; height: 34px; }
+.cabin-recordings__empty { color: rgba(240,218,185,0.42); font-size: 0.75rem; }
+
 @keyframes cabin-step {
   50% { transform: scale(1.025) translateY(2px); }
 }
@@ -1074,7 +1227,7 @@ label {
   }
 
   .cabin-map {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 6px;
     padding: 10px;
     border-right: 0;
@@ -1137,6 +1290,15 @@ label {
     border-width: 7px;
     padding: 5px;
   }
+
+  .music-instruments { grid-template-columns: 1fr; }
+  .piano-keys { height: 118px; }
+  .piano-keys button { min-height: 114px; }
+  .piano-keys button.black { min-height: 72px; }
+  .music-recorder { grid-template-columns: 1fr 1fr; }
+  .music-recorder input { grid-column: 1 / -1; }
+  .music-recorder audio { grid-column: 1 / -1; }
+  #cabinRecordingList article { grid-template-columns: 1fr; }
 }
 
 .podcast-form {

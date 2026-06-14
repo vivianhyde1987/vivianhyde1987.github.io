@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Rose & Rainbow Blog</title>
-    <link rel="stylesheet" href="styles.css?v=mimi-walk-cycle-cabin-layout-v3-20260614" />
+    <link rel="stylesheet" href="styles.css?v=playable-music-room-v1-20260614" />
   </head>
   <body>
     <div class="shell">
@@ -323,6 +323,7 @@
                 <button type="button" data-room="flowers"><span>花房</span><small>03</small></button>
                 <button type="button" data-room="hearth"><span>炉边</span><small>04</small></button>
                 <button type="button" data-room="child"><span>儿童房</span><small>05</small></button>
+                <button type="button" data-room="music"><span>乐器房</span><small>06</small></button>
                 <div class="cabin-footprints" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
               </nav>
               <div class="cabin-room">
@@ -342,6 +343,22 @@
                 </div>
               </div>
             </div>
+            <section id="cabinMusicStudio" class="cabin-music-studio" hidden aria-label="可演奏乐器房">
+              <div class="music-studio__head"><div><small>ROOM 06</small><h3>夜色乐器房</h3></div><span>钢琴 · 颂钵 · 吉他</span></div>
+              <div class="music-instruments">
+                <section class="instrument instrument--piano"><h4>钢琴</h4><div class="piano-keys" aria-label="钢琴键盘">
+                  <button type="button" data-note="261.63"><span>C</span></button><button class="black" type="button" data-note="277.18"><span>C♯</span></button><button type="button" data-note="293.66"><span>D</span></button><button class="black" type="button" data-note="311.13"><span>D♯</span></button><button type="button" data-note="329.63"><span>E</span></button><button type="button" data-note="349.23"><span>F</span></button><button class="black" type="button" data-note="369.99"><span>F♯</span></button><button type="button" data-note="392"><span>G</span></button><button class="black" type="button" data-note="415.3"><span>G♯</span></button><button type="button" data-note="440"><span>A</span></button><button class="black" type="button" data-note="466.16"><span>A♯</span></button><button type="button" data-note="493.88"><span>B</span></button>
+                </div></section>
+                <section class="instrument instrument--bowls"><h4>颂钵</h4><div class="singing-bowls"><button type="button" data-bowl="174">低音钵</button><button type="button" data-bowl="285">中音钵</button><button type="button" data-bowl="396">高音钵</button></div></section>
+                <section class="instrument instrument--guitar"><h4>吉他</h4><div class="guitar-strings" aria-label="吉他琴弦"><button type="button" data-string="82.41">E</button><button type="button" data-string="110">A</button><button type="button" data-string="146.83">D</button><button type="button" data-string="196">G</button><button type="button" data-string="246.94">B</button><button type="button" data-string="329.63">e</button></div></section>
+              </div>
+              <div class="music-recorder">
+                <input id="cabinRecordingTitle" maxlength="60" placeholder="给这段即兴起一个名字" />
+                <button id="cabinRecordStart" type="button">● 开始录音</button><button id="cabinRecordStop" type="button" disabled>■ 完成</button><span id="cabinRecordTime">00:00</span>
+                <audio id="cabinRecordPreview" controls hidden></audio><button id="cabinRecordSave" type="button" disabled>保存作品</button>
+              </div>
+              <div class="cabin-recordings"><div class="cabin-recordings__head"><strong>留在房间里的作品</strong><span>访客即兴录音</span></div><div id="cabinRecordingList"></div></div>
+            </section>
             <section class="cabin-gallery" aria-label="家庭画廊">
               <div class="cabin-gallery__head"><div><small>FAMILY GALLERY</small><h3>屋里的画</h3></div><span>按风格慢慢看</span></div>
               <div id="cabinGalleryFilters" class="cabin-gallery__filters">
@@ -488,6 +505,6 @@
       <p id="cabinTreasureMessage"></p>
     </dialog>
 
-    <script src="app.js?v=mimi-walk-cycle-cabin-layout-v3-20260614"></script>
+    <script src="app.js?v=playable-music-room-v1-20260614"></script>
   </body>
 </html>
