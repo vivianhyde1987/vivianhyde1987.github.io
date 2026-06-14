@@ -3083,6 +3083,7 @@ function setupBlogBookmarks() {
     { selector: ".event-log", label: "健康" },
     { selector: ".sleep-panel", label: "睡眠" },
     { selector: ".podcast-panel", label: "播客" },
+    { selector: ".cabin-panel", label: "木屋" },
     { selector: ".composer", label: "写文" },
     { selector: ".chat", label: "讨论" }
   ];
@@ -3127,6 +3128,75 @@ function setupBlogBookmarks() {
   });
 }
 
+function setupCabinExperience() {
+  const experience = document.querySelector(".cabin-experience");
+  if (!experience) return;
+  const image = $("#cabinRoomImage");
+  const detailImage = $("#cabinRoomDetail");
+  const title = $("#cabinRoomTitle");
+  const note = $("#cabinRoomNote");
+  const number = $("#cabinRoomNumber");
+  const lightButton = $("#cabinLightToggle");
+  const rooms = {
+    studio: { number: "ROOM 01", title: "夜色画室", note: "灯亮以后，街巷里的星星才慢慢出现。", image: "assets/cabin/painting-night.jpg", alt: "夜色街巷油画", detail: "assets/cabin/desk-lamp.jpg", detailAlt: "画室里的台灯" },
+    water: { number: "ROOM 02", title: "水边房间", note: "胡桃木墙上，水面把光留在了睡莲之间。", image: "assets/cabin/painting-water.jpg", alt: "睡莲水面油画", detail: "assets/cabin/wood-lamp.jpg", detailAlt: "木质吊灯" },
+    flowers: { number: "ROOM 03", title: "花与书房", note: "花、旧书和绿色墙面，在夜里有自己的呼吸。", image: "assets/cabin/painting-flowers.jpg", alt: "花与书静物油画", detail: "assets/cabin/flowers.jpg", detailAlt: "房间里的花束" },
+    hearth: { number: "ROOM 04", title: "炉边角落", note: "灯和薄雾守着这个角落，像一间一直有人等候的小屋。", image: "assets/cabin/hearth.jpg", alt: "暖色灯光与加湿器角落", detail: "assets/cabin/wood-lamp.jpg", detailAlt: "炉边的木质吊灯" }
+  };
+  let lightOn = false;
+  let footstepContext = null;
+
+  const playFootsteps = () => {
+    try {
+      footstepContext ||= new (window.AudioContext || window.webkitAudioContext)();
+      if (footstepContext.state === "suspended") footstepContext.resume();
+      [0, 0.18, 0.38].forEach((delay, index) => {
+        const now = footstepContext.currentTime + delay;
+        const buffer = footstepContext.createBuffer(1, Math.floor(footstepContext.sampleRate * 0.12), footstepContext.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < data.length; i += 1) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 3);
+        const source = footstepContext.createBufferSource();
+        const filter = footstepContext.createBiquadFilter();
+        const gain = footstepContext.createGain();
+        source.buffer = buffer;
+        filter.type = "lowpass";
+        filter.frequency.value = 190 + index * 25;
+        gain.gain.value = 0.09;
+        source.connect(filter).connect(gain).connect(footstepContext.destination);
+        source.start(now);
+      });
+    } catch {}
+  };
+
+  const setLight = (value) => {
+    lightOn = value;
+    experience.classList.toggle("is-lit", lightOn);
+    lightButton.setAttribute("aria-pressed", String(lightOn));
+    lightButton.querySelector("strong").textContent = lightOn ? "关灯" : "开灯";
+  };
+
+  document.querySelectorAll("[data-room]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const room = rooms[button.dataset.room];
+      if (!room) return;
+      playFootsteps();
+      experience.classList.add("is-walking");
+      window.setTimeout(() => experience.classList.remove("is-walking"), 650);
+      experience.dataset.cabinRoom = button.dataset.room;
+      document.querySelectorAll("[data-room]").forEach((item) => item.classList.toggle("active", item === button));
+      image.src = room.image;
+      image.alt = room.alt;
+      detailImage.src = room.detail;
+      detailImage.alt = room.detailAlt;
+      number.textContent = room.number;
+      title.textContent = room.title;
+      note.textContent = room.note;
+      setLight(false);
+    });
+  });
+  lightButton.addEventListener("click", () => setLight(!lightOn));
+}
+
 renderAvatarPreview();
 elements.bodyCount.textContent = `${elements.bodyInput.value.length} / ${elements.bodyInput.maxLength} 字`;
 updateMediaClearButtons();
@@ -3136,6 +3206,7 @@ switchAuthTab("login");
 setCategory("文章");
 renderMysteryBox();
 setupBlogBookmarks();
+setupCabinExperience();
 setupMimiDrag();
 setupAmbientSounds();
 refreshSession();
