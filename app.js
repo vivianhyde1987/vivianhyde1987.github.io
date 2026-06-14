@@ -3044,6 +3044,7 @@ function setupMimiPet() {
   const catButton = pet.querySelector(".mimi-pet__cat");
   const catImage = catButton.querySelector("img");
   const panel = pet.querySelector(".mimi-pet__panel");
+  const petRoom = document.querySelector("#cabinPetRoom");
   const bubble = pet.querySelector(".mimi-pet__bubble");
   const message = pet.querySelector(".mimi-pet__message");
   const storageKey = "mimi-pet-care-v1";
@@ -3064,7 +3065,7 @@ function setupMimiPet() {
   let audioContext = null;
   let moveTimer = null;
   let walkFrameTimer = null;
-  let lastX = Math.max(18, window.innerWidth - 150);
+  let lastX = 0;
   const realPurr = new Audio("mimi-purr.mp3");
   realPurr.preload = "metadata";
   realPurr.volume = 0.78;
@@ -3139,11 +3140,18 @@ function setupMimiPet() {
     }
   };
   const move = () => {
-    if (!panel.hidden || pet.classList.contains("is-held")) return;
-    const safeWidth = Math.max(40, window.innerWidth - 150);
-    const safeHeight = Math.max(120, window.innerHeight - 230);
-    const x = 18 + Math.random() * safeWidth;
-    const y = 90 + Math.random() * safeHeight;
+    if (!pet.classList.contains("is-in-pet-room") || !petRoom || !panel.hidden || pet.classList.contains("is-held")) return;
+    const safeWidth = Math.max(70, petRoom.clientWidth - 150);
+    const safeHeight = Math.max(120, petRoom.clientHeight - 155);
+    const restingSpots = [
+      { x: safeWidth * 0.04, y: safeHeight * 0.2 },
+      { x: safeWidth * 0.66, y: safeHeight * 0.78 },
+      { x: safeWidth * 0.38, y: safeHeight * 0.64 },
+      { x: safeWidth * 0.94, y: safeHeight * 0.16 }
+    ];
+    const spot = restingSpots[Math.floor(Math.random() * restingSpots.length)];
+    const x = 18 + spot.x;
+    const y = 36 + spot.y;
     pet.style.setProperty("--mimi-face", x < lastX ? "-1" : "1");
     lastX = x;
     pet.dataset.pose = "walk";
@@ -3153,7 +3161,7 @@ function setupMimiPet() {
     walkFrameTimer = window.setInterval(() => {
       walkFrame = (walkFrame + 1) % walkFrames.length;
       catImage.src = walkFrames[walkFrame];
-    }, 165);
+    }, 230);
     pet.style.setProperty("--mimi-x", `${x}px`);
     pet.style.setProperty("--mimi-y", `${y}px`);
     pet.classList.add("is-walking");
@@ -3166,9 +3174,9 @@ function setupMimiPet() {
       catImage.src = poses[0];
       save();
       if (Math.random() < 0.08) sound("meow");
-    }, 2600);
+    }, 4200);
   };
-  const scheduleMove = (delay = 8000 + Math.random() * 8000) => {
+  const scheduleMove = (delay = 16000 + Math.random() * 14000) => {
     window.clearTimeout(moveTimer);
     moveTimer = window.setTimeout(() => { move(); scheduleMove(); }, delay);
   };
@@ -3196,12 +3204,20 @@ function setupMimiPet() {
       await saveMimiCareLog(action);
     });
   });
+  petRoom?.querySelector(".pet-room__wand")?.addEventListener("click", () => {
+    pet.querySelector('[data-mimi-action="wand"]')?.click();
+  });
+  pet.addEventListener("mimi-enter-room", () => {
+    pet.dataset.pose = "sit";
+    catImage.src = poses[0];
+    window.setTimeout(move, 1800);
+  });
   pet.dataset.pose = "sit";
   catImage.src = poses[0];
   render();
-  scheduleMove(3500);
+  scheduleMove(6000);
   document.body.append(panel);
-  window.addEventListener("resize", () => move());
+  window.addEventListener("resize", () => { if (pet.classList.contains("is-in-pet-room")) move(); });
 }
 
 const mimiCareLabels = {
@@ -3367,6 +3383,7 @@ function setupCabinExperience() {
   const detailImage = $("#cabinRoomDetail");
   const pendantImage = $("#cabinPendant");
   const musicStudio = $("#cabinMusicStudio");
+  const petRoom = $("#cabinPetRoom");
   const gallery = document.querySelector(".cabin-gallery");
   const title = $("#cabinRoomTitle");
   const note = $("#cabinRoomNote");
@@ -3433,16 +3450,31 @@ function setupCabinExperience() {
     button.addEventListener("click", () => {
       const room = rooms[button.dataset.room];
       const isMusicRoom = button.dataset.room === "music";
-      if (!room && !isMusicRoom) return;
+      const isPetRoom = button.dataset.room === "pet";
+      if (!room && !isMusicRoom && !isPetRoom) return;
       playFootsteps();
       experience.classList.add("is-walking");
       window.setTimeout(() => experience.classList.remove("is-walking"), 650);
       experience.dataset.cabinRoom = button.dataset.room;
       document.querySelectorAll("[data-room]").forEach((item) => item.classList.toggle("active", item === button));
       experience.classList.toggle("is-music-room", isMusicRoom);
+      experience.classList.toggle("is-pet-room", isPetRoom);
       musicStudio.hidden = !isMusicRoom;
-      gallery.hidden = isMusicRoom;
-      if (isMusicRoom) {
+      petRoom.hidden = !isPetRoom;
+      gallery.hidden = isMusicRoom || isPetRoom;
+      const mimi = document.querySelector(".mimi-pet");
+      const mimiPanel = document.querySelector(".mimi-pet__panel");
+      if (isPetRoom && mimi) {
+        petRoom.append(mimi);
+        mimi.classList.add("is-in-pet-room");
+        mimi.style.setProperty("--mimi-x", "46px");
+        mimi.style.setProperty("--mimi-y", "82px");
+        mimi.dispatchEvent(new CustomEvent("mimi-enter-room"));
+      } else if (mimi) {
+        mimi.classList.remove("is-in-pet-room", "is-walking", "is-held");
+        if (mimiPanel) mimiPanel.hidden = true;
+      }
+      if (isMusicRoom || isPetRoom) {
         setLight(false);
         return;
       }

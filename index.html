@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Rose & Rainbow Blog</title>
-    <link rel="stylesheet" href="styles.css?v=playable-music-room-v1-20260614" />
+    <link rel="stylesheet" href="styles.css?v=cabin-pet-room-v3-20260614" />
   </head>
   <body>
     <div class="shell">
@@ -324,6 +324,7 @@
                 <button type="button" data-room="hearth"><span>炉边</span><small>04</small></button>
                 <button type="button" data-room="child"><span>儿童房</span><small>05</small></button>
                 <button type="button" data-room="music"><span>乐器房</span><small>06</small></button>
+                <button type="button" data-room="pet"><span>宠物房</span><small>07</small></button>
                 <div class="cabin-footprints" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
               </nav>
               <div class="cabin-room">
@@ -358,6 +359,17 @@
                 <audio id="cabinRecordPreview" controls hidden></audio><button id="cabinRecordSave" type="button" disabled>保存作品</button>
               </div>
               <div class="cabin-recordings"><div class="cabin-recordings__head"><strong>留在房间里的作品</strong><span>访客即兴录音</span></div><div id="cabinRecordingList"></div></div>
+            </section>
+            <section id="cabinPetRoom" class="cabin-pet-room" hidden aria-label="眯眯的宠物房">
+              <div class="pet-room__window"><span class="pet-room__moon"></span><i></i><i></i><i></i></div>
+              <div class="pet-room__cat-tree" aria-label="猫爬架"><span class="tree-post tree-post--one"></span><span class="tree-post tree-post--two"></span><span class="tree-platform tree-platform--one"></span><span class="tree-platform tree-platform--two"></span><span class="tree-cave"></span></div>
+              <div class="pet-room__bed" aria-label="猫窝"><span>猫窝</span></div>
+              <div class="pet-room__litter" aria-label="猫砂盆"><span>猫砂盆</span></div>
+              <div class="pet-room__cardboard" aria-label="瓦楞纸和猫抓板"><span>瓦楞纸</span><i></i></div>
+              <div class="pet-room__bowls" aria-label="猫粮盆和水盆"><span>粮</span><span>水</span></div>
+              <button class="pet-room__wand" type="button" aria-label="拿起逗猫棒"><i></i><span></span></button>
+              <div class="pet-room__rug"></div>
+              <div class="pet-room__title"><small>ROOM 07</small><h3>眯眯的房间</h3><p>窗台有月光，角落里留着她熟悉的窝。</p></div>
             </section>
             <section class="cabin-gallery" aria-label="家庭画廊">
               <div class="cabin-gallery__head"><div><small>FAMILY GALLERY</small><h3>屋里的画</h3></div><span>按风格慢慢看</span></div>
@@ -505,6 +517,6 @@
       <p id="cabinTreasureMessage"></p>
     </dialog>
 
-    <script src="app.js?v=playable-music-room-v1-20260614"></script>
+    <script src="app.js?v=cabin-pet-room-v3-20260614"></script>
   </body>
 </html>
