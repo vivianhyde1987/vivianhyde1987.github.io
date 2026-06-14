@@ -527,6 +527,145 @@ label {
   display: none;
 }
 
+/* Long-term blog materials: coordinated walnut cabin layout. */
+.cabin-room__scene {
+  --room-accent: #9b6a3f;
+  --room-floor: #2d190f;
+  --painting-w: 34%;
+  --painting-h: 67%;
+  --painting-x: 9%;
+  --painting-y: 6%;
+  --prop-w: 17%;
+  --prop-x: 76%;
+  --prop-y: 14%;
+  --plant-w: 18%;
+  --plant-x: 54%;
+  --plant-y: 13%;
+  --accent-w: 0%;
+  --accent-x: 0%;
+  --accent-y: 0%;
+  --pendant-w: 28%;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 72% 31%, color-mix(in srgb, var(--room-accent) 24%, transparent), transparent 38%),
+    linear-gradient(90deg, #160d09, #2a170e 46%, #160c08);
+}
+
+.cabin-room__scene::before {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  height: 25%;
+  border-top: 1px solid rgba(241, 200, 139, 0.11);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.025), transparent 18%),
+    repeating-linear-gradient(90deg, var(--room-floor) 0 72px, color-mix(in srgb, var(--room-floor) 80%, #090504) 73px 77px);
+  box-shadow: 0 -22px 45px rgba(0,0,0,.34), inset 0 18px 34px rgba(0,0,0,.22);
+  content: "";
+}
+
+.cabin-room__scene::after {
+  position: absolute;
+  right: 4%;
+  bottom: 4%;
+  left: 4%;
+  z-index: 1;
+  height: 15%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, color-mix(in srgb, var(--room-accent) 22%, transparent), transparent 68%);
+  filter: blur(10px);
+  content: "";
+  pointer-events: none;
+}
+
+.cabin-wall-lines { z-index: 0; }
+
+.cabin-room__scene .cabin-room__painting,
+.cabin-room__painting[data-aspect="portrait"],
+.cabin-room__painting[data-aspect="landscape"] {
+  top: var(--painting-y);
+  left: var(--painting-x);
+  z-index: 2;
+  width: var(--painting-w);
+  height: var(--painting-h);
+  transform: perspective(900px) rotateY(1.1deg) rotate(-0.35deg) translateY(4px);
+}
+
+.cabin-room__scene .cabin-room__prop,
+.cabin-room__prop[data-prop="flowers"] {
+  right: auto;
+  bottom: var(--prop-y);
+  left: var(--prop-x);
+  width: var(--prop-w);
+  height: 38%;
+}
+
+.cabin-room__plant,
+.cabin-room__accent {
+  position: absolute;
+  z-index: 3;
+  object-fit: contain;
+  object-position: center bottom;
+  opacity: .08;
+  filter: brightness(.34) saturate(.55);
+  transform: translateY(8px);
+  transition: opacity 650ms ease, filter 650ms ease, transform 800ms ease;
+}
+
+.cabin-room__plant { bottom: var(--plant-y); left: var(--plant-x); width: var(--plant-w); max-height: 43%; }
+.cabin-room__accent { bottom: var(--accent-y); left: var(--accent-x); width: var(--accent-w); max-height: 46%; }
+.cabin-room__pendant { width: var(--pendant-w); }
+
+.cabin-experience.is-lit .cabin-room__plant,
+.cabin-experience.is-lit .cabin-room__accent {
+  opacity: .92;
+  filter: brightness(.9) saturate(.78) drop-shadow(0 16px 18px rgba(0,0,0,.42));
+  transform: translateY(0);
+}
+
+.cabin-experience.is-lit .cabin-room__scene .cabin-room__painting {
+  transform: perspective(900px) rotateY(1.1deg) rotate(-0.35deg) translateY(0);
+}
+
+.cabin-experience[data-cabin-theme="water"] .cabin-wall-lines { background-color: rgba(48, 74, 70, .16); }
+.cabin-experience[data-cabin-theme="flowers"] .cabin-wall-lines { background-color: rgba(82, 93, 62, .14); }
+.cabin-experience[data-cabin-theme="hearth"] .cabin-wall-lines { background-color: rgba(112, 61, 26, .16); }
+.cabin-experience[data-cabin-theme="child"] .cabin-wall-lines { background-color: rgba(117, 88, 50, .14); }
+
+.mimi-pet.is-idle-breathing .mimi-pet__cat img,
+.mimi-pet:not(.is-walking):not(.is-playing):not(.is-purring):not(.is-stretching):not(.is-turning) .mimi-pet__cat img {
+  animation: mimi-idle-breathe 3.8s ease-in-out infinite;
+}
+
+.mimi-pet.is-playing .mimi-pet__cat { animation: mimi-play-soft 520ms ease-in-out 4; }
+.mimi-pet.is-stretching .mimi-pet__cat { animation: mimi-stretch 1.45s cubic-bezier(.22,.72,.26,1) both; }
+.mimi-pet.is-turning .mimi-pet__cat { animation: mimi-turn 1.25s ease-in-out both; }
+
+@keyframes mimi-play-soft {
+  35% { transform: translate(8px, -7px) rotate(-3deg) scale(1.035); }
+  72% { transform: translate(-3px, 1px) rotate(2deg) scale(.99); }
+}
+
+@keyframes mimi-stretch {
+  0%, 100% { transform: scale(1) translateY(0); }
+  45% { transform: scaleX(1.08) scaleY(.91) translateY(7px); }
+  72% { transform: scaleX(1.03) scaleY(1.025) translateY(-2px); }
+}
+
+@keyframes mimi-turn {
+  0%, 100% { transform: rotate(0) translateX(0); }
+  40% { transform: rotate(-3deg) translateX(-4px); }
+  70% { transform: rotate(2deg) translateX(3px); }
+}
+
+@media (max-width: 680px) {
+  .cabin-room__plant { max-height: 34%; }
+  .cabin-room__accent { max-height: 35%; }
+  .cabin-room__scene .cabin-room__prop { height: 31%; }
+}
+
 .cabin-panel.bookmark-panel {
   width: min(940px, calc(100vw - 40px));
 }

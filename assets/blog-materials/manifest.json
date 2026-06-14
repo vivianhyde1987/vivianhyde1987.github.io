@@ -1,0 +1,779 @@
+{
+  "version": "codex-blog-materials-v1",
+  "basePath": "assets/blog-materials",
+  "style": "transparent light-realistic vector illustration, low-saturation warm palette, mid-century walnut blog, soft edges, preserve real object features",
+  "assets": [
+    {
+      "id": "painting-water-lilies",
+      "title": "睡莲装框画",
+      "type": "image",
+      "category": "paintings",
+      "role": "water.painting",
+      "src": "assets/blog-materials/vector/paintings/painting-water-lilies-walnut-frame.png",
+      "thumb": "assets/blog-materials/thumbs/painting-water-lilies-walnut-frame.webp",
+      "original": "assets/blog-materials/original/source-03-0d44dff84e28.jpg",
+      "style": "walnut-frame vector-style raster asset",
+      "status": "ready",
+      "tags": [
+        "小木屋",
+        "水边房间",
+        "画廊",
+        "胡桃木",
+        "睡莲"
+      ]
+    },
+    {
+      "id": "painting-flower-vase-book",
+      "title": "花瓶与书装框画",
+      "type": "image",
+      "category": "paintings",
+      "role": "flowers.painting",
+      "src": "assets/blog-materials/vector/paintings/painting-flower-vase-book-walnut-frame.png",
+      "thumb": "assets/blog-materials/thumbs/painting-flower-vase-book-walnut-frame.webp",
+      "original": "assets/blog-materials/original/source-25-90ea265a299f.jpg",
+      "style": "walnut-frame vector-style raster asset",
+      "status": "ready",
+      "tags": [
+        "花房",
+        "画廊",
+        "静物",
+        "胡桃木"
+      ]
+    },
+    {
+      "id": "painting-night-cafe-street",
+      "title": "夜晚咖啡街景装框画",
+      "type": "image",
+      "category": "paintings",
+      "role": "studio.painting",
+      "src": "assets/blog-materials/vector/paintings/painting-night-cafe-street-walnut-frame.png",
+      "thumb": "assets/blog-materials/thumbs/painting-night-cafe-street-walnut-frame.webp",
+      "original": "assets/blog-materials/original/source-20-74210dde2de7.jpg",
+      "style": "walnut-frame vector-style raster asset",
+      "status": "ready",
+      "tags": [
+        "画室",
+        "夜街",
+        "画廊",
+        "胡桃木"
+      ]
+    },
+    {
+      "id": "painting-bamboo-ink",
+      "title": "竹影水墨装框画",
+      "type": "image",
+      "category": "paintings",
+      "role": "child.painting",
+      "src": "assets/blog-materials/vector/paintings/painting-bamboo-ink-walnut-frame.png",
+      "thumb": "assets/blog-materials/thumbs/painting-bamboo-ink-walnut-frame.webp",
+      "original": "assets/blog-materials/original/source-34-e6314a1030ef.jpg",
+      "style": "walnut-frame vector-style raster asset",
+      "status": "review",
+      "tags": [
+        "水墨",
+        "画廊",
+        "竹影",
+        "待确认裁切"
+      ]
+    },
+    {
+      "id": "mimi-main-sitting",
+      "title": "眯眯端坐",
+      "type": "image",
+      "category": "cats",
+      "role": "pet.idle",
+      "src": "assets/blog-materials/vector/cats/mimi-main-sitting.png",
+      "thumb": "assets/blog-materials/thumbs/mimi-main-sitting.webp",
+      "original": "assets/blog-materials/original/source-22-7ac7b0528980.jpg",
+      "style": "transparent light-realistic cat asset",
+      "status": "ready",
+      "tags": [
+        "眯眯",
+        "宠物房",
+        "端坐"
+      ]
+    },
+    {
+      "id": "mimi-peeking",
+      "title": "眯眯探头",
+      "type": "image",
+      "category": "cats",
+      "role": "pet.peek",
+      "src": "assets/blog-materials/vector/cats/mimi-peeking.png",
+      "thumb": "assets/blog-materials/thumbs/mimi-peeking.webp",
+      "original": "assets/blog-materials/original/source-04-0f636bbb9160.jpg",
+      "style": "transparent light-realistic cat asset",
+      "status": "ready",
+      "tags": [
+        "眯眯",
+        "宠物房",
+        "探头"
+      ]
+    },
+    {
+      "id": "mimi-playing-string",
+      "title": "眯眯玩耍",
+      "type": "image",
+      "category": "cats",
+      "role": "pet.play",
+      "src": "assets/blog-materials/vector/cats/mimi-playing-string.png",
+      "thumb": "assets/blog-materials/thumbs/mimi-playing-string.webp",
+      "original": "assets/blog-materials/original/source-19-73fd2eb805a4.jpg",
+      "style": "transparent light-realistic cat asset",
+      "status": "ready",
+      "tags": [
+        "眯眯",
+        "宠物房",
+        "玩耍"
+      ]
+    },
+    {
+      "id": "mimi-watch-toy",
+      "title": "眯眯盯着玩具",
+      "type": "image",
+      "category": "cats",
+      "role": "pet.tease",
+      "src": "assets/blog-materials/vector/cats/mimi-watch-toy.png",
+      "thumb": "assets/blog-materials/thumbs/mimi-watch-toy.webp",
+      "original": "assets/blog-materials/original/source-19-73fd2eb805a4.jpg",
+      "style": "transparent light-realistic cat asset",
+      "status": "ready",
+      "tags": [
+        "眯眯",
+        "宠物房",
+        "逗猫棒"
+      ]
+    },
+    {
+      "id": "mimi-relaxed-sitting",
+      "title": "眯眯放松坐着",
+      "type": "image",
+      "category": "cats",
+      "role": "pet.pet",
+      "src": "assets/blog-materials/vector/cats/mimi-relaxed-sitting.png",
+      "thumb": "assets/blog-materials/thumbs/mimi-relaxed-sitting.webp",
+      "original": "assets/blog-materials/original/source-22-7ac7b0528980.jpg",
+      "style": "transparent light-realistic cat asset",
+      "status": "ready",
+      "tags": [
+        "眯眯",
+        "宠物房",
+        "呼噜"
+      ]
+    },
+    {
+      "id": "plant-aloe-white-pot",
+      "title": "白盆芦荟",
+      "type": "image",
+      "category": "plants",
+      "role": "studio.plant",
+      "src": "assets/blog-materials/vector/plants/plant-aloe-white-pot.png",
+      "thumb": "assets/blog-materials/thumbs/plant-aloe-white-pot.webp",
+      "original": "assets/blog-materials/original/source-12-54f33f94803f.jpg",
+      "style": "soft-edge vector-style raster asset",
+      "status": "review",
+      "tags": [
+        "植物",
+        "芦荟",
+        "白盆"
+      ]
+    },
+    {
+      "id": "plant-bird-nest-fern",
+      "title": "木盆鸟巢蕨",
+      "type": "image",
+      "category": "plants",
+      "role": "water.plant",
+      "src": "assets/blog-materials/vector/plants/plant-bird-nest-fern-wood-pot.png",
+      "thumb": "assets/blog-materials/thumbs/plant-bird-nest-fern-wood-pot.webp",
+      "original": "assets/blog-materials/original/source-39-f883e6a9c323.jpg",
+      "style": "soft-edge vector-style raster asset",
+      "status": "review",
+      "tags": [
+        "植物",
+        "鸟巢蕨",
+        "水边房间"
+      ]
+    },
+    {
+      "id": "plant-monstera",
+      "title": "玻璃瓶龟背竹",
+      "type": "image",
+      "category": "plants",
+      "role": "flowers.plantMain",
+      "src": "assets/blog-materials/vector/plants/plant-monstera-glass-vase.png",
+      "thumb": "assets/blog-materials/thumbs/plant-monstera-glass-vase.webp",
+      "original": "assets/blog-materials/original/source-15-61716bf1924f.jpg",
+      "style": "soft-edge vector-style raster asset",
+      "status": "review",
+      "tags": [
+        "植物",
+        "龟背竹",
+        "花房"
+      ]
+    },
+    {
+      "id": "plant-white-chrysanthemum",
+      "title": "玻璃瓶白菊",
+      "type": "image",
+      "category": "plants",
+      "role": "flowers.plantDetail",
+      "src": "assets/blog-materials/vector/plants/plant-white-chrysanthemum-glass-vase.png",
+      "thumb": "assets/blog-materials/thumbs/plant-white-chrysanthemum-glass-vase.webp",
+      "original": "assets/blog-materials/original/source-09-38992c587beb.jpg",
+      "style": "transparent light-realistic asset",
+      "status": "ready",
+      "tags": [
+        "植物",
+        "白菊",
+        "花瓶"
+      ]
+    },
+    {
+      "id": "lamp-black-mushroom",
+      "title": "黑色蘑菇台灯",
+      "type": "image",
+      "category": "lighting",
+      "role": "studio.prop",
+      "src": "assets/blog-materials/vector/lighting/lamp-black-mushroom.png",
+      "thumb": "assets/blog-materials/thumbs/lamp-black-mushroom.webp",
+      "original": "assets/blog-materials/original/source-26-9667cc59f376.jpg",
+      "style": "transparent light-realistic asset",
+      "status": "ready",
+      "tags": [
+        "灯具",
+        "台灯",
+        "暖光"
+      ]
+    },
+    {
+      "id": "lamp-fabric-warm-table",
+      "title": "布艺暖光台灯",
+      "type": "image",
+      "category": "lighting",
+      "role": "hearth.lamp",
+      "src": "assets/blog-materials/vector/lighting/lamp-fabric-warm-table.png",
+      "thumb": "assets/blog-materials/thumbs/lamp-fabric-warm-table.webp",
+      "original": "assets/blog-materials/original/source-06-148c08b55842.jpg",
+      "style": "soft-edge vector-style raster asset",
+      "status": "review",
+      "tags": [
+        "灯具",
+        "台灯",
+        "炉边"
+      ]
+    },
+    {
+      "id": "lamp-walnut-pendant",
+      "title": "胡桃木吊灯",
+      "type": "image",
+      "category": "lighting",
+      "role": "shared.pendant",
+      "src": "assets/blog-materials/vector/lighting/lamp-walnut-pendant.png",
+      "thumb": "assets/blog-materials/thumbs/lamp-walnut-pendant.webp",
+      "original": "assets/blog-materials/original/source-41-fe71d1a40d38.jpg",
+      "style": "transparent light-realistic asset",
+      "status": "ready",
+      "tags": [
+        "灯具",
+        "吊灯",
+        "胡桃木"
+      ]
+    },
+    {
+      "id": "lamp-round-ceiling",
+      "title": "圆形暖光顶灯",
+      "type": "image",
+      "category": "lighting",
+      "role": "shared.ceiling",
+      "src": "assets/blog-materials/vector/lighting/lamp-round-ceiling-warm.png",
+      "thumb": "assets/blog-materials/thumbs/lamp-round-ceiling-warm.webp",
+      "original": "assets/blog-materials/original/source-21-7727e62ff5d4.jpg",
+      "style": "soft-edge vector-style raster asset",
+      "status": "review",
+      "tags": [
+        "灯具",
+        "顶灯",
+        "暖光"
+      ]
+    },
+    {
+      "id": "green-wall-clock",
+      "title": "绿色墙钟",
+      "type": "image",
+      "category": "props",
+      "role": "water.prop",
+      "src": "assets/blog-materials/vector/props/green-wall-clock.png",
+      "thumb": "assets/blog-materials/thumbs/green-wall-clock.webp",
+      "original": "assets/blog-materials/original/source-11-4cf169e394a8.jpg",
+      "style": "transparent circular raster asset",
+      "status": "ready",
+      "tags": [
+        "道具",
+        "墙钟",
+        "鼠尾草绿"
+      ]
+    },
+    {
+      "id": "scene-hearth",
+      "title": "加湿器与枝影暖角",
+      "type": "image",
+      "category": "scenes",
+      "role": "hearth.scene",
+      "src": "assets/blog-materials/vector/scenes/scene-hearth-humidifier-branches.png",
+      "thumb": "assets/blog-materials/thumbs/scene-hearth-humidifier-branches.webp",
+      "original": "assets/blog-materials/original/source-27-9d18d30d8295.jpg",
+      "style": "soft-edge room vignette",
+      "status": "review",
+      "tags": [
+        "炉边",
+        "加湿器",
+        "暖光"
+      ]
+    },
+    {
+      "id": "scene-warm-desk-toy",
+      "title": "月光长椅角落",
+      "type": "image",
+      "category": "scenes",
+      "role": "child.scene",
+      "src": "assets/blog-materials/vector/scenes/scene-warm-desk-toy.png",
+      "thumb": "assets/blog-materials/thumbs/scene-warm-desk-toy.webp",
+      "original": "assets/blog-materials/original/source-29-a18db9af5a5a.jpg",
+      "style": "soft-edge room vignette",
+      "status": "review",
+      "tags": [
+        "儿童房",
+        "长椅",
+        "月光"
+      ]
+    },
+    {
+      "id": "scene-walnut-corner",
+      "title": "胡桃木绿植角落",
+      "type": "image",
+      "category": "scenes",
+      "role": "shared.corner",
+      "src": "assets/blog-materials/vector/scenes/scene-walnut-corner-vignette.png",
+      "thumb": "assets/blog-materials/thumbs/scene-walnut-corner-vignette.webp",
+      "original": "assets/blog-materials/original/source-15-61716bf1924f.jpg",
+      "style": "soft-edge room vignette",
+      "status": "review",
+      "tags": [
+        "胡桃木",
+        "绿植",
+        "房间角落"
+      ]
+    },
+    {
+      "id": "toy-furry-brown",
+      "title": "棕色毛绒伙伴",
+      "type": "image",
+      "category": "toys",
+      "role": "child.toy",
+      "src": "assets/blog-materials/vector/toys/toy-furry-brown-character.png",
+      "thumb": "assets/blog-materials/thumbs/toy-furry-brown-character.webp",
+      "original": "assets/blog-materials/original/source-37-eea8d03c8edd.jpg",
+      "style": "soft-edge vector-style raster asset",
+      "status": "review",
+      "tags": [
+        "玩具",
+        "儿童房",
+        "毛绒"
+      ]
+    },
+    {
+      "id": "toy-rainbow-companion",
+      "title": "彩虹小伙伴",
+      "type": "image",
+      "category": "toys",
+      "role": "child.companion",
+      "src": "assets/blog-materials/vector/toys/toy-rainbow-companion.png",
+      "thumb": "assets/blog-materials/thumbs/toy-rainbow-companion.webp",
+      "original": "assets/blog-materials/original/source-38-f7da829f347b.jpg",
+      "style": "soft-edge vector-style raster asset",
+      "status": "review",
+      "tags": [
+        "玩具",
+        "儿童房",
+        "挂件"
+      ]
+    }
+  ],
+  "roomMap": {
+    "studio": {
+      "title": "夜色画室",
+      "painting": "assets/blog-materials/vector/paintings/painting-night-cafe-street-walnut-frame.png",
+      "prop": "assets/blog-materials/vector/lighting/lamp-black-mushroom.png",
+      "plant": "assets/blog-materials/vector/plants/plant-monstera-glass-vase.png",
+      "accent": "#9b6a3f",
+      "mood": "walnut studio, warm desk lamp, night painting"
+    },
+    "water": {
+      "title": "水边房间",
+      "painting": "assets/blog-materials/vector/paintings/painting-water-lilies-walnut-frame.png",
+      "prop": "assets/blog-materials/vector/props/green-wall-clock.png",
+      "plant": "assets/blog-materials/vector/plants/plant-bird-nest-fern-wood-pot.png",
+      "accent": "#6f8f86",
+      "mood": "calm water room, blue green painting, muted walnut interior"
+    },
+    "flowers": {
+      "title": "花房",
+      "painting": "assets/blog-materials/vector/paintings/painting-flower-vase-book-walnut-frame.png",
+      "plantMain": "assets/blog-materials/vector/plants/plant-monstera-glass-vase.png",
+      "plantDetail": "assets/blog-materials/vector/plants/plant-white-chrysanthemum-glass-vase.png",
+      "accent": "#8b9a68",
+      "mood": "green flower room, glass vase, walnut desk"
+    },
+    "hearth": {
+      "title": "炉边",
+      "scene": "assets/blog-materials/vector/scenes/scene-hearth-humidifier-branches.png",
+      "lamp": "assets/blog-materials/vector/lighting/lamp-fabric-warm-table.png",
+      "accent": "#b06f3a",
+      "mood": "amber humidifier, warm hearth, walnut shelf"
+    },
+    "child": {
+      "title": "儿童房",
+      "painting": "assets/blog-materials/vector/paintings/painting-bamboo-ink-walnut-frame.png",
+      "scene": "assets/blog-materials/vector/scenes/scene-warm-desk-toy.png",
+      "toy": "assets/blog-materials/vector/toys/toy-furry-brown-character.png",
+      "prop": "assets/blog-materials/vector/props/green-wall-clock.png",
+      "accent": "#b99764",
+      "mood": "warm playful corner, soft toy, walnut desk"
+    },
+    "pet": {
+      "title": "眯眯的房间",
+      "mainCat": "assets/blog-materials/vector/cats/mimi-main-sitting.png",
+      "watchToy": "assets/blog-materials/vector/cats/mimi-watch-toy.png",
+      "playing": "assets/blog-materials/vector/cats/mimi-playing-string.png",
+      "peeking": "assets/blog-materials/vector/cats/mimi-peeking.png",
+      "relaxed": "assets/blog-materials/vector/cats/mimi-relaxed-sitting.png",
+      "accent": "#a77b55",
+      "mood": "real cat room, warm walnut, cozy pet corner"
+    },
+    "shared": {
+      "pendant": "assets/blog-materials/vector/lighting/lamp-walnut-pendant.png",
+      "tableLamp": "assets/blog-materials/vector/lighting/lamp-black-mushroom.png",
+      "floorLamp": "assets/blog-materials/vector/lighting/lamp-fabric-warm-table.png"
+    }
+  },
+  "gallerySeeds": [
+    {
+      "title": "夜街",
+      "category": "oil",
+      "src": "assets/blog-materials/vector/paintings/painting-night-cafe-street-walnut-frame.png"
+    },
+    {
+      "title": "睡莲",
+      "category": "oil",
+      "src": "assets/blog-materials/vector/paintings/painting-water-lilies-walnut-frame.png"
+    },
+    {
+      "title": "花瓶与书",
+      "category": "oil",
+      "src": "assets/blog-materials/vector/paintings/painting-flower-vase-book-walnut-frame.png"
+    },
+    {
+      "title": "竹影",
+      "category": "ink",
+      "src": "assets/blog-materials/vector/paintings/painting-bamboo-ink-walnut-frame.png"
+    }
+  ],
+  "audio": {
+    "mimiPurr": "assets/blog-materials/audio/mimi-purr-soft-source.mp3"
+  },
+  "originalLibrary": [
+    {
+      "id": "original-01",
+      "sourceName": "0589d5f1a87df036e385f7eaf01b22a6.jpg",
+      "src": "assets/blog-materials/original/source-01-0589d5f1a87d.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-02",
+      "sourceName": "0a672c2d23358294e796746d864a20a4.jpg",
+      "src": "assets/blog-materials/original/source-02-0a672c2d2335.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-03",
+      "sourceName": "0d44dff84e28b0700a541b8c12900b5c.jpg",
+      "src": "assets/blog-materials/original/source-03-0d44dff84e28.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-04",
+      "sourceName": "0f636bbb916000bfbeb1a2f8b4c54bd6.jpg",
+      "src": "assets/blog-materials/original/source-04-0f636bbb9160.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-05",
+      "sourceName": "11d6946751fdfcbec7275e2ac9b4cdba.jpg",
+      "src": "assets/blog-materials/original/source-05-11d6946751fd.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-06",
+      "sourceName": "148c08b558423335269cfcb2c0881b4d.jpg",
+      "src": "assets/blog-materials/original/source-06-148c08b55842.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-07",
+      "sourceName": "17a2ac3523a0476b3dd5f95be4edb250.jpg",
+      "src": "assets/blog-materials/original/source-07-17a2ac3523a0.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-08",
+      "sourceName": "384e907b4df4cf8524ee972793aa70f5.jpg",
+      "src": "assets/blog-materials/original/source-08-384e907b4df4.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-09",
+      "sourceName": "38992c587bebe293bee85da5f456f46f.jpg",
+      "src": "assets/blog-materials/original/source-09-38992c587beb.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-10",
+      "sourceName": "3be31024bcf5e83ffbacd06b6ba254df.jpg",
+      "src": "assets/blog-materials/original/source-10-3be31024bcf5.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-11",
+      "sourceName": "4cf169e394a85c27a2fc63783810c517.jpg",
+      "src": "assets/blog-materials/original/source-11-4cf169e394a8.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-12",
+      "sourceName": "54f33f94803f43c46862032845002a42.jpg",
+      "src": "assets/blog-materials/original/source-12-54f33f94803f.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-13",
+      "sourceName": "58bcae9e8300f185dc34638b8689cfb7.jpg",
+      "src": "assets/blog-materials/original/source-13-58bcae9e8300.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-14",
+      "sourceName": "5a81c45d0cac1a44e9b8ab01ef36636e.jpg",
+      "src": "assets/blog-materials/original/source-14-5a81c45d0cac.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-15",
+      "sourceName": "61716bf1924f50d28ca031c9a04bbe4a.jpg",
+      "src": "assets/blog-materials/original/source-15-61716bf1924f.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-16",
+      "sourceName": "61fb859d2a3c034304159ee49e52a836.jpg",
+      "src": "assets/blog-materials/original/source-16-61fb859d2a3c.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-17",
+      "sourceName": "6c52e8b908f60ece3fc715978305cf8b.jpg",
+      "src": "assets/blog-materials/original/source-17-6c52e8b908f6.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-18",
+      "sourceName": "7100ed3e21e9fc5b03546520bc491b4c.jpg",
+      "src": "assets/blog-materials/original/source-18-7100ed3e21e9.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-19",
+      "sourceName": "73fd2eb805a43a24a9ed4973152719a0.jpg",
+      "src": "assets/blog-materials/original/source-19-73fd2eb805a4.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-20",
+      "sourceName": "74210dde2de7af5cc5b3286ed35f195c.jpg",
+      "src": "assets/blog-materials/original/source-20-74210dde2de7.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-21",
+      "sourceName": "7727e62ff5d4554b80f4f46b2df9b147.jpg",
+      "src": "assets/blog-materials/original/source-21-7727e62ff5d4.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-22",
+      "sourceName": "7ac7b0528980c84e69461287f2ca50b7.jpg",
+      "src": "assets/blog-materials/original/source-22-7ac7b0528980.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-23",
+      "sourceName": "842a83d97e9adfb3d3bd4075c030ccde.jpg",
+      "src": "assets/blog-materials/original/source-23-842a83d97e9a.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-24",
+      "sourceName": "89f5987c2beca114ba0cff07388b9d08.jpg",
+      "src": "assets/blog-materials/original/source-24-89f5987c2bec.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-25",
+      "sourceName": "90ea265a299f6f35a97f0a6bbcf0678e.jpg",
+      "src": "assets/blog-materials/original/source-25-90ea265a299f.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-26",
+      "sourceName": "9667cc59f376ba5f326c0a1b9d5be29d.jpg",
+      "src": "assets/blog-materials/original/source-26-9667cc59f376.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-27",
+      "sourceName": "9d18d30d82958d3a61a61fac2f07fa29.jpg",
+      "src": "assets/blog-materials/original/source-27-9d18d30d8295.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-28",
+      "sourceName": "9e063f75f80a865ac6e01b5ab95c09fe.jpg",
+      "src": "assets/blog-materials/original/source-28-9e063f75f80a.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-29",
+      "sourceName": "a18db9af5a5a1cbd4478c399bb3756b2.jpg",
+      "src": "assets/blog-materials/original/source-29-a18db9af5a5a.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-30",
+      "sourceName": "b599a03473a6fea2ec3be3a52a7ff503.jpg",
+      "src": "assets/blog-materials/original/source-30-b599a03473a6.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-31",
+      "sourceName": "b8269c8f6101991b301668f98740a2f2.jpg",
+      "src": "assets/blog-materials/original/source-31-b8269c8f6101.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-32",
+      "sourceName": "c8ab5b14105bcaeb2e75b7d24846cb45.jpg",
+      "src": "assets/blog-materials/original/source-32-c8ab5b14105b.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-33",
+      "sourceName": "d54f162b3088a160404551c91f79c9bd.jpg",
+      "src": "assets/blog-materials/original/source-33-d54f162b3088.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-34",
+      "sourceName": "e6314a1030ef6f57b9fd39babf00edad.jpg",
+      "src": "assets/blog-materials/original/source-34-e6314a1030ef.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-35",
+      "sourceName": "e764459cf22d5b974d99bbd0f1b7bfde.jpg",
+      "src": "assets/blog-materials/original/source-35-e764459cf22d.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-36",
+      "sourceName": "ec556c1a73437678844acc5004cc8f23.jpg",
+      "src": "assets/blog-materials/original/source-36-ec556c1a7343.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-37",
+      "sourceName": "eea8d03c8edd67de686b42da6408be24.jpg",
+      "src": "assets/blog-materials/original/source-37-eea8d03c8edd.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-38",
+      "sourceName": "f7da829f347b305224f4e253154f0fb1.jpg",
+      "src": "assets/blog-materials/original/source-38-f7da829f347b.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-39",
+      "sourceName": "f883e6a9c3231f9be94db1059fbf7598.jpg",
+      "src": "assets/blog-materials/original/source-39-f883e6a9c323.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-40",
+      "sourceName": "fc5dbc5149477a151022152c8125c0af.jpg",
+      "src": "assets/blog-materials/original/source-40-fc5dbc514947.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    },
+    {
+      "id": "original-41",
+      "sourceName": "fe71d1a40d38c32e1654ead5585380ee.jpg",
+      "src": "assets/blog-materials/original/source-41-fe71d1a40d38.jpg",
+      "type": "source-photo",
+      "status": "archived"
+    }
+  ],
+  "sourceArchive": {
+    "photoCount": 41,
+    "video": "assets/blog-materials/original/mimi-purr-video.mp4",
+    "audio": "assets/blog-materials/audio/mimi-purr-soft-source.mp3"
+  }
+}

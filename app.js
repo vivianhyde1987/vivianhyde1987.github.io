@@ -34,6 +34,97 @@ let activeMysteryCategory = "健康";
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
 
+const CabinAudioManager = (() => {
+  const activeSources = new Map();
+  const activeVoices = new Set();
+  let context = null;
+
+  const getContext = () => {
+    context ||= new (window.AudioContext || window.webkitAudioContext)();
+    if (context.state === "suspended") context.resume().catch((error) => console.warn("[CabinAudio] 无法恢复声音上下文。", error));
+    return context;
+  };
+  const stopController = (controller) => {
+    if (!controller) return;
+    try {
+      if (typeof controller === "function") controller();
+      else if (controller instanceof HTMLMediaElement) {
+        controller.pause();
+        controller.currentTime = 0;
+      } else if (typeof controller.stop === "function") controller.stop();
+    } catch (error) {
+      console.warn("[CabinAudio] 停止声音时出现问题。", error);
+    }
+  };
+  const stop = (name) => {
+    stopController(activeSources.get(name));
+    activeSources.delete(name);
+  };
+  const play = (name, audioOrFunction) => {
+    stop(name);
+    try {
+      const controller = typeof audioOrFunction === "function" ? audioOrFunction(getContext()) : audioOrFunction;
+      if (controller instanceof HTMLMediaElement) {
+        controller.currentTime = 0;
+        controller.play().catch((error) => console.warn(`[CabinAudio:${name}] 播放失败。`, error));
+      }
+      if (controller) activeSources.set(name, controller);
+      return controller;
+    } catch (error) {
+      console.warn(`[CabinAudio:${name}]`, error);
+      return null;
+    }
+  };
+  const registerActiveOscillator = (node) => {
+    if (!node) return node;
+    activeVoices.add(node);
+    node.addEventListener?.("ended", () => activeVoices.delete(node), { once: true });
+    return node;
+  };
+  const registerVoice = (voice) => {
+    if (!voice) return voice;
+    activeVoices.add(voice);
+    return voice;
+  };
+  const releaseVoice = (voice) => activeVoices.delete(voice);
+  const stopAllVoices = () => {
+    [...activeVoices].forEach((voice) => stopController(voice));
+    activeVoices.clear();
+  };
+  const stopAll = () => {
+    [...activeSources.keys()].forEach(stop);
+    stopAllVoices();
+  };
+  const stopRoomSounds = () => stopAll();
+
+  const getActiveVoiceCount = () => activeVoices.size;
+  const getActiveSourceNames = () => [...activeSources.keys()];
+  return { play, stop, stopAll, stopRoomSounds, registerActiveOscillator, registerVoice, releaseVoice, stopAllVoices, getActiveVoiceCount, getActiveSourceNames, getContext };
+})();
+
+window.CabinAudioManager = CabinAudioManager;
+
+const fallbackBlogMaterials = {
+  roomMap: {
+    studio: { painting: "assets/blog-materials/vector/paintings/painting-night-cafe-street-walnut-frame.png", prop: "assets/blog-materials/vector/lighting/lamp-black-mushroom.png", plant: "assets/blog-materials/vector/plants/plant-monstera-glass-vase.png", accent: "#9b6a3f" },
+    water: { painting: "assets/blog-materials/vector/paintings/painting-water-lilies-walnut-frame.png", prop: "assets/blog-materials/vector/props/green-wall-clock.png", plant: "assets/blog-materials/vector/plants/plant-bird-nest-fern-wood-pot.png", accent: "#6f8f86" },
+    flowers: { painting: "assets/blog-materials/vector/paintings/painting-flower-vase-book-walnut-frame.png", plantMain: "assets/blog-materials/vector/plants/plant-monstera-glass-vase.png", plantDetail: "assets/blog-materials/vector/plants/plant-white-chrysanthemum-glass-vase.png", accent: "#8b9a68" },
+    hearth: { scene: "assets/blog-materials/vector/scenes/scene-hearth-humidifier-branches.png", lamp: "assets/blog-materials/vector/lighting/lamp-fabric-warm-table.png", accent: "#b06f3a" },
+    child: { painting: "assets/blog-materials/vector/paintings/painting-bamboo-ink-walnut-frame.png", scene: "assets/blog-materials/vector/scenes/scene-warm-desk-toy.png", toy: "assets/blog-materials/vector/toys/toy-furry-brown-character.png", accent: "#b99764" },
+    pet: { mainCat: "assets/blog-materials/vector/cats/mimi-main-sitting.png", watchToy: "assets/blog-materials/vector/cats/mimi-watch-toy.png", playing: "assets/blog-materials/vector/cats/mimi-playing-string.png", peeking: "assets/blog-materials/vector/cats/mimi-peeking.png", relaxed: "assets/blog-materials/vector/cats/mimi-relaxed-sitting.png", accent: "#a77b55" },
+    shared: { pendant: "assets/blog-materials/vector/lighting/lamp-walnut-pendant.png" }
+  },
+  gallerySeeds: [
+    { title: "夜街", category: "oil", src: "assets/blog-materials/vector/paintings/painting-night-cafe-street-walnut-frame.png" },
+    { title: "睡莲", category: "oil", src: "assets/blog-materials/vector/paintings/painting-water-lilies-walnut-frame.png" },
+    { title: "花瓶与书", category: "oil", src: "assets/blog-materials/vector/paintings/painting-flower-vase-book-walnut-frame.png" },
+    { title: "竹影", category: "ink", src: "assets/blog-materials/vector/paintings/painting-bamboo-ink-walnut-frame.png" }
+  ],
+  audio: { mimiPurr: "assets/blog-materials/audio/mimi-purr-soft-source.mp3" }
+};
+
+const getBlogMaterials = () => window.ROSE_BLOG_MATERIALS || fallbackBlogMaterials;
+
 const interestTypes = ["全部", "艺术", "音乐", "电影", "阅读", "展览", "生活灵感"];
 
 const wishMenu = [
@@ -378,7 +469,7 @@ function paintAvatar(node, avatar) {
   node.className = `user-avatar user-avatar--${avatar.shape || "circle"}`;
   node.style.setProperty("--avatar-color", avatar.color || "#b62548");
   node.innerHTML = avatar.image
-    ? `<img src="${avatar.image}" alt="" />`
+    ? `<img src="${avatar.image}" alt="" loading="lazy" decoding="async" />`
     : `<span>${escapeHtml(avatar.mark || "R")}</span>`;
 }
 
@@ -393,7 +484,7 @@ function renderAvatarPreview() {
   elements.avatarPreview.style.setProperty("--avatar-color", avatar.color);
   elements.avatarPreview.dataset.shape = avatar.shape;
   elements.avatarPreview.innerHTML = avatar.image
-    ? `<img src="${avatar.image}" alt="" />`
+    ? `<img src="${avatar.image}" alt="" loading="lazy" decoding="async" />`
     : `<span>${escapeHtml(avatar.mark)}</span>`;
 }
 
@@ -1186,7 +1277,7 @@ function renderChat() {
         <small>${formatDate(message.created_at)}</small>
       </div>
       ${message.body ? `<p>${escapeHtml(message.body)}</p>` : ""}
-      ${message.image_url ? `<img src="${message.image_url}" alt="聊天贴图" />` : ""}
+      ${message.image_url ? `<img src="${message.image_url}" alt="聊天贴图" loading="lazy" decoding="async" />` : ""}
       <div class="chat-message__actions"></div>
     `;
     const actions = item.querySelector(".chat-message__actions");
@@ -1504,7 +1595,7 @@ function createChatNode(message, isReply = false) {
       <small>${formatDate(message.created_at)}</small>
     </div>
     ${message.body ? `<p>${escapeHtml(message.body)}</p>` : ""}
-    ${message.image_url ? `<img src="${message.image_url}" alt="聊天贴图" />` : ""}
+    ${message.image_url ? `<img src="${message.image_url}" alt="聊天贴图" loading="lazy" decoding="async" />` : ""}
     <div class="chat-message__actions"></div>
   `;
   const actions = item.querySelector(".chat-message__actions");
@@ -3048,12 +3139,12 @@ function setupMimiPet() {
   const bubble = pet.querySelector(".mimi-pet__bubble");
   const message = pet.querySelector(".mimi-pet__message");
   const storageKey = "mimi-pet-care-v1";
-  const poses = [
-    "mimi-sit-transparent.png",
-    "mimi-walk-cutout.png"
-  ];
+  const petAssets = getBlogMaterials().roomMap.pet;
+  const idleSource = petAssets.mainCat || "mimi-sit-transparent.png";
+  const poses = [idleSource, petAssets.peeking || "mimi-walk-cutout.png"];
   const walkFrames = ["mimi-walk-cutout.png", "mimi-walk-2.png", "mimi-walk-3.png", "mimi-walk-4.png"];
-  [...walkFrames, "mimi-purr-expression.png"].forEach((src) => { const image = new Image(); image.src = src; });
+  const stateImages = [idleSource, petAssets.relaxed, petAssets.playing, petAssets.watchToy, petAssets.peeking, ...walkFrames].filter(Boolean);
+  stateImages.forEach((src) => { const image = new Image(); image.src = src; });
   const now = Date.now();
   let state = { hunger: 78, mood: 82, health: 88, litter: 86, lastUpdate: now, lastDoctor: 0, pose: 0 };
   try { state = { ...state, ...JSON.parse(localStorage.getItem(storageKey) || "{}") }; } catch {}
@@ -3062,13 +3153,14 @@ function setupMimiPet() {
   state.mood = Math.max(35, state.mood - elapsedHours * 0.45);
   state.litter = Math.max(18, state.litter - elapsedHours * 0.9);
   state.lastUpdate = now;
-  let audioContext = null;
   let moveTimer = null;
   let walkFrameTimer = null;
   let lastX = 0;
-  const realPurr = new Audio("mimi-purr.mp3");
+  let purrBufferPromise = null;
+  const purrAudioPath = getBlogMaterials().audio?.mimiPurr || "mimi-purr.mp3";
+  const realPurr = new Audio(purrAudioPath);
   realPurr.preload = "metadata";
-  realPurr.volume = 0.78;
+  realPurr.volume = 0.16;
   realPurr.hidden = true;
   realPurr.dataset.mimiPurr = "true";
   document.body.append(realPurr);
@@ -3090,8 +3182,7 @@ function setupMimiPet() {
   };
   const sound = (type) => {
     try {
-      audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
-      if (audioContext.state === "suspended") audioContext.resume();
+      const audioContext = CabinAudioManager.getContext();
       const nowTime = audioContext.currentTime;
       if (type === "step") {
         [0, 0.16, 0.33, 0.5].forEach((delay) => {
@@ -3104,6 +3195,7 @@ function setupMimiPet() {
           oscillator.connect(gain).connect(audioContext.destination);
           oscillator.start(nowTime + delay);
           oscillator.stop(nowTime + delay + 0.09);
+          CabinAudioManager.registerActiveOscillator(oscillator);
         });
       } else if (type === "purrFallback") {
         const oscillator = audioContext.createOscillator();
@@ -3115,6 +3207,7 @@ function setupMimiPet() {
         oscillator.connect(gain).connect(audioContext.destination);
         oscillator.start(nowTime);
         oscillator.stop(nowTime + 1.6);
+        CabinAudioManager.registerActiveOscillator(oscillator);
       } else if (type === "meow") {
         const oscillator = audioContext.createOscillator();
         const gain = audioContext.createGain();
@@ -3126,18 +3219,59 @@ function setupMimiPet() {
         oscillator.connect(gain).connect(audioContext.destination);
         oscillator.start(nowTime);
         oscillator.stop(nowTime + 0.45);
+        CabinAudioManager.registerActiveOscillator(oscillator);
       }
-    } catch {}
-  };
-  const playRealPurr = () => {
-    try {
-      realPurr.pause();
-      realPurr.currentTime = 0;
-      const playing = realPurr.play();
-      if (playing?.catch) playing.catch(() => sound("purrFallback"));
-    } catch {
-      sound("purrFallback");
+    } catch (error) {
+      console.warn(`[CabinAudio:Mimi:${type}]`, error);
     }
+  };
+  const playRealPurr = async () => {
+    CabinAudioManager.stop("mimi-purr");
+    try {
+      const context = CabinAudioManager.getContext();
+      purrBufferPromise ||= fetch(purrAudioPath)
+        .then((response) => {
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          return response.arrayBuffer();
+        })
+        .then((buffer) => context.decodeAudioData(buffer));
+      const audioBuffer = await purrBufferPromise;
+      const duration = Math.min(2.8, Math.max(2.2, audioBuffer.duration - 0.2));
+      CabinAudioManager.play("mimi-purr", (audioContext) => {
+        const source = audioContext.createBufferSource();
+        const highpass = audioContext.createBiquadFilter();
+        const lowpass = audioContext.createBiquadFilter();
+        const gain = audioContext.createGain();
+        source.buffer = audioBuffer;
+        highpass.type = "highpass";
+        highpass.frequency.value = 58;
+        highpass.Q.value = 0.7;
+        lowpass.type = "lowpass";
+        lowpass.frequency.value = 1650;
+        lowpass.Q.value = 0.55;
+        const start = audioContext.currentTime;
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.linearRampToValueAtTime(0.105, start + 0.1);
+        gain.gain.setValueAtTime(0.105, start + duration - 0.42);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+        source.connect(highpass).connect(lowpass).connect(gain).connect(audioContext.destination);
+        source.start(start, Math.min(0.2, Math.max(0, audioBuffer.duration - duration)), duration);
+        source.stop(start + duration + 0.03);
+        return { stop: () => { try { source.stop(); } catch {} } };
+      });
+      window.setTimeout(() => CabinAudioManager.stop("mimi-purr"), duration * 1000 + 80);
+    } catch (error) {
+      console.warn("[CabinAudio:MimiPurr] 未能处理真实呼噜声，已使用短播放保护。", error);
+      realPurr.volume = 0.16;
+      CabinAudioManager.play("mimi-purr", realPurr);
+      window.setTimeout(() => CabinAudioManager.stop("mimi-purr"), 2800);
+    }
+  };
+  const setPetVisual = (src, className = "is-idle-breathing", duration = 0) => {
+    pet.classList.remove("is-idle-breathing", "is-purring", "is-playing", "is-stretching", "is-turning");
+    if (src) catImage.src = src;
+    if (className) pet.classList.add(className);
+    if (duration) window.setTimeout(() => setPetVisual(idleSource), duration);
   };
   const move = () => {
     if (!pet.classList.contains("is-in-pet-room") || !petRoom || !panel.hidden || pet.classList.contains("is-held")) return;
@@ -3155,26 +3289,33 @@ function setupMimiPet() {
     pet.style.setProperty("--mimi-face", x < lastX ? "-1" : "1");
     lastX = x;
     pet.dataset.pose = "walk";
+    pet.classList.remove("is-idle-breathing", "is-stretching", "is-turning");
     let walkFrame = 0;
     catImage.src = walkFrames[walkFrame];
     window.clearInterval(walkFrameTimer);
     walkFrameTimer = window.setInterval(() => {
       walkFrame = (walkFrame + 1) % walkFrames.length;
       catImage.src = walkFrames[walkFrame];
-    }, 230);
+    }, 300);
     pet.style.setProperty("--mimi-x", `${x}px`);
     pet.style.setProperty("--mimi-y", `${y}px`);
     pet.classList.add("is-walking");
-    sound("step");
+    CabinAudioManager.stop("mimi-steps");
+    CabinAudioManager.play("mimi-steps", () => {
+      sound("step");
+      return () => {};
+    });
     window.setTimeout(() => {
       window.clearInterval(walkFrameTimer);
       pet.classList.remove("is-walking");
       state.pose = 0;
       pet.dataset.pose = "sit";
       catImage.src = poses[0];
+      const restingClass = Math.random() < 0.38 ? "is-stretching" : Math.random() < 0.35 ? "is-turning" : "is-idle-breathing";
+      setPetVisual(idleSource, restingClass, restingClass === "is-idle-breathing" ? 0 : 1500);
       save();
       if (Math.random() < 0.08) sound("meow");
-    }, 4200);
+    }, 5400);
   };
   const scheduleMove = (delay = 16000 + Math.random() * 14000) => {
     window.clearTimeout(moveTimer);
@@ -3190,11 +3331,11 @@ function setupMimiPet() {
     button.addEventListener("click", async () => {
       const action = button.dataset.mimiAction;
       const reactions = {
-        food: () => { state.hunger = Math.min(100, state.hunger + 25); state.health = Math.min(100, state.health + 2); speak("眯眯认真地吃了几口猫粮。"); },
-        treat: () => { state.hunger = Math.min(100, state.hunger + 12); state.mood = Math.min(100, state.mood + 18); speak("猫条很好吃。她舔了舔鼻子。"); },
-        wand: () => { state.mood = Math.min(100, state.mood + 22); catImage.src = walkFrames[2]; pet.dataset.pose = "walk"; pet.classList.add("is-playing"); window.setTimeout(() => { pet.classList.remove("is-playing"); pet.dataset.pose = "sit"; catImage.src = poses[0]; }, 1800); speak("她盯紧逗猫棒，还是很有精神。"); },
-        pet: () => { state.mood = Math.min(100, state.mood + 12); playRealPurr(); catImage.src = "mimi-purr-expression.png"; pet.classList.add("is-purring"); window.setTimeout(() => { pet.classList.remove("is-purring"); catImage.src = poses[0]; }, 5200); speak("她眯起眼睛，你听见了眯眯真实的呼噜声。噢，是一只小猫咪"); },
-        hold: () => { state.mood = Math.min(100, state.mood + 8); pet.classList.toggle("is-held"); speak(pet.classList.contains("is-held") ? "你把眯眯抱起来了。她安静地靠着你。" : "你轻轻把她放回地上。"); },
+        food: () => { state.hunger = Math.min(100, state.hunger + 25); state.health = Math.min(100, state.health + 2); setPetVisual(petAssets.peeking, "is-turning", 1700); speak("眯眯认真地吃了几口猫粮。"); },
+        treat: () => { state.hunger = Math.min(100, state.hunger + 12); state.mood = Math.min(100, state.mood + 18); setPetVisual(petAssets.relaxed, "is-idle-breathing", 1900); speak("猫条很好吃。她舔了舔鼻子。"); },
+        wand: () => { state.mood = Math.min(100, state.mood + 22); setPetVisual(petAssets.watchToy, "is-playing", 2100); speak("她盯紧逗猫棒，轻轻扑了过去。"); },
+        pet: () => { state.mood = Math.min(100, state.mood + 12); playRealPurr(); setPetVisual(petAssets.relaxed, "is-purring", 3000); speak("她眯起眼睛，轻轻呼噜了几秒。", 2600); },
+        hold: () => { state.mood = Math.min(100, state.mood + 8); pet.classList.toggle("is-held"); setPetVisual(pet.classList.contains("is-held") ? petAssets.relaxed : idleSource); speak(pet.classList.contains("is-held") ? "你把眯眯抱起来了。她安静地靠着你。" : "你轻轻把她放回地上。"); },
         litter: () => { state.litter = 100; speak("猫砂盆干净了。眯眯过来检查了一遍。"); },
         doctor: () => { state.health = 100; state.lastDoctor = Date.now(); speak("完成了一次温柔的健康检查，一切都被好好记挂着。"); }
       };
@@ -3209,11 +3350,19 @@ function setupMimiPet() {
   });
   pet.addEventListener("mimi-enter-room", () => {
     pet.dataset.pose = "sit";
-    catImage.src = poses[0];
+    setPetVisual(idleSource);
     window.setTimeout(move, 1800);
   });
+  pet.addEventListener("mimi-leave-room", () => {
+    CabinAudioManager.stop("mimi-purr");
+    CabinAudioManager.stop("mimi-meow");
+    CabinAudioManager.stop("mimi-steps");
+    window.clearInterval(walkFrameTimer);
+    pet.classList.remove("is-walking", "is-playing", "is-purring", "is-stretching", "is-turning", "is-held");
+    catImage.src = idleSource;
+  });
   pet.dataset.pose = "sit";
-  catImage.src = poses[0];
+  setPetVisual(idleSource);
   render();
   scheduleMove(6000);
   document.body.append(panel);
@@ -3381,6 +3530,8 @@ function setupCabinExperience() {
   if (!experience) return;
   const image = $("#cabinRoomImage");
   const detailImage = $("#cabinRoomDetail");
+  const plantImage = $("#cabinRoomPlant");
+  const accentImage = $("#cabinRoomAccent");
   const pendantImage = $("#cabinPendant");
   const musicStudio = $("#cabinMusicStudio");
   const petRoom = $("#cabinPetRoom");
@@ -3392,15 +3543,16 @@ function setupCabinExperience() {
   const treasureClue = $("#cabinTreasureClue");
   const treasureDialog = $("#cabinTreasureDialog");
   const treasureMessage = $("#cabinTreasureMessage");
+  const scene = experience.querySelector(".cabin-room__scene");
+  const materialMap = getBlogMaterials().roomMap || fallbackBlogMaterials.roomMap;
   const rooms = {
-    studio: { number: "ROOM 01", title: "夜色画室", note: "灯亮以后，街巷里的星星才慢慢出现。", image: "cabin-art-night.jpg", alt: "夜色街巷油画", aspect: "portrait", detail: "cabin-lamp-cutout.png", detailAlt: "桌上的台灯", prop: "lamp", pendant: false },
-    water: { number: "ROOM 02", title: "水边房间", note: "胡桃木墙上，水面把光留在了睡莲之间。", image: "cabin-art-water.jpg", alt: "睡莲水面油画", aspect: "landscape", detail: "", detailAlt: "", prop: "none", pendant: true },
-    flowers: { number: "ROOM 03", title: "花与书房", note: "花、旧书和绿色墙面，在夜里有自己的呼吸。", image: "cabin-art-flowers.jpg", alt: "花与书静物油画", aspect: "landscape", detail: "cabin-flowers-cutout.png", detailAlt: "桌上的淡粉菊花瓶", prop: "flowers", pendant: true },
-    hearth: { number: "ROOM 04", title: "炉边角落", note: "灯和薄雾守着这个角落，像一间一直有人等候的小屋。", image: "cabin-hearth.jpg", alt: "暖色灯光与加湿器角落", aspect: "landscape", detail: "cabin-lamp-cutout.png", detailAlt: "桌上的台灯", prop: "lamp", pendant: false },
-    child: { number: "ROOM 05", title: "儿童画室", note: "胡桃木矮柜和柔软地毯，等着新的颜色住进来。", image: "cabin-art-flowers.jpg", alt: "儿童房预留画作", aspect: "landscape", detail: "cabin-flowers-cutout.png", detailAlt: "矮柜上的花瓶", prop: "flowers", pendant: true }
+    studio: { number: "ROOM 01", title: "夜色画室", note: "灯亮以后，街巷里的星星才慢慢出现。", image: "cabin-art-night.jpg", alt: "夜色街巷油画", aspect: "portrait", detail: "cabin-lamp-cutout.png", detailAlt: "桌上的台灯", prop: "lamp", pendant: false, assets: materialMap.studio, layout: { theme: "studio", paintingSize: "34%", paintingHeight: "67%", paintingX: "9%", paintingY: "6%", propSize: "17%", propX: "76%", propY: "14%", plantSize: "18%", plantX: "54%", plantY: "13%", pendantSize: "28%", moodColor: "#9b6a3f", floorTone: "#2d190f" } },
+    water: { number: "ROOM 02", title: "水边房间", note: "胡桃木墙上，水面把光留在了睡莲之间。", image: "cabin-art-water.jpg", alt: "睡莲水面油画", aspect: "landscape", detail: "", detailAlt: "绿色墙钟", prop: "clock", pendant: true, assets: materialMap.water, layout: { theme: "water", paintingSize: "51%", paintingHeight: "52%", paintingX: "7%", paintingY: "10%", propSize: "12%", propX: "78%", propY: "52%", plantSize: "19%", plantX: "59%", plantY: "12%", pendantSize: "27%", moodColor: "#6f8f86", floorTone: "#20221d" } },
+    flowers: { number: "ROOM 03", title: "花与书房", note: "花、旧书和绿色墙面，在夜里有自己的呼吸。", image: "cabin-art-flowers.jpg", alt: "花与书静物油画", aspect: "landscape", detail: "cabin-flowers-cutout.png", detailAlt: "桌上的淡粉菊花瓶", prop: "flowers", pendant: true, assets: materialMap.flowers, layout: { theme: "flowers", paintingSize: "46%", paintingHeight: "51%", paintingX: "6%", paintingY: "9%", propSize: "16%", propX: "78%", propY: "10%", plantSize: "19%", plantX: "58%", plantY: "10%", pendantSize: "25%", moodColor: "#8b9a68", floorTone: "#272016" } },
+    hearth: { number: "ROOM 04", title: "炉边角落", note: "灯和薄雾守着这个角落，像一间一直有人等候的小屋。", image: "cabin-hearth.jpg", alt: "暖色灯光与加湿器角落", aspect: "landscape", detail: "cabin-lamp-cutout.png", detailAlt: "桌上的暖光灯", prop: "lamp", pendant: false, assets: materialMap.hearth, layout: { theme: "hearth", paintingSize: "56%", paintingHeight: "62%", paintingX: "5%", paintingY: "7%", propSize: "15%", propX: "76%", propY: "10%", plantSize: "0%", plantX: "0%", plantY: "0%", pendantSize: "0%", moodColor: "#b06f3a", floorTone: "#32190d" } },
+    child: { number: "ROOM 05", title: "儿童画室", note: "胡桃木矮柜和柔软地毯，等着新的颜色住进来。", image: "cabin-art-flowers.jpg", alt: "儿童房里的竹影画", aspect: "portrait", detail: "cabin-flowers-cutout.png", detailAlt: "绿色墙钟", prop: "clock", pendant: true, assets: materialMap.child, layout: { theme: "child", paintingSize: "30%", paintingHeight: "66%", paintingX: "8%", paintingY: "7%", propSize: "9%", propX: "87%", propY: "17%", plantSize: "13%", plantX: "72%", plantY: "12%", accentSize: "29%", accentX: "42%", accentY: "10%", pendantSize: "22%", moodColor: "#b99764", floorTone: "#312116" } }
   };
   let lightOn = false;
-  let footstepContext = null;
   const dayKey = new Date().toISOString().slice(0, 10);
   const roomKeys = Object.keys(rooms);
   const dailyNumber = [...dayKey].reduce((sum, char) => sum + char.charCodeAt(0), 0);
@@ -3417,9 +3569,9 @@ function setupCabinExperience() {
   const todayMessage = treasureMessages[dailyNumber % treasureMessages.length];
 
   const playFootsteps = () => {
-    try {
-      footstepContext ||= new (window.AudioContext || window.webkitAudioContext)();
-      if (footstepContext.state === "suspended") footstepContext.resume();
+    CabinAudioManager.play("cabin-footsteps", (footstepContext) => {
+      const sources = [];
+      try {
       [0, 0.18, 0.38].forEach((delay, index) => {
         const now = footstepContext.currentTime + delay;
         const buffer = footstepContext.createBuffer(1, Math.floor(footstepContext.sampleRate * 0.12), footstepContext.sampleRate);
@@ -3434,8 +3586,65 @@ function setupCabinExperience() {
         gain.gain.value = 0.09;
         source.connect(filter).connect(gain).connect(footstepContext.destination);
         source.start(now);
+        source.stop(now + 0.13);
+        sources.push(source);
+        CabinAudioManager.registerActiveOscillator(source);
       });
-    } catch {}
+      } catch (error) {
+        console.warn("[CabinAudio:Footsteps]", error);
+      }
+      return { stop: () => sources.forEach((source) => { try { source.stop(); } catch {} }) };
+    });
+  };
+
+  const setImageSource = (element, source, fallback = "") => {
+    if (!element) return;
+    element.loading = "lazy";
+    element.decoding = "async";
+    element.hidden = !source;
+    if (!source) return;
+    element.onerror = fallback ? () => { element.onerror = null; element.src = fallback; } : null;
+    element.src = source;
+  };
+  const applyRoomLayout = (room) => {
+    const layout = room.layout || {};
+    experience.dataset.cabinTheme = layout.theme || "studio";
+    const variables = {
+      "--painting-w": layout.paintingSize,
+      "--painting-h": layout.paintingHeight,
+      "--painting-x": layout.paintingX,
+      "--painting-y": layout.paintingY,
+      "--prop-w": layout.propSize,
+      "--prop-x": layout.propX,
+      "--prop-y": layout.propY,
+      "--plant-w": layout.plantSize,
+      "--plant-x": layout.plantX,
+      "--plant-y": layout.plantY,
+      "--accent-w": layout.accentSize || "0%",
+      "--accent-x": layout.accentX || "0%",
+      "--accent-y": layout.accentY || "0%",
+      "--pendant-w": layout.pendantSize,
+      "--room-accent": layout.moodColor,
+      "--room-floor": layout.floorTone
+    };
+    Object.entries(variables).forEach(([key, value]) => { if (value) scene.style.setProperty(key, value); });
+  };
+  const applyCabinRoomAssets = (roomId, room) => {
+    const assets = getBlogMaterials().roomMap?.[roomId] || room.assets || {};
+    const mainSource = assets.painting || assets.scene || room.image;
+    const detailSource = assets.prop || assets.lamp || assets.plantDetail || assets.toy || room.detail;
+    const plantSource = assets.plant || assets.plantMain || assets.toy || "";
+    const accentSource = assets.painting && assets.scene ? assets.scene : assets.toy && detailSource !== assets.toy ? assets.toy : "";
+    setImageSource(image, mainSource, room.image);
+    setImageSource(detailImage, detailSource, room.detail);
+    setImageSource(plantImage, plantSource);
+    setImageSource(accentImage, accentSource);
+    setImageSource(pendantImage, room.pendant ? (getBlogMaterials().roomMap?.shared?.pendant || "cabin-pendant-cutout.png") : "", "cabin-pendant-cutout.png");
+    image.alt = room.alt;
+    image.dataset.aspect = room.aspect;
+    detailImage.alt = room.detailAlt;
+    detailImage.dataset.prop = room.prop;
+    applyRoomLayout(room);
   };
 
   const setLight = (value) => {
@@ -3452,6 +3661,7 @@ function setupCabinExperience() {
       const isMusicRoom = button.dataset.room === "music";
       const isPetRoom = button.dataset.room === "pet";
       if (!room && !isMusicRoom && !isPetRoom) return;
+      CabinAudioManager.stopRoomSounds();
       playFootsteps();
       experience.classList.add("is-walking");
       window.setTimeout(() => experience.classList.remove("is-walking"), 650);
@@ -3471,6 +3681,7 @@ function setupCabinExperience() {
         mimi.style.setProperty("--mimi-y", "82px");
         mimi.dispatchEvent(new CustomEvent("mimi-enter-room"));
       } else if (mimi) {
+        mimi.dispatchEvent(new CustomEvent("mimi-leave-room"));
         mimi.classList.remove("is-in-pet-room", "is-walking", "is-held");
         if (mimiPanel) mimiPanel.hidden = true;
       }
@@ -3478,14 +3689,7 @@ function setupCabinExperience() {
         setLight(false);
         return;
       }
-      image.src = room.image;
-      image.alt = room.alt;
-      image.dataset.aspect = room.aspect;
-      detailImage.hidden = !room.detail;
-      if (room.detail) detailImage.src = room.detail;
-      detailImage.alt = room.detailAlt;
-      detailImage.dataset.prop = room.prop;
-      pendantImage.hidden = !room.pendant;
+      applyCabinRoomAssets(button.dataset.room, room);
       number.textContent = room.number;
       title.textContent = room.title;
       note.textContent = room.note;
@@ -3499,6 +3703,7 @@ function setupCabinExperience() {
     localStorage.setItem("cabin-treasure-found", dayKey);
   });
   treasureDialog.querySelector(".cabin-treasure-dialog__close").addEventListener("click", () => treasureDialog.close());
+  applyCabinRoomAssets("studio", rooms.studio);
 }
 
 function renderCabinRecordings() {
@@ -3531,6 +3736,7 @@ function setupCabinMusicRoom() {
   let pendingRecording = null;
   let startedAt = 0;
   let timer = null;
+  const heldKeyboardVoices = new Map();
 
   const ensureAudio = async () => {
     if (!context) {
@@ -3549,37 +3755,84 @@ function setupCabinMusicRoom() {
     button.classList.add("is-playing");
     window.setTimeout(() => button.classList.remove("is-playing"), 500);
   };
+  const registerVoice = (nodes, stopAt, releaseDuration = 0.18) => {
+    let stopped = false;
+    const voice = {
+      release: () => {
+        if (stopped || !context) return;
+        const now = context.currentTime;
+        nodes.gain.gain.cancelScheduledValues(now);
+        nodes.gain.gain.setValueAtTime(Math.max(0.0001, nodes.gain.gain.value), now);
+        nodes.gain.gain.exponentialRampToValueAtTime(0.0001, now + releaseDuration);
+        nodes.oscillators?.forEach((oscillator) => { try { oscillator.stop(now + releaseDuration + 0.04); } catch {} });
+        if (nodes.source) { try { nodes.source.stop(now + releaseDuration + 0.04); } catch {} }
+      },
+      stop: () => {
+        if (stopped) return;
+        stopped = true;
+        nodes.oscillators?.forEach((oscillator) => { try { oscillator.stop(); } catch {} });
+        if (nodes.source) { try { nodes.source.stop(); } catch {} }
+        CabinAudioManager.releaseVoice(voice);
+      }
+    };
+    CabinAudioManager.registerVoice(voice);
+    window.setTimeout(() => {
+      stopped = true;
+      CabinAudioManager.releaseVoice(voice);
+    }, stopAt * 1000 + 180);
+    return voice;
+  };
   const playPiano = async (frequency, button) => {
     await ensureAudio();
     const now = context.currentTime;
+    const oscillators = [];
+    const voiceGain = context.createGain();
+    const filter = context.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.value = 3500;
+    voiceGain.gain.setValueAtTime(0.0001, now);
+    voiceGain.gain.linearRampToValueAtTime(0.2, now + 0.025);
+    voiceGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.5);
+    filter.connect(voiceGain).connect(master);
     [1, 2, 3.01].forEach((multiple, index) => {
       const oscillator = context.createOscillator();
       const gain = context.createGain();
       oscillator.type = index === 0 ? "triangle" : "sine";
       oscillator.frequency.value = frequency * multiple;
-      gain.gain.setValueAtTime(index === 0 ? 0.22 : 0.055 / index, now);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.2 - index * 0.35);
-      oscillator.connect(gain).connect(master);
+      gain.gain.value = index === 0 ? 0.86 : 0.12 / index;
+      oscillator.connect(gain).connect(filter);
       oscillator.start(now);
-      oscillator.stop(now + 2.3);
+      oscillator.stop(now + 2.6);
+      oscillators.push(oscillator);
     });
     animateButton(button);
+    return registerVoice({ oscillators, gain: voiceGain }, 2.6, 0.28);
   };
   const playBowl = async (frequency, button) => {
     await ensureAudio();
     const now = context.currentTime;
+    const oscillators = [];
+    const voiceGain = context.createGain();
+    const filter = context.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.value = 4600;
+    voiceGain.gain.setValueAtTime(0.0001, now);
+    voiceGain.gain.linearRampToValueAtTime(0.14, now + 0.12);
+    voiceGain.gain.exponentialRampToValueAtTime(0.0001, now + 7.2);
+    filter.connect(voiceGain).connect(master);
     [1, 2.71, 4.16, 5.43].forEach((multiple, index) => {
       const oscillator = context.createOscillator();
       const gain = context.createGain();
       oscillator.type = "sine";
       oscillator.frequency.value = frequency * multiple;
-      gain.gain.setValueAtTime(0.12 / (index + 1), now);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 7 - index * 0.75);
-      oscillator.connect(gain).connect(master);
+      gain.gain.value = 0.85 / (index + 1);
+      oscillator.connect(gain).connect(filter);
       oscillator.start(now);
-      oscillator.stop(now + 7.2);
+      oscillator.stop(now + 7.3);
+      oscillators.push(oscillator);
     });
     animateButton(button);
+    return registerVoice({ oscillators, gain: voiceGain }, 7.3, 0.7);
   };
   const playGuitar = async (frequency, button) => {
     await ensureAudio();
@@ -3590,16 +3843,53 @@ function setupCabinMusicRoom() {
     for (let index = length; index < data.length; index += 1) data[index] = 0.994 * 0.5 * (data[index - length] + data[index - length + 1]);
     const source = context.createBufferSource();
     const gain = context.createGain();
-    gain.gain.value = 0.34;
+    const filter = context.createBiquadFilter();
+    const now = context.currentTime;
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(3200, now);
+    filter.frequency.exponentialRampToValueAtTime(900, now + 2.7);
+    gain.gain.setValueAtTime(0.3, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.8);
     source.buffer = buffer;
-    source.connect(gain).connect(master);
-    source.start();
+    source.connect(filter).connect(gain).connect(master);
+    source.start(now);
+    source.stop(now + 2.9);
     animateButton(button);
+    return registerVoice({ source, gain }, 2.9, 0.24);
   };
 
-  studio.querySelectorAll("[data-note]").forEach((button) => button.addEventListener("click", () => playPiano(Number(button.dataset.note), button)));
-  studio.querySelectorAll("[data-bowl]").forEach((button) => button.addEventListener("click", () => playBowl(Number(button.dataset.bowl), button)));
-  studio.querySelectorAll("[data-string]").forEach((button) => button.addEventListener("click", () => playGuitar(Number(button.dataset.string), button)));
+  const bindInstrumentButtons = (selector, playVoice, dataKey) => {
+    studio.querySelectorAll(selector).forEach((button) => {
+      let pointerVoice = null;
+      button.addEventListener("pointerdown", async (event) => {
+        event.preventDefault();
+        button.setPointerCapture?.(event.pointerId);
+        pointerVoice = await playVoice(Number(button.dataset[dataKey]), button);
+      });
+      const release = () => { pointerVoice?.release?.(); pointerVoice = null; };
+      button.addEventListener("pointerup", release);
+      button.addEventListener("pointercancel", release);
+      button.addEventListener("lostpointercapture", release);
+    });
+  };
+  bindInstrumentButtons("[data-note]", playPiano, "note");
+  bindInstrumentButtons("[data-bowl]", playBowl, "bowl");
+  bindInstrumentButtons("[data-string]", playGuitar, "string");
+
+  const keyboardMap = { a: 261.63, w: 277.18, s: 293.66, e: 311.13, d: 329.63, f: 349.23, t: 369.99, g: 392, y: 415.3, h: 440, u: 466.16, j: 493.88 };
+  const isTypingTarget = (target) => target instanceof HTMLElement && (target.matches("input, textarea, select") || target.isContentEditable);
+  window.addEventListener("keydown", async (event) => {
+    const key = event.key.toLowerCase();
+    if (isTypingTarget(event.target) || event.repeat || !keyboardMap[key] || document.querySelector('.cabin-experience')?.dataset.cabinRoom !== "music") return;
+    event.preventDefault();
+    const matchingButton = [...studio.querySelectorAll("[data-note]")].find((button) => Math.abs(Number(button.dataset.note) - keyboardMap[key]) < 0.1);
+    heldKeyboardVoices.set(key, await playPiano(keyboardMap[key], matchingButton));
+  });
+  window.addEventListener("keyup", (event) => {
+    const key = event.key.toLowerCase();
+    heldKeyboardVoices.get(key)?.release?.();
+    heldKeyboardVoices.delete(key);
+  });
 
   startButton.addEventListener("click", async () => {
     await ensureAudio();
@@ -3653,17 +3943,19 @@ function setupCabinMusicRoom() {
   renderCabinRecordings();
 }
 
-const defaultCabinArtworks = [
-  { id: "oil-night", category: "oil", title: "夜色街巷", image_url: "cabin-art-night.jpg" },
-  { id: "oil-water", category: "oil", title: "水面与睡莲", image_url: "cabin-art-water.jpg" },
-  { id: "oil-flowers", category: "oil", title: "花与旧书", image_url: "cabin-art-flowers.jpg" }
-];
+const defaultCabinArtworks = getBlogMaterials().gallerySeeds.map((item, index) => ({
+  id: `material-seed-${index}`,
+  category: item.category,
+  title: item.title,
+  image_url: item.src
+}));
 
 function renderCabinGallery() {
   if (!elements.cabinGalleryGrid) return;
   elements.cabinArtworkForm.hidden = profile?.role !== "owner";
   document.querySelectorAll("[data-art-filter]").forEach((button) => button.classList.toggle("active", button.dataset.artFilter === activeCabinArtFilter));
-  const items = [...defaultCabinArtworks, ...cabinArtworks].filter((item) => item.category === activeCabinArtFilter);
+  const sourceItems = cabinArtworks.length ? cabinArtworks : defaultCabinArtworks;
+  const items = sourceItems.filter((item) => item.category === activeCabinArtFilter);
   if (!items.length) {
     const waiting = activeCabinArtFilter === "child" ? "儿童房的画框已经挂好，等第一幅作品住进来。" : "这个展厅正在等待新的作品。";
     elements.cabinGalleryGrid.innerHTML = `<div class="cabin-gallery__empty"><span></span><p>${waiting}</p></div>`;
@@ -3673,11 +3965,11 @@ function renderCabinGallery() {
   items.forEach((item) => {
     const figure = document.createElement("figure");
     figure.className = `cabin-artwork cabin-artwork--${item.category}`;
-    figure.innerHTML = `<button type="button"><img src="${item.image_url}" alt="${escapeHtml(item.title)}" /></button><figcaption>${escapeHtml(item.title)}</figcaption>`;
+    figure.innerHTML = `<button type="button"><img src="${item.image_url}" alt="${escapeHtml(item.title)}" loading="lazy" decoding="async" /></button><figcaption>${escapeHtml(item.title)}</figcaption>`;
     figure.querySelector("button").addEventListener("click", () => {
       const dialog = document.createElement("dialog");
       dialog.className = "cabin-art-dialog";
-      dialog.innerHTML = `<button type="button" aria-label="关闭">×</button><img src="${item.image_url}" alt="${escapeHtml(item.title)}" /><p>${escapeHtml(item.title)}</p>`;
+      dialog.innerHTML = `<button type="button" aria-label="关闭">×</button><img src="${item.image_url}" alt="${escapeHtml(item.title)}" loading="lazy" decoding="async" /><p>${escapeHtml(item.title)}</p>`;
       document.body.append(dialog);
       dialog.querySelector("button").addEventListener("click", () => dialog.close());
       dialog.addEventListener("close", () => dialog.remove());

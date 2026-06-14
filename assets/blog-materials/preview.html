@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>博客素材库</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#17110e;color:#ead9c4;font-family:system-ui,sans-serif}header{position:sticky;top:0;z-index:2;padding:18px 5vw;background:rgba(23,17,14,.94);border-bottom:1px solid #60442f}h1{margin:0;font-size:1.25rem}main{width:min(1180px,92vw);margin:28px auto 60px}section{margin:0 0 32px}h2{color:#c99c68;font-size:1rem;text-transform:capitalize}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}.card{padding:10px;border:1px solid #503827;background:#211713;border-radius:6px}.image{display:grid;place-items:center;aspect-ratio:4/3;background:#120d0b;overflow:hidden}.image img{width:100%;height:100%;object-fit:contain}.card strong,.card small{display:block}.card strong{margin-top:9px}.card small{margin-top:4px;color:#9f8876;overflow-wrap:anywhere}.card button{margin-top:9px;width:100%;min-height:34px;border:1px solid #765337;background:#38251b;color:#f0d7b7;border-radius:4px}mark{background:#66502d;color:#fff2cb}
+  </style>
+</head>
+<body>
+  <header><h1>Rose Blog Materials · 长期素材库</h1></header>
+  <main id="app"><p>正在读取素材……</p></main>
+  <script>
+    fetch("manifest.json").then(r=>r.json()).then(data=>{
+      const groups=Object.groupBy?Object.groupBy(data.assets,a=>a.category):data.assets.reduce((m,a)=>((m[a.category]||=[]).push(a),m),{});
+      document.querySelector("#app").innerHTML=Object.entries(groups).map(([category,assets])=>`<section><h2>${category}</h2><div class="grid">${assets.map(asset=>`<article class="card"><div class="image"><img src="../../${asset.thumb}" alt="${asset.title}" loading="lazy" decoding="async"></div><strong>${asset.title}</strong><small>${asset.role}</small><small>${asset.src}</small>${asset.status==="review"?"<mark>需人工确认边缘</mark>":""}<button data-copy="${asset.src}">复制路径</button></article>`).join("")}</div></section>`).join("");
+      document.querySelectorAll("[data-copy]").forEach(button=>button.addEventListener("click",async()=>{await navigator.clipboard.writeText(button.dataset.copy);button.textContent="已复制";setTimeout(()=>button.textContent="复制路径",1200)}));
+    }).catch(error=>{document.querySelector("#app").textContent=`素材读取失败：${error.message}`});
+  </script>
+</body>
+</html>
