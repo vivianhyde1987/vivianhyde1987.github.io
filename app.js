@@ -123,7 +123,42 @@ const fallbackBlogMaterials = {
   audio: { mimiPurr: "assets/blog-materials/audio/mimi-purr-soft-source.mp3" }
 };
 
-const getBlogMaterials = () => window.ROSE_BLOG_MATERIALS || fallbackBlogMaterials;
+const BLOG_MATERIALS = window.ROSE_BLOG_MATERIALS || fallbackBlogMaterials;
+const getBlogMaterials = () => BLOG_MATERIALS;
+
+function getBlogMaterialPath(path) {
+  if (!path) return "";
+  if (/^(https?:|data:|blob:|file:)/.test(path)) return path;
+  return path.replace(/^\/+/, "");
+}
+
+function setImageSafe(img, src, alt = "") {
+  if (!img || !src) return false;
+  const safeSrc = getBlogMaterialPath(src);
+  img.loading = "lazy";
+  img.decoding = "async";
+  img.hidden = false;
+  if (alt) img.alt = alt;
+  img.removeAttribute("data-image-error");
+  img.onerror = () => {
+    console.warn("[BlogMaterials] 图片加载失败:", safeSrc);
+    img.dataset.imageError = "true";
+  };
+  img.src = `${safeSrc}${safeSrc.includes("?") ? "&" : "?"}v=materials-fix-1`;
+  return true;
+}
+
+console.table(
+  Object.entries(BLOG_MATERIALS.roomMap || {}).map(([room, data]) => ({
+    room,
+    painting: data.painting || "",
+    scene: data.scene || "",
+    mainCat: data.mainCat || "",
+    prop: data.prop || "",
+    plant: data.plant || data.plantMain || "",
+    lamp: data.lamp || ""
+  }))
+);
 
 const interestTypes = ["全部", "艺术", "音乐", "电影", "阅读", "展览", "生活灵感"];
 
@@ -3141,8 +3176,13 @@ function setupMimiPet() {
   const storageKey = "mimi-pet-care-v1";
   const petAssets = getBlogMaterials().roomMap.pet;
   const idleSource = petAssets.mainCat || "mimi-sit-transparent.png";
-  const poses = [idleSource, petAssets.peeking || "mimi-walk-cutout.png"];
-  const walkFrames = ["mimi-walk-cutout.png", "mimi-walk-2.png", "mimi-walk-3.png", "mimi-walk-4.png"];
+  const poses = [idleSource, petAssets.peeking || idleSource];
+  const walkFrames = [
+    petAssets.peeking,
+    petAssets.watchToy,
+    petAssets.playing,
+    petAssets.peeking
+  ].filter(Boolean);
   const stateImages = [idleSource, petAssets.relaxed, petAssets.playing, petAssets.watchToy, petAssets.peeking, ...walkFrames].filter(Boolean);
   stateImages.forEach((src) => { const image = new Image(); image.src = src; });
   const now = Date.now();
@@ -3546,11 +3586,11 @@ function setupCabinExperience() {
   const scene = experience.querySelector(".cabin-room__scene");
   const materialMap = getBlogMaterials().roomMap || fallbackBlogMaterials.roomMap;
   const rooms = {
-    studio: { number: "ROOM 01", title: "夜色画室", note: "灯亮以后，街巷里的星星才慢慢出现。", image: "cabin-art-night.jpg", alt: "夜色街巷油画", aspect: "portrait", detail: "cabin-lamp-cutout.png", detailAlt: "桌上的台灯", prop: "lamp", pendant: false, assets: materialMap.studio, layout: { theme: "studio", paintingSize: "34%", paintingHeight: "67%", paintingX: "9%", paintingY: "6%", propSize: "17%", propX: "76%", propY: "14%", plantSize: "18%", plantX: "54%", plantY: "13%", pendantSize: "28%", moodColor: "#9b6a3f", floorTone: "#2d190f" } },
-    water: { number: "ROOM 02", title: "水边房间", note: "胡桃木墙上，水面把光留在了睡莲之间。", image: "cabin-art-water.jpg", alt: "睡莲水面油画", aspect: "landscape", detail: "", detailAlt: "绿色墙钟", prop: "clock", pendant: true, assets: materialMap.water, layout: { theme: "water", paintingSize: "51%", paintingHeight: "52%", paintingX: "7%", paintingY: "10%", propSize: "12%", propX: "78%", propY: "52%", plantSize: "19%", plantX: "59%", plantY: "12%", pendantSize: "27%", moodColor: "#6f8f86", floorTone: "#20221d" } },
-    flowers: { number: "ROOM 03", title: "花与书房", note: "花、旧书和绿色墙面，在夜里有自己的呼吸。", image: "cabin-art-flowers.jpg", alt: "花与书静物油画", aspect: "landscape", detail: "cabin-flowers-cutout.png", detailAlt: "桌上的淡粉菊花瓶", prop: "flowers", pendant: true, assets: materialMap.flowers, layout: { theme: "flowers", paintingSize: "46%", paintingHeight: "51%", paintingX: "6%", paintingY: "9%", propSize: "16%", propX: "78%", propY: "10%", plantSize: "19%", plantX: "58%", plantY: "10%", pendantSize: "25%", moodColor: "#8b9a68", floorTone: "#272016" } },
-    hearth: { number: "ROOM 04", title: "炉边角落", note: "灯和薄雾守着这个角落，像一间一直有人等候的小屋。", image: "cabin-hearth.jpg", alt: "暖色灯光与加湿器角落", aspect: "landscape", detail: "cabin-lamp-cutout.png", detailAlt: "桌上的暖光灯", prop: "lamp", pendant: false, assets: materialMap.hearth, layout: { theme: "hearth", paintingSize: "56%", paintingHeight: "62%", paintingX: "5%", paintingY: "7%", propSize: "15%", propX: "76%", propY: "10%", plantSize: "0%", plantX: "0%", plantY: "0%", pendantSize: "0%", moodColor: "#b06f3a", floorTone: "#32190d" } },
-    child: { number: "ROOM 05", title: "儿童画室", note: "胡桃木矮柜和柔软地毯，等着新的颜色住进来。", image: "cabin-art-flowers.jpg", alt: "儿童房里的竹影画", aspect: "portrait", detail: "cabin-flowers-cutout.png", detailAlt: "绿色墙钟", prop: "clock", pendant: true, assets: materialMap.child, layout: { theme: "child", paintingSize: "30%", paintingHeight: "66%", paintingX: "8%", paintingY: "7%", propSize: "9%", propX: "87%", propY: "17%", plantSize: "13%", plantX: "72%", plantY: "12%", accentSize: "29%", accentX: "42%", accentY: "10%", pendantSize: "22%", moodColor: "#b99764", floorTone: "#312116" } }
+    studio: { number: "ROOM 01", title: "夜色画室", note: "灯亮以后，街巷里的星星才慢慢出现。", image: materialMap.studio.painting, alt: "夜色街巷装框画", aspect: "portrait", detail: materialMap.studio.prop, detailAlt: "桌上的暖光台灯", prop: "lamp", pendant: false, assets: materialMap.studio, layout: { theme: "studio", paintingSize: "34%", paintingHeight: "67%", paintingX: "9%", paintingY: "6%", propSize: "17%", propX: "76%", propY: "14%", plantSize: "18%", plantX: "54%", plantY: "13%", pendantSize: "28%", moodColor: "#9b6a3f", floorTone: "#2d190f" } },
+    water: { number: "ROOM 02", title: "水边房间", note: "胡桃木墙上，水面把光留在了睡莲之间。", image: materialMap.water.painting, alt: "睡莲水面装框画", aspect: "landscape", detail: materialMap.water.prop, detailAlt: "绿色墙钟", prop: "clock", pendant: true, assets: materialMap.water, layout: { theme: "water", paintingSize: "51%", paintingHeight: "52%", paintingX: "7%", paintingY: "10%", propSize: "12%", propX: "78%", propY: "52%", plantSize: "19%", plantX: "59%", plantY: "12%", pendantSize: "27%", moodColor: "#6f8f86", floorTone: "#20221d" } },
+    flowers: { number: "ROOM 03", title: "花与书房", note: "花、旧书和绿色墙面，在夜里有自己的呼吸。", image: materialMap.flowers.painting, alt: "花与书静物装框画", aspect: "landscape", detail: materialMap.flowers.plantDetail, detailAlt: "桌上的淡粉菊花瓶", prop: "flowers", pendant: true, assets: materialMap.flowers, layout: { theme: "flowers", paintingSize: "46%", paintingHeight: "51%", paintingX: "6%", paintingY: "9%", propSize: "16%", propX: "78%", propY: "10%", plantSize: "19%", plantX: "58%", plantY: "10%", pendantSize: "25%", moodColor: "#8b9a68", floorTone: "#272016" } },
+    hearth: { number: "ROOM 04", title: "炉边角落", note: "灯和薄雾守着这个角落，像一间一直有人等候的小屋。", image: materialMap.hearth.scene, alt: "暖色灯光与加湿器角落", aspect: "landscape", detail: materialMap.hearth.lamp, detailAlt: "桌上的暖光灯", prop: "lamp", pendant: false, assets: materialMap.hearth, layout: { theme: "hearth", paintingSize: "56%", paintingHeight: "62%", paintingX: "5%", paintingY: "7%", propSize: "15%", propX: "76%", propY: "10%", plantSize: "0%", plantX: "0%", plantY: "0%", pendantSize: "0%", moodColor: "#b06f3a", floorTone: "#32190d" } },
+    child: { number: "ROOM 05", title: "儿童画室", note: "胡桃木矮柜和柔软地毯，等着新的颜色住进来。", image: materialMap.child.painting, alt: "儿童房里的竹影装框画", aspect: "portrait", detail: materialMap.child.prop, detailAlt: "绿色墙钟", prop: "clock", pendant: true, assets: materialMap.child, layout: { theme: "child", paintingSize: "30%", paintingHeight: "66%", paintingX: "8%", paintingY: "7%", propSize: "9%", propX: "87%", propY: "17%", plantSize: "13%", plantX: "72%", plantY: "12%", accentSize: "29%", accentX: "42%", accentY: "10%", pendantSize: "22%", moodColor: "#b99764", floorTone: "#312116" } }
   };
   let lightOn = false;
   const dayKey = new Date().toISOString().slice(0, 10);
@@ -3597,15 +3637,6 @@ function setupCabinExperience() {
     });
   };
 
-  const setImageSource = (element, source, fallback = "") => {
-    if (!element) return;
-    element.loading = "lazy";
-    element.decoding = "async";
-    element.hidden = !source;
-    if (!source) return;
-    element.onerror = fallback ? () => { element.onerror = null; element.src = fallback; } : null;
-    element.src = source;
-  };
   const applyRoomLayout = (room) => {
     const layout = room.layout || {};
     experience.dataset.cabinTheme = layout.theme || "studio";
@@ -3629,17 +3660,27 @@ function setupCabinExperience() {
     };
     Object.entries(variables).forEach(([key, value]) => { if (value) scene.style.setProperty(key, value); });
   };
-  const applyCabinRoomAssets = (roomId, room) => {
-    const assets = getBlogMaterials().roomMap?.[roomId] || room.assets || {};
-    const mainSource = assets.painting || assets.scene || room.image;
-    const detailSource = assets.prop || assets.lamp || assets.plantDetail || assets.toy || room.detail;
+  const applyCabinRoomAssets = (roomId, room = rooms[roomId]) => {
+    const assets = BLOG_MATERIALS.roomMap?.[roomId] || room?.assets;
+    if (!assets || !room) {
+      console.warn("[BlogMaterials] 没有找到房间素材:", roomId);
+      return;
+    }
+    const mainSource = assets.painting || assets.scene || assets.background || assets.mainCat || "";
+    const detailSource = assets.prop || assets.plant || assets.plantMain || assets.lamp || assets.plantDetail || assets.toy || "";
     const plantSource = assets.plant || assets.plantMain || assets.toy || "";
     const accentSource = assets.painting && assets.scene ? assets.scene : assets.toy && detailSource !== assets.toy ? assets.toy : "";
-    setImageSource(image, mainSource, room.image);
-    setImageSource(detailImage, detailSource, room.detail);
-    setImageSource(plantImage, plantSource);
-    setImageSource(accentImage, accentSource);
-    setImageSource(pendantImage, room.pendant ? (getBlogMaterials().roomMap?.shared?.pendant || "cabin-pendant-cutout.png") : "", "cabin-pendant-cutout.png");
+    if (mainSource) setImageSafe(image, mainSource, assets.title || room.alt);
+    detailImage.hidden = !detailSource;
+    plantImage.hidden = !plantSource;
+    accentImage.hidden = !accentSource;
+    pendantImage.hidden = !room.pendant;
+    if (detailSource) setImageSafe(detailImage, detailSource, `${assets.title || room.title} detail`);
+    if (plantSource) setImageSafe(plantImage, plantSource, `${assets.title || room.title} plant`);
+    if (accentSource) setImageSafe(accentImage, accentSource, `${assets.title || room.title} scene`);
+    if (room.pendant && BLOG_MATERIALS.roomMap?.shared?.pendant) {
+      setImageSafe(pendantImage, BLOG_MATERIALS.roomMap.shared.pendant, "胡桃木暖光吊灯");
+    }
     image.alt = room.alt;
     image.dataset.aspect = room.aspect;
     detailImage.alt = room.detailAlt;
@@ -3689,11 +3730,11 @@ function setupCabinExperience() {
         setLight(false);
         return;
       }
-      applyCabinRoomAssets(button.dataset.room, room);
       number.textContent = room.number;
       title.textContent = room.title;
       note.textContent = room.note;
       setLight(false);
+      applyCabinRoomAssets(button.dataset.room, room);
     });
   });
   lightButton.addEventListener("click", () => setLight(!lightOn));
