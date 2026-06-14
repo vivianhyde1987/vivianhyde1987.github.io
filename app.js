@@ -106,20 +106,21 @@ window.CabinAudioManager = CabinAudioManager;
 
 const fallbackBlogMaterials = {
   roomMap: {
-    studio: { painting: "assets/blog-materials/vector/paintings/painting-night-cafe-street-walnut-frame.png", prop: "assets/blog-materials/vector/lighting/lamp-black-mushroom.png", plant: "assets/blog-materials/vector/plants/plant-monstera-glass-vase.png", accent: "#9b6a3f" },
-    water: { painting: "assets/blog-materials/vector/paintings/painting-water-lilies-walnut-frame.png", prop: "assets/blog-materials/vector/props/green-wall-clock.png", plant: "assets/blog-materials/vector/plants/plant-bird-nest-fern-wood-pot.png", accent: "#6f8f86" },
-    flowers: { painting: "assets/blog-materials/vector/paintings/painting-flower-vase-book-walnut-frame.png", plantMain: "assets/blog-materials/vector/plants/plant-monstera-glass-vase.png", plantDetail: "assets/blog-materials/vector/plants/plant-white-chrysanthemum-glass-vase.png", accent: "#8b9a68" },
-    hearth: { scene: "assets/blog-materials/vector/scenes/scene-hearth-humidifier-branches.png", lamp: "assets/blog-materials/vector/lighting/lamp-fabric-warm-table.png", accent: "#b06f3a" },
-    child: { painting: "assets/blog-materials/vector/paintings/painting-bamboo-ink-walnut-frame.png", scene: "assets/blog-materials/vector/scenes/scene-warm-desk-toy.png", toy: "assets/blog-materials/vector/toys/toy-furry-brown-character.png", accent: "#b99764" },
-    pet: { mainCat: "assets/blog-materials/vector/cats/mimi-main-sitting.png", watchToy: "assets/blog-materials/vector/cats/mimi-watch-toy.png", playing: "assets/blog-materials/vector/cats/mimi-playing-string.png", peeking: "assets/blog-materials/vector/cats/mimi-peeking.png", relaxed: "assets/blog-materials/vector/cats/mimi-relaxed-sitting.png", accent: "#a77b55" },
-    shared: { pendant: "assets/blog-materials/vector/lighting/lamp-walnut-pendant.png" }
+    studio: { painting: "cabin-painting-night.jpg", prop: "cabin-lamp-cutout.png", plant: "cabin-flowers-cutout.png", accent: "#9b6a3f" },
+    water: { painting: "cabin-painting-water.jpg", prop: "cabin-desk-lamp.jpg", plant: "cabin-flowers-cutout.png", accent: "#6f8f86" },
+    flowers: { painting: "cabin-painting-flowers.jpg", plantMain: "cabin-flowers-cutout.png", plantDetail: "cabin-flowers.jpg", accent: "#8b9a68" },
+    hearth: { scene: "cabin-hearth.jpg", lamp: "cabin-wood-lamp.jpg", accent: "#b06f3a" },
+    child: { painting: "cabin-art-night.jpg", toy: "cabin-flowers-cutout.png", prop: "cabin-desk-lamp.jpg", accent: "#b99764" },
+    pet: { mainCat: "mimi-sit-transparent.png", watchToy: "mimi-play.jpg", playing: "mimi-play.jpg", peeking: "mimi-alert.jpg", relaxed: "mimi-lean.jpg", accent: "#a77b55" },
+    shared: { pendant: "cabin-pendant-cutout.png" }
   },
   gallerySeeds: [
-    { title: "夜街", category: "oil", src: "assets/blog-materials/vector/paintings/painting-night-cafe-street-walnut-frame.png" },
-    { title: "睡莲", category: "oil", src: "assets/blog-materials/vector/paintings/painting-water-lilies-walnut-frame.png" },
-    { title: "花瓶与书", category: "oil", src: "assets/blog-materials/vector/paintings/painting-flower-vase-book-walnut-frame.png" },
-    { title: "竹影", category: "ink", src: "assets/blog-materials/vector/paintings/painting-bamboo-ink-walnut-frame.png" }
+    { title: "旧画室", category: "oil", src: "cabin-painting-night.jpg" },
+    { title: "旧水边", category: "oil", src: "cabin-painting-water.jpg" },
+    { title: "旧花房", category: "oil", src: "cabin-painting-flowers.jpg" }
   ],
+  articleIllustrations: [],
+  legacyFallbacks: {},
   audio: { mimiPurr: "assets/blog-materials/audio/mimi-purr-soft-source.mp3" }
 };
 
@@ -132,19 +133,29 @@ function getBlogMaterialPath(path) {
   return path.replace(/^\/+/, "");
 }
 
-function setImageSafe(img, src, alt = "") {
+function setImageSafe(img, src, alt = "", fallbackSrc = "") {
   if (!img || !src) return false;
   const safeSrc = getBlogMaterialPath(src);
+  const safeFallback = getBlogMaterialPath(fallbackSrc);
+  const withVersion = (path) => {
+    if (!path || /^(https?:|data:|blob:)/.test(path)) return path;
+    return `${path}${path.includes("?") ? "&" : "?"}v=vector-final-1`;
+  };
   img.loading = "lazy";
   img.decoding = "async";
   img.hidden = false;
   if (alt) img.alt = alt;
   img.removeAttribute("data-image-error");
   img.onerror = () => {
-    console.warn("[BlogMaterials] 图片加载失败:", safeSrc);
+    console.warn("[BlogMaterials] image failed:", safeSrc);
     img.dataset.imageError = "true";
+    if (safeFallback && img.dataset.fallbackApplied !== "true") {
+      img.dataset.fallbackApplied = "true";
+      img.src = withVersion(safeFallback);
+    }
   };
-  img.src = `${safeSrc}${safeSrc.includes("?") ? "&" : "?"}v=materials-fix-1`;
+  img.removeAttribute("data-fallback-applied");
+  img.src = withVersion(safeSrc);
   return true;
 }
 
@@ -1121,8 +1132,16 @@ function renderFeed() {
     node.querySelector(".post__body").textContent = post.body;
 
     const image = node.querySelector(".post__image");
-    if (post.image_url) {
-      image.src = post.image_url;
+    const articleIllustrations = BLOG_MATERIALS.articleIllustrations || [];
+    const illustrationSeed = String(post.id || post.title || "article")
+      .split("")
+      .reduce((sum, character) => sum + character.charCodeAt(0), 0);
+    const articleIllustration = articleIllustrations.length
+      ? articleIllustrations[illustrationSeed % articleIllustrations.length]
+      : "";
+    const postImageSource = post.image_url || articleIllustration;
+    if (postImageSource) {
+      setImageSafe(image, postImageSource, post.title || "文章插图");
       image.closest(".post__image-frame").hidden = false;
     }
     const video = node.querySelector(".post__video");
@@ -2228,7 +2247,7 @@ function generateSharePoster() {
   const dataUrl = canvas.toDataURL("image/png");
   elements.sharePoster.hidden = false;
   elements.sharePoster.innerHTML = `
-    <img src="${dataUrl}" alt="博客分享海报" />
+    <img src="${dataUrl}" alt="博客分享海报" loading="lazy" decoding="async" />
     <a href="${dataUrl}" download="vivian-blog-poster.png">下载海报</a>
   `;
   setSync("分享海报已生成");
@@ -3184,7 +3203,12 @@ function setupMimiPet() {
     petAssets.peeking
   ].filter(Boolean);
   const stateImages = [idleSource, petAssets.relaxed, petAssets.playing, petAssets.watchToy, petAssets.peeking, ...walkFrames].filter(Boolean);
-  stateImages.forEach((src) => { const image = new Image(); image.src = src; });
+  stateImages.forEach((src) => {
+    const preloadImage = new Image();
+    preloadImage.loading = "lazy";
+    preloadImage.decoding = "async";
+    preloadImage.src = getBlogMaterialPath(src);
+  });
   const now = Date.now();
   let state = { hunger: 78, mood: 82, health: 88, litter: 86, lastUpdate: now, lastDoctor: 0, pose: 0 };
   try { state = { ...state, ...JSON.parse(localStorage.getItem(storageKey) || "{}") }; } catch {}
@@ -3309,7 +3333,7 @@ function setupMimiPet() {
   };
   const setPetVisual = (src, className = "is-idle-breathing", duration = 0) => {
     pet.classList.remove("is-idle-breathing", "is-purring", "is-playing", "is-stretching", "is-turning");
-    if (src) catImage.src = src;
+    if (src) setImageSafe(catImage, src, "棕虎斑猫眯眯", fallbackBlogMaterials.roomMap.pet.mainCat);
     if (className) pet.classList.add(className);
     if (duration) window.setTimeout(() => setPetVisual(idleSource), duration);
   };
@@ -3331,11 +3355,11 @@ function setupMimiPet() {
     pet.dataset.pose = "walk";
     pet.classList.remove("is-idle-breathing", "is-stretching", "is-turning");
     let walkFrame = 0;
-    catImage.src = walkFrames[walkFrame];
+    setImageSafe(catImage, walkFrames[walkFrame], "正在房间里散步的眯眯", fallbackBlogMaterials.roomMap.pet.mainCat);
     window.clearInterval(walkFrameTimer);
     walkFrameTimer = window.setInterval(() => {
       walkFrame = (walkFrame + 1) % walkFrames.length;
-      catImage.src = walkFrames[walkFrame];
+      setImageSafe(catImage, walkFrames[walkFrame], "正在房间里散步的眯眯", fallbackBlogMaterials.roomMap.pet.mainCat);
     }, 300);
     pet.style.setProperty("--mimi-x", `${x}px`);
     pet.style.setProperty("--mimi-y", `${y}px`);
@@ -3350,7 +3374,7 @@ function setupMimiPet() {
       pet.classList.remove("is-walking");
       state.pose = 0;
       pet.dataset.pose = "sit";
-      catImage.src = poses[0];
+      setImageSafe(catImage, poses[0], "坐下休息的眯眯", fallbackBlogMaterials.roomMap.pet.mainCat);
       const restingClass = Math.random() < 0.38 ? "is-stretching" : Math.random() < 0.35 ? "is-turning" : "is-idle-breathing";
       setPetVisual(idleSource, restingClass, restingClass === "is-idle-breathing" ? 0 : 1500);
       save();
@@ -3662,6 +3686,7 @@ function setupCabinExperience() {
   };
   const applyCabinRoomAssets = (roomId, room = rooms[roomId]) => {
     const assets = BLOG_MATERIALS.roomMap?.[roomId] || room?.assets;
+    const fallbackAssets = fallbackBlogMaterials.roomMap[roomId] || {};
     if (!assets || !room) {
       console.warn("[BlogMaterials] 没有找到房间素材:", roomId);
       return;
@@ -3670,16 +3695,18 @@ function setupCabinExperience() {
     const detailSource = assets.prop || assets.plant || assets.plantMain || assets.lamp || assets.plantDetail || assets.toy || "";
     const plantSource = assets.plant || assets.plantMain || assets.toy || "";
     const accentSource = assets.painting && assets.scene ? assets.scene : assets.toy && detailSource !== assets.toy ? assets.toy : "";
-    if (mainSource) setImageSafe(image, mainSource, assets.title || room.alt);
+    const fallbackMain = fallbackAssets.painting || fallbackAssets.scene || fallbackAssets.mainCat || "";
+    const fallbackDetail = fallbackAssets.prop || fallbackAssets.plant || fallbackAssets.plantMain || fallbackAssets.lamp || fallbackAssets.toy || "";
+    if (mainSource) setImageSafe(image, mainSource, assets.title || room.alt, fallbackMain);
     detailImage.hidden = !detailSource;
     plantImage.hidden = !plantSource;
     accentImage.hidden = !accentSource;
     pendantImage.hidden = !room.pendant;
-    if (detailSource) setImageSafe(detailImage, detailSource, `${assets.title || room.title} detail`);
-    if (plantSource) setImageSafe(plantImage, plantSource, `${assets.title || room.title} plant`);
-    if (accentSource) setImageSafe(accentImage, accentSource, `${assets.title || room.title} scene`);
+    if (detailSource) setImageSafe(detailImage, detailSource, `${assets.title || room.title} detail`, fallbackDetail);
+    if (plantSource) setImageSafe(plantImage, plantSource, `${assets.title || room.title} plant`, fallbackAssets.plant || fallbackAssets.plantMain || "");
+    if (accentSource) setImageSafe(accentImage, accentSource, `${assets.title || room.title} scene`, fallbackAssets.toy || "");
     if (room.pendant && BLOG_MATERIALS.roomMap?.shared?.pendant) {
-      setImageSafe(pendantImage, BLOG_MATERIALS.roomMap.shared.pendant, "胡桃木暖光吊灯");
+      setImageSafe(pendantImage, BLOG_MATERIALS.roomMap.shared.pendant, "胡桃木暖光吊灯", fallbackBlogMaterials.roomMap.shared.pendant);
     }
     image.alt = room.alt;
     image.dataset.aspect = room.aspect;
@@ -3995,7 +4022,7 @@ function renderCabinGallery() {
   if (!elements.cabinGalleryGrid) return;
   elements.cabinArtworkForm.hidden = profile?.role !== "owner";
   document.querySelectorAll("[data-art-filter]").forEach((button) => button.classList.toggle("active", button.dataset.artFilter === activeCabinArtFilter));
-  const sourceItems = cabinArtworks.length ? cabinArtworks : defaultCabinArtworks;
+  const sourceItems = [...defaultCabinArtworks, ...cabinArtworks];
   const items = sourceItems.filter((item) => item.category === activeCabinArtFilter);
   if (!items.length) {
     const waiting = activeCabinArtFilter === "child" ? "儿童房的画框已经挂好，等第一幅作品住进来。" : "这个展厅正在等待新的作品。";
