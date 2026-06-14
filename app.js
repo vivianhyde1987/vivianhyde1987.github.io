@@ -3044,10 +3044,8 @@ function setupMimiPet() {
   const message = pet.querySelector(".mimi-pet__message");
   const storageKey = "mimi-pet-care-v1";
   const poses = [
-    "mimi-sit-cutout.jpg",
-    "mimi-alert.jpg",
-    "mimi-lean.jpg",
-    "mimi-play.jpg"
+    "mimi-sit-transparent.png",
+    "mimi-walk-cutout.png"
   ];
   const now = Date.now();
   let state = { hunger: 78, mood: 82, health: 88, litter: 86, lastUpdate: now, lastDoctor: 0, pose: 0 };
@@ -3059,6 +3057,7 @@ function setupMimiPet() {
   state.lastUpdate = now;
   let audioContext = null;
   let moveTimer = null;
+  let lastX = Math.max(18, window.innerWidth - 150);
 
   const save = () => localStorage.setItem(storageKey, JSON.stringify(state));
   const render = () => {
@@ -3122,21 +3121,26 @@ function setupMimiPet() {
     const safeHeight = Math.max(120, window.innerHeight - 230);
     const x = 18 + Math.random() * safeWidth;
     const y = 90 + Math.random() * safeHeight;
+    pet.style.setProperty("--mimi-face", x < lastX ? "-1" : "1");
+    lastX = x;
+    pet.dataset.pose = "walk";
+    catImage.src = poses[1];
     pet.style.setProperty("--mimi-x", `${x}px`);
     pet.style.setProperty("--mimi-y", `${y}px`);
     pet.classList.add("is-walking");
     sound("step");
     window.setTimeout(() => {
       pet.classList.remove("is-walking");
-      state.pose = (state.pose + 1 + Math.floor(Math.random() * (poses.length - 1))) % poses.length;
-      catImage.src = poses[state.pose];
+      state.pose = 0;
+      pet.dataset.pose = "sit";
+      catImage.src = poses[0];
       save();
       if (Math.random() < 0.08) sound("meow");
-    }, 1800);
+    }, 2600);
   };
-  const scheduleMove = () => {
+  const scheduleMove = (delay = 8000 + Math.random() * 8000) => {
     window.clearTimeout(moveTimer);
-    moveTimer = window.setTimeout(() => { move(); scheduleMove(); }, 14000 + Math.random() * 16000);
+    moveTimer = window.setTimeout(() => { move(); scheduleMove(); }, delay);
   };
 
   catButton.addEventListener("click", () => {
@@ -3150,7 +3154,7 @@ function setupMimiPet() {
       const reactions = {
         food: () => { state.hunger = Math.min(100, state.hunger + 25); state.health = Math.min(100, state.health + 2); speak("眯眯认真地吃了几口猫粮。"); },
         treat: () => { state.hunger = Math.min(100, state.hunger + 12); state.mood = Math.min(100, state.mood + 18); speak("猫条很好吃。她舔了舔鼻子。"); },
-        wand: () => { state.mood = Math.min(100, state.mood + 22); catImage.src = poses[3]; pet.classList.add("is-playing"); window.setTimeout(() => pet.classList.remove("is-playing"), 1800); speak("她盯紧逗猫棒，还是很有精神。"); },
+        wand: () => { state.mood = Math.min(100, state.mood + 22); catImage.src = poses[1]; pet.dataset.pose = "walk"; pet.classList.add("is-playing"); window.setTimeout(() => { pet.classList.remove("is-playing"); pet.dataset.pose = "sit"; catImage.src = poses[0]; }, 1800); speak("她盯紧逗猫棒，还是很有精神。"); },
         pet: () => { state.mood = Math.min(100, state.mood + 12); sound("purr"); speak("她眯起眼睛，发出很轻的呼噜声。噢，是一只小猫咪"); },
         hold: () => { state.mood = Math.min(100, state.mood + 8); pet.classList.toggle("is-held"); speak(pet.classList.contains("is-held") ? "你把眯眯抱起来了。她安静地靠着你。" : "你轻轻把她放回地上。"); },
         litter: () => { state.litter = 100; speak("猫砂盆干净了。眯眯过来检查了一遍。"); },
@@ -3162,9 +3166,10 @@ function setupMimiPet() {
       await saveMimiCareLog(action);
     });
   });
-  catImage.src = poses[state.pose % poses.length];
+  pet.dataset.pose = "sit";
+  catImage.src = poses[0];
   render();
-  scheduleMove();
+  scheduleMove(3500);
   document.body.append(panel);
   window.addEventListener("resize", () => move());
 }
@@ -3336,11 +3341,11 @@ function setupCabinExperience() {
   const treasureDialog = $("#cabinTreasureDialog");
   const treasureMessage = $("#cabinTreasureMessage");
   const rooms = {
-    studio: { number: "ROOM 01", title: "夜色画室", note: "灯亮以后，街巷里的星星才慢慢出现。", image: "cabin-painting-night.jpg", alt: "夜色街巷油画", detail: "cabin-desk-lamp.jpg", detailAlt: "画室里的台灯" },
-    water: { number: "ROOM 02", title: "水边房间", note: "胡桃木墙上，水面把光留在了睡莲之间。", image: "cabin-painting-water.jpg", alt: "睡莲水面油画", detail: "cabin-wood-lamp.jpg", detailAlt: "木质吊灯" },
-    flowers: { number: "ROOM 03", title: "花与书房", note: "花、旧书和绿色墙面，在夜里有自己的呼吸。", image: "cabin-painting-flowers.jpg", alt: "花与书静物油画", detail: "cabin-flowers.jpg", detailAlt: "房间里的花束" },
-    hearth: { number: "ROOM 04", title: "炉边角落", note: "灯和薄雾守着这个角落，像一间一直有人等候的小屋。", image: "cabin-hearth.jpg", alt: "暖色灯光与加湿器角落", detail: "cabin-wood-lamp.jpg", detailAlt: "炉边的木质吊灯" },
-    child: { number: "ROOM 05", title: "儿童画室", note: "胡桃木矮柜和柔软地毯，等着新的颜色住进来。", image: "cabin-flowers.jpg", alt: "儿童画室里的花", detail: "cabin-painting-flowers.jpg", detailAlt: "儿童房预留画框" }
+    studio: { number: "ROOM 01", title: "夜色画室", note: "灯亮以后，街巷里的星星才慢慢出现。", image: "cabin-painting-night.jpg", alt: "夜色街巷油画", detail: "cabin-lamp-cutout.png", detailAlt: "画室里的台灯" },
+    water: { number: "ROOM 02", title: "水边房间", note: "胡桃木墙上，水面把光留在了睡莲之间。", image: "cabin-painting-water.jpg", alt: "睡莲水面油画", detail: "cabin-lamp-cutout.png", detailAlt: "水边房间的灯" },
+    flowers: { number: "ROOM 03", title: "花与书房", note: "花、旧书和绿色墙面，在夜里有自己的呼吸。", image: "cabin-painting-flowers.jpg", alt: "花与书静物油画", detail: "cabin-flowers-cutout.png", detailAlt: "独立的淡粉菊花瓶" },
+    hearth: { number: "ROOM 04", title: "炉边角落", note: "灯和薄雾守着这个角落，像一间一直有人等候的小屋。", image: "cabin-hearth.jpg", alt: "暖色灯光与加湿器角落", detail: "cabin-lamp-cutout.png", detailAlt: "炉边台灯" },
+    child: { number: "ROOM 05", title: "儿童画室", note: "胡桃木矮柜和柔软地毯，等着新的颜色住进来。", image: "cabin-painting-flowers.jpg", alt: "儿童房预留画作", detail: "cabin-flowers-cutout.png", detailAlt: "儿童房里的花瓶" }
   };
   let lightOn = false;
   let footstepContext = null;
