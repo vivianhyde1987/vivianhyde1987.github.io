@@ -3047,6 +3047,8 @@ function setupMimiPet() {
     "mimi-sit-transparent.png",
     "mimi-walk-cutout.png"
   ];
+  const walkFrames = ["mimi-walk-cutout.png", "mimi-walk-2.png", "mimi-walk-3.png", "mimi-walk-4.png"];
+  [...walkFrames, "mimi-purr-expression.png"].forEach((src) => { const image = new Image(); image.src = src; });
   const now = Date.now();
   let state = { hunger: 78, mood: 82, health: 88, litter: 86, lastUpdate: now, lastDoctor: 0, pose: 0 };
   try { state = { ...state, ...JSON.parse(localStorage.getItem(storageKey) || "{}") }; } catch {}
@@ -3057,6 +3059,7 @@ function setupMimiPet() {
   state.lastUpdate = now;
   let audioContext = null;
   let moveTimer = null;
+  let walkFrameTimer = null;
   let lastX = Math.max(18, window.innerWidth - 150);
   const realPurr = new Audio("mimi-purr.mp3");
   realPurr.preload = "metadata";
@@ -3140,12 +3143,19 @@ function setupMimiPet() {
     pet.style.setProperty("--mimi-face", x < lastX ? "-1" : "1");
     lastX = x;
     pet.dataset.pose = "walk";
-    catImage.src = poses[1];
+    let walkFrame = 0;
+    catImage.src = walkFrames[walkFrame];
+    window.clearInterval(walkFrameTimer);
+    walkFrameTimer = window.setInterval(() => {
+      walkFrame = (walkFrame + 1) % walkFrames.length;
+      catImage.src = walkFrames[walkFrame];
+    }, 165);
     pet.style.setProperty("--mimi-x", `${x}px`);
     pet.style.setProperty("--mimi-y", `${y}px`);
     pet.classList.add("is-walking");
     sound("step");
     window.setTimeout(() => {
+      window.clearInterval(walkFrameTimer);
       pet.classList.remove("is-walking");
       state.pose = 0;
       pet.dataset.pose = "sit";
@@ -3170,8 +3180,8 @@ function setupMimiPet() {
       const reactions = {
         food: () => { state.hunger = Math.min(100, state.hunger + 25); state.health = Math.min(100, state.health + 2); speak("眯眯认真地吃了几口猫粮。"); },
         treat: () => { state.hunger = Math.min(100, state.hunger + 12); state.mood = Math.min(100, state.mood + 18); speak("猫条很好吃。她舔了舔鼻子。"); },
-        wand: () => { state.mood = Math.min(100, state.mood + 22); catImage.src = poses[1]; pet.dataset.pose = "walk"; pet.classList.add("is-playing"); window.setTimeout(() => { pet.classList.remove("is-playing"); pet.dataset.pose = "sit"; catImage.src = poses[0]; }, 1800); speak("她盯紧逗猫棒，还是很有精神。"); },
-        pet: () => { state.mood = Math.min(100, state.mood + 12); playRealPurr(); speak("她眯起眼睛，你听见了眯眯真实的呼噜声。噢，是一只小猫咪"); },
+        wand: () => { state.mood = Math.min(100, state.mood + 22); catImage.src = walkFrames[2]; pet.dataset.pose = "walk"; pet.classList.add("is-playing"); window.setTimeout(() => { pet.classList.remove("is-playing"); pet.dataset.pose = "sit"; catImage.src = poses[0]; }, 1800); speak("她盯紧逗猫棒，还是很有精神。"); },
+        pet: () => { state.mood = Math.min(100, state.mood + 12); playRealPurr(); catImage.src = "mimi-purr-expression.png"; pet.classList.add("is-purring"); window.setTimeout(() => { pet.classList.remove("is-purring"); catImage.src = poses[0]; }, 5200); speak("她眯起眼睛，你听见了眯眯真实的呼噜声。噢，是一只小猫咪"); },
         hold: () => { state.mood = Math.min(100, state.mood + 8); pet.classList.toggle("is-held"); speak(pet.classList.contains("is-held") ? "你把眯眯抱起来了。她安静地靠着你。" : "你轻轻把她放回地上。"); },
         litter: () => { state.litter = 100; speak("猫砂盆干净了。眯眯过来检查了一遍。"); },
         doctor: () => { state.health = 100; state.lastDoctor = Date.now(); speak("完成了一次温柔的健康检查，一切都被好好记挂着。"); }
@@ -3311,6 +3321,7 @@ function setupBlogBookmarks() {
   const closeAll = () => {
     document.querySelectorAll(".bookmark-panel.is-bookmark-open").forEach((panel) => panel.classList.remove("is-bookmark-open"));
     rail.querySelectorAll("button").forEach((button) => button.classList.remove("active"));
+    document.body.classList.remove("has-bookmark-open");
   };
 
   panels.forEach(({ selector, label }) => {
@@ -3338,6 +3349,7 @@ function setupBlogBookmarks() {
       if (!isOpen) {
         panel.classList.add("is-bookmark-open");
         tab.classList.add("active");
+        document.body.classList.add("has-bookmark-open");
       }
     });
     rail.append(tab);
@@ -3349,6 +3361,7 @@ function setupCabinExperience() {
   if (!experience) return;
   const image = $("#cabinRoomImage");
   const detailImage = $("#cabinRoomDetail");
+  const pendantImage = $("#cabinPendant");
   const title = $("#cabinRoomTitle");
   const note = $("#cabinRoomNote");
   const number = $("#cabinRoomNumber");
@@ -3357,11 +3370,11 @@ function setupCabinExperience() {
   const treasureDialog = $("#cabinTreasureDialog");
   const treasureMessage = $("#cabinTreasureMessage");
   const rooms = {
-    studio: { number: "ROOM 01", title: "夜色画室", note: "灯亮以后，街巷里的星星才慢慢出现。", image: "cabin-painting-night.jpg", alt: "夜色街巷油画", detail: "cabin-lamp-cutout.png", detailAlt: "画室里的台灯" },
-    water: { number: "ROOM 02", title: "水边房间", note: "胡桃木墙上，水面把光留在了睡莲之间。", image: "cabin-painting-water.jpg", alt: "睡莲水面油画", detail: "cabin-lamp-cutout.png", detailAlt: "水边房间的灯" },
-    flowers: { number: "ROOM 03", title: "花与书房", note: "花、旧书和绿色墙面，在夜里有自己的呼吸。", image: "cabin-painting-flowers.jpg", alt: "花与书静物油画", detail: "cabin-flowers-cutout.png", detailAlt: "独立的淡粉菊花瓶" },
-    hearth: { number: "ROOM 04", title: "炉边角落", note: "灯和薄雾守着这个角落，像一间一直有人等候的小屋。", image: "cabin-hearth.jpg", alt: "暖色灯光与加湿器角落", detail: "cabin-lamp-cutout.png", detailAlt: "炉边台灯" },
-    child: { number: "ROOM 05", title: "儿童画室", note: "胡桃木矮柜和柔软地毯，等着新的颜色住进来。", image: "cabin-painting-flowers.jpg", alt: "儿童房预留画作", detail: "cabin-flowers-cutout.png", detailAlt: "儿童房里的花瓶" }
+    studio: { number: "ROOM 01", title: "夜色画室", note: "灯亮以后，街巷里的星星才慢慢出现。", image: "cabin-art-night.jpg", alt: "夜色街巷油画", aspect: "portrait", detail: "cabin-lamp-cutout.png", detailAlt: "桌上的台灯", prop: "lamp", pendant: false },
+    water: { number: "ROOM 02", title: "水边房间", note: "胡桃木墙上，水面把光留在了睡莲之间。", image: "cabin-art-water.jpg", alt: "睡莲水面油画", aspect: "landscape", detail: "", detailAlt: "", prop: "none", pendant: true },
+    flowers: { number: "ROOM 03", title: "花与书房", note: "花、旧书和绿色墙面，在夜里有自己的呼吸。", image: "cabin-art-flowers.jpg", alt: "花与书静物油画", aspect: "landscape", detail: "cabin-flowers-cutout.png", detailAlt: "桌上的淡粉菊花瓶", prop: "flowers", pendant: true },
+    hearth: { number: "ROOM 04", title: "炉边角落", note: "灯和薄雾守着这个角落，像一间一直有人等候的小屋。", image: "cabin-hearth.jpg", alt: "暖色灯光与加湿器角落", aspect: "landscape", detail: "cabin-lamp-cutout.png", detailAlt: "桌上的台灯", prop: "lamp", pendant: false },
+    child: { number: "ROOM 05", title: "儿童画室", note: "胡桃木矮柜和柔软地毯，等着新的颜色住进来。", image: "cabin-art-flowers.jpg", alt: "儿童房预留画作", aspect: "landscape", detail: "cabin-flowers-cutout.png", detailAlt: "矮柜上的花瓶", prop: "flowers", pendant: true }
   };
   let lightOn = false;
   let footstepContext = null;
@@ -3421,8 +3434,12 @@ function setupCabinExperience() {
       document.querySelectorAll("[data-room]").forEach((item) => item.classList.toggle("active", item === button));
       image.src = room.image;
       image.alt = room.alt;
-      detailImage.src = room.detail;
+      image.dataset.aspect = room.aspect;
+      detailImage.hidden = !room.detail;
+      if (room.detail) detailImage.src = room.detail;
       detailImage.alt = room.detailAlt;
+      detailImage.dataset.prop = room.prop;
+      pendantImage.hidden = !room.pendant;
       number.textContent = room.number;
       title.textContent = room.title;
       note.textContent = room.note;
@@ -3439,9 +3456,9 @@ function setupCabinExperience() {
 }
 
 const defaultCabinArtworks = [
-  { id: "oil-night", category: "oil", title: "夜色街巷", image_url: "cabin-painting-night.jpg" },
-  { id: "oil-water", category: "oil", title: "水面与睡莲", image_url: "cabin-painting-water.jpg" },
-  { id: "oil-flowers", category: "oil", title: "花与旧书", image_url: "cabin-painting-flowers.jpg" }
+  { id: "oil-night", category: "oil", title: "夜色街巷", image_url: "cabin-art-night.jpg" },
+  { id: "oil-water", category: "oil", title: "水面与睡莲", image_url: "cabin-art-water.jpg" },
+  { id: "oil-flowers", category: "oil", title: "花与旧书", image_url: "cabin-art-flowers.jpg" }
 ];
 
 function renderCabinGallery() {

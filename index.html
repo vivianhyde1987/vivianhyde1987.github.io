@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Rose & Rainbow Blog</title>
-    <link rel="stylesheet" href="styles.css?v=mimi-cutout-motion-v2-20260614" />
+    <link rel="stylesheet" href="styles.css?v=mimi-walk-cycle-cabin-layout-v3-20260614" />
   </head>
   <body>
     <div class="shell">
@@ -328,8 +328,9 @@
               <div class="cabin-room">
                 <div class="cabin-room__scene">
                   <div class="cabin-wall-lines" aria-hidden="true"></div>
-                  <img id="cabinRoomImage" class="cabin-room__painting" src="cabin-painting-night.jpg" alt="小木屋画室" />
-                  <img id="cabinRoomDetail" class="cabin-room__prop" src="cabin-lamp-cutout.png" alt="画室里的台灯" />
+                  <img id="cabinRoomImage" class="cabin-room__painting" data-aspect="portrait" src="cabin-art-night.jpg" alt="小木屋画室" />
+                  <img id="cabinRoomDetail" class="cabin-room__prop" data-prop="lamp" src="cabin-lamp-cutout.png" alt="画室里的台灯" />
+                  <img id="cabinPendant" class="cabin-room__pendant" src="cabin-pendant-cutout.png" alt="木质吊灯" hidden />
                   <div class="cabin-room__darkness"></div>
                   <div class="cabin-room__lamp-glow"></div>
                   <div class="cabin-furniture" aria-hidden="true"><span class="cabin-chair"></span><span class="cabin-table"></span></div>
@@ -487,6 +488,6 @@
       <p id="cabinTreasureMessage"></p>
     </dialog>
 
-    <script src="app.js?v=mimi-real-purr-v2-20260614"></script>
+    <script src="app.js?v=mimi-walk-cycle-cabin-layout-v3-20260614"></script>
   </body>
 </html>
