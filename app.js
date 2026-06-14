@@ -3058,6 +3058,12 @@ function setupMimiPet() {
   let audioContext = null;
   let moveTimer = null;
   let lastX = Math.max(18, window.innerWidth - 150);
+  const realPurr = new Audio("mimi-purr.mp3");
+  realPurr.preload = "metadata";
+  realPurr.volume = 0.78;
+  realPurr.hidden = true;
+  realPurr.dataset.mimiPurr = "true";
+  document.body.append(realPurr);
 
   const save = () => localStorage.setItem(storageKey, JSON.stringify(state));
   const render = () => {
@@ -3091,7 +3097,7 @@ function setupMimiPet() {
           oscillator.start(nowTime + delay);
           oscillator.stop(nowTime + delay + 0.09);
         });
-      } else if (type === "purr") {
+      } else if (type === "purrFallback") {
         const oscillator = audioContext.createOscillator();
         const gain = audioContext.createGain();
         oscillator.type = "sawtooth";
@@ -3114,6 +3120,16 @@ function setupMimiPet() {
         oscillator.stop(nowTime + 0.45);
       }
     } catch {}
+  };
+  const playRealPurr = () => {
+    try {
+      realPurr.pause();
+      realPurr.currentTime = 0;
+      const playing = realPurr.play();
+      if (playing?.catch) playing.catch(() => sound("purrFallback"));
+    } catch {
+      sound("purrFallback");
+    }
   };
   const move = () => {
     if (!panel.hidden || pet.classList.contains("is-held")) return;
@@ -3155,7 +3171,7 @@ function setupMimiPet() {
         food: () => { state.hunger = Math.min(100, state.hunger + 25); state.health = Math.min(100, state.health + 2); speak("眯眯认真地吃了几口猫粮。"); },
         treat: () => { state.hunger = Math.min(100, state.hunger + 12); state.mood = Math.min(100, state.mood + 18); speak("猫条很好吃。她舔了舔鼻子。"); },
         wand: () => { state.mood = Math.min(100, state.mood + 22); catImage.src = poses[1]; pet.dataset.pose = "walk"; pet.classList.add("is-playing"); window.setTimeout(() => { pet.classList.remove("is-playing"); pet.dataset.pose = "sit"; catImage.src = poses[0]; }, 1800); speak("她盯紧逗猫棒，还是很有精神。"); },
-        pet: () => { state.mood = Math.min(100, state.mood + 12); sound("purr"); speak("她眯起眼睛，发出很轻的呼噜声。噢，是一只小猫咪"); },
+        pet: () => { state.mood = Math.min(100, state.mood + 12); playRealPurr(); speak("她眯起眼睛，你听见了眯眯真实的呼噜声。噢，是一只小猫咪"); },
         hold: () => { state.mood = Math.min(100, state.mood + 8); pet.classList.toggle("is-held"); speak(pet.classList.contains("is-held") ? "你把眯眯抱起来了。她安静地靠着你。" : "你轻轻把她放回地上。"); },
         litter: () => { state.litter = 100; speak("猫砂盆干净了。眯眯过来检查了一遍。"); },
         doctor: () => { state.health = 100; state.lastDoctor = Date.now(); speak("完成了一次温柔的健康检查，一切都被好好记挂着。"); }
