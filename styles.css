@@ -764,6 +764,230 @@ label {
   box-shadow: 0 0 30px rgba(255, 183, 77, 0.34), inset 0 0 14px rgba(255, 233, 181, 0.18);
 }
 
+.cabin-treasure-clue {
+  position: absolute;
+  right: 24%;
+  bottom: 17%;
+  z-index: 4;
+  width: 34px;
+  height: 34px;
+  min-height: 0;
+  padding: 0;
+  border: 1px solid rgba(255, 224, 157, 0.62);
+  border-radius: 50%;
+  background: #875223;
+  color: #fff0c3;
+  box-shadow: 0 0 22px rgba(255, 190, 88, 0.48);
+  animation: treasure-glow 1.8s ease-in-out infinite;
+}
+
+.cabin-gallery {
+  margin-top: 14px;
+  padding: 18px;
+  border: 1px solid rgba(211, 174, 112, 0.16);
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025), transparent),
+    repeating-linear-gradient(90deg, #26180f 0 34px, #21140d 35px 38px);
+}
+
+.cabin-gallery__head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.cabin-gallery__head small {
+  color: #9f7042;
+  letter-spacing: 0.12em;
+}
+
+.cabin-gallery__head h3 {
+  margin: 2px 0 0;
+  color: #f0d2a3;
+}
+
+.cabin-gallery__head span {
+  color: rgba(240, 218, 185, 0.48);
+  font-size: 0.76rem;
+}
+
+.cabin-gallery__filters {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 14px;
+}
+
+.cabin-gallery__filters button {
+  min-height: 34px;
+  border-color: rgba(211, 174, 112, 0.18);
+  background: rgba(8, 5, 4, 0.5);
+  color: rgba(240, 218, 185, 0.58);
+}
+
+.cabin-gallery__filters button.active {
+  background: #68401f;
+  color: #ffe2ad;
+}
+
+.cabin-artwork-form {
+  display: grid;
+  grid-template-columns: 150px 1fr 1fr auto;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 10px;
+  border: 1px solid rgba(211, 174, 112, 0.13);
+  background: rgba(5, 3, 2, 0.34);
+}
+
+.cabin-gallery__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.cabin-artwork {
+  margin: 0;
+  text-align: center;
+}
+
+.cabin-artwork button {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  min-height: 0;
+  padding: 8px;
+  border: 10px solid #3c2619;
+  border-radius: 2px;
+  outline: 1px solid rgba(222, 178, 111, 0.24);
+  background: #160d08;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.38), inset 0 0 0 2px rgba(218, 169, 95, 0.12);
+}
+
+.cabin-artwork--ink button {
+  border-color: #29241f;
+  background: #d8d0c2;
+}
+
+.cabin-artwork--child button {
+  border-color: #604021;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.34), inset 0 0 0 3px rgba(221, 179, 99, 0.16);
+}
+
+.cabin-artwork img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cabin-artwork figcaption {
+  margin-top: 7px;
+  color: rgba(240, 218, 185, 0.68);
+  font-size: 0.78rem;
+}
+
+.cabin-gallery__empty {
+  grid-column: 1 / -1;
+  display: grid;
+  place-items: center;
+  min-height: 170px;
+  color: rgba(240, 218, 185, 0.48);
+  text-align: center;
+}
+
+.cabin-gallery__empty span {
+  width: 90px;
+  height: 116px;
+  border: 9px solid #3b271a;
+  box-shadow: inset 0 0 0 1px rgba(216, 172, 104, 0.2);
+}
+
+.cabin-art-dialog,
+.cabin-treasure-dialog {
+  border: 1px solid rgba(211, 174, 112, 0.28);
+  border-radius: 8px;
+  background: #1b110c;
+  color: #f3d9ae;
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.72);
+}
+
+.cabin-art-dialog::backdrop,
+.cabin-treasure-dialog::backdrop {
+  background: rgba(4, 3, 3, 0.84);
+  backdrop-filter: blur(7px);
+}
+
+.cabin-art-dialog {
+  width: min(760px, calc(100vw - 30px));
+  padding: 18px;
+}
+
+.cabin-art-dialog img {
+  display: block;
+  width: 100%;
+  max-height: 72vh;
+  object-fit: contain;
+}
+
+.cabin-art-dialog button,
+.cabin-treasure-dialog__close {
+  float: right;
+  width: 34px;
+  min-height: 34px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.cabin-treasure-dialog {
+  width: min(340px, calc(100vw - 32px));
+  padding: 24px;
+  text-align: center;
+}
+
+.lucky-bottle {
+  position: relative;
+  width: 84px;
+  height: 120px;
+  margin: 34px auto 14px;
+  border: 2px solid rgba(173, 225, 216, 0.68);
+  border-radius: 20px 20px 34px 34px;
+  background: linear-gradient(145deg, rgba(189, 239, 228, 0.22), rgba(60, 136, 121, 0.16));
+  box-shadow: inset 12px 0 20px rgba(255, 255, 255, 0.08), 0 0 34px rgba(91, 207, 176, 0.16);
+}
+
+.lucky-bottle::before {
+  position: absolute;
+  top: -24px;
+  left: 25px;
+  width: 30px;
+  height: 25px;
+  border: 2px solid rgba(173, 225, 216, 0.68);
+  border-bottom: 0;
+  background: #342216;
+  content: "";
+}
+
+.lucky-bottle span {
+  position: absolute;
+  right: 16px;
+  bottom: 18px;
+  left: 16px;
+  height: 43px;
+  border-radius: 50% 50% 28% 28%;
+  background: rgba(218, 172, 80, 0.38);
+}
+
+.cabin-treasure-dialog p {
+  color: #f4dfb9;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+@keyframes treasure-glow {
+  50% { transform: translateY(-3px); box-shadow: 0 0 32px rgba(255, 190, 88, 0.72); }
+}
+
 .cabin-experience.is-walking .cabin-room__scene img {
   animation: cabin-step 220ms ease-in-out 3;
 }
@@ -783,7 +1007,7 @@ label {
   }
 
   .cabin-map {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 6px;
     padding: 10px;
     border-right: 0;
@@ -817,6 +1041,34 @@ label {
   .cabin-light-toggle {
     flex-basis: 66px;
     min-height: 66px;
+  }
+
+  .cabin-gallery {
+    padding: 12px;
+  }
+
+  .cabin-gallery__filters {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .cabin-gallery__filters button {
+    padding: 0 5px;
+    font-size: 0.72rem;
+  }
+
+  .cabin-artwork-form {
+    grid-template-columns: 1fr;
+  }
+
+  .cabin-gallery__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .cabin-artwork button {
+    border-width: 7px;
+    padding: 5px;
   }
 }
 
@@ -3269,6 +3521,233 @@ h2 {
 .mimi-companion__note p {
   margin: 5px 0 0;
   line-height: 1.55;
+}
+
+.mimi-pet {
+  --mimi-x: calc(100vw - 150px);
+  --mimi-y: calc(100vh - 210px);
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 48;
+  transform: translate3d(var(--mimi-x), var(--mimi-y), 0);
+  transition: transform 1.8s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.mimi-pet__cat {
+  position: relative;
+  width: clamp(92px, 9vw, 132px);
+  height: clamp(112px, 12vw, 165px);
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  filter: drop-shadow(0 12px 12px rgba(0, 0, 0, 0.48));
+  pointer-events: auto;
+  transform-origin: bottom center;
+}
+
+.mimi-pet__cat img {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  border-radius: 38% 38% 28% 28%;
+  object-fit: cover;
+  object-position: center 30%;
+  mix-blend-mode: multiply;
+  transition: filter 300ms ease, transform 300ms ease;
+}
+
+.mimi-pet__shadow {
+  position: absolute;
+  right: 8%;
+  bottom: 0;
+  left: 8%;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.48);
+  filter: blur(6px);
+}
+
+.mimi-pet.is-walking .mimi-pet__cat {
+  animation: mimi-walk 360ms ease-in-out infinite alternate;
+}
+
+.mimi-pet.is-playing .mimi-pet__cat {
+  animation: mimi-play 420ms ease-in-out 4;
+}
+
+.mimi-pet.is-held {
+  --mimi-x: calc(50vw - 60px) !important;
+  --mimi-y: calc(50vh - 90px) !important;
+  z-index: 70;
+}
+
+.mimi-pet.is-held .mimi-pet__cat {
+  transform: scale(1.2) rotate(-2deg);
+}
+
+.mimi-pet__bubble {
+  position: absolute;
+  right: 50%;
+  bottom: calc(100% + 7px);
+  width: max-content;
+  max-width: min(230px, 72vw);
+  padding: 8px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px 8px 2px 8px;
+  background: rgba(24, 16, 17, 0.94);
+  color: #fff2e4;
+  font-size: 0.76rem;
+  line-height: 1.45;
+  opacity: 0;
+  transform: translateY(5px);
+  transition: opacity 180ms ease, transform 180ms ease;
+  pointer-events: none;
+}
+
+.mimi-pet__bubble.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mimi-pet__panel {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 80;
+  width: min(330px, calc(100vw - 24px));
+  max-height: min(520px, 72vh);
+  overflow: auto;
+  padding: 14px;
+  border: 1px solid rgba(218, 175, 112, 0.25);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(91, 52, 30, 0.34), transparent 100px),
+    rgba(20, 13, 12, 0.97);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.62);
+  color: #f4ddbc;
+  pointer-events: auto;
+}
+
+.mimi-pet__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mimi-pet__head div {
+  display: grid;
+}
+
+.mimi-pet__head strong {
+  color: #ffe6bd;
+  font-size: 1rem;
+}
+
+.mimi-pet__head small {
+  color: rgba(244, 221, 188, 0.52);
+}
+
+.mimi-pet__close {
+  width: 32px;
+  min-height: 32px;
+  padding: 0;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.mimi-pet__status {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  margin: 14px 0;
+}
+
+.mimi-pet__status span {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  align-items: center;
+  gap: 7px;
+  color: rgba(244, 221, 188, 0.66);
+  font-size: 0.72rem;
+}
+
+.mimi-pet__status i {
+  position: relative;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.mimi-pet__status i::after {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--mimi-value, 50%);
+  border-radius: inherit;
+  background: linear-gradient(90deg, #9a542b, #ddb06b);
+  content: "";
+  transition: width 300ms ease;
+}
+
+.mimi-pet__actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+}
+
+.mimi-pet__actions button {
+  min-height: 38px;
+  padding: 0 7px;
+  border-color: rgba(218, 175, 112, 0.16);
+  background: rgba(255, 255, 255, 0.045);
+  color: rgba(255, 231, 199, 0.8);
+  font-size: 0.75rem;
+}
+
+.mimi-pet__actions button:hover {
+  background: rgba(147, 81, 42, 0.44);
+}
+
+.mimi-pet__message {
+  margin: 12px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(244, 221, 188, 0.58);
+  font-size: 0.76rem;
+  line-height: 1.55;
+}
+
+@keyframes mimi-walk {
+  from { transform: translateY(0) rotate(-1deg); }
+  to { transform: translateY(-5px) rotate(1deg); }
+}
+
+@keyframes mimi-play {
+  50% { transform: translateY(-9px) rotate(5deg) scale(1.04); }
+}
+
+@media (max-width: 680px) {
+  .mimi-pet {
+    --mimi-x: calc(100vw - 112px);
+    --mimi-y: calc(100vh - 190px);
+  }
+
+  .mimi-pet__cat {
+    width: 92px;
+    height: 118px;
+  }
+
+  .mimi-pet__panel {
+    right: 8px;
+    bottom: calc(72px + env(safe-area-inset-bottom));
+    left: 8px;
+    width: auto;
+  }
 }
 
 /* Atmosphere pass: quieter structure, darker glass, less visual noise. */

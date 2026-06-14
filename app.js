@@ -21,6 +21,8 @@ let podcastComments = [];
 let podcastLikes = [];
 let pendingPodcastRecording = null;
 let podcastMusicMode = "off";
+let cabinArtworks = [];
+let activeCabinArtFilter = "oil";
 let archiveOpen = false;
 let medicineHistoryOpen = false;
 let activeInterest = "全部";
@@ -179,6 +181,11 @@ const elements = {
   podcastRecordTime: $("#podcastRecordTime"),
   podcastRecordPreview: $("#podcastRecordPreview"),
   podcastList: $("#podcastList"),
+  cabinArtworkForm: $("#cabinArtworkForm"),
+  cabinArtworkCategory: $("#cabinArtworkCategory"),
+  cabinArtworkTitle: $("#cabinArtworkTitle"),
+  cabinArtworkImage: $("#cabinArtworkImage"),
+  cabinGalleryGrid: $("#cabinGalleryGrid"),
   copyInviteButton: $("#copyInviteButton"),
   posterButton: $("#posterButton"),
   sharePoster: $("#sharePoster"),
@@ -866,7 +873,7 @@ async function loadBlog() {
   if (!client) return;
   setSync("同步中");
   try {
-    const [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult, wishResult, lotteryTopicResult, lotteryEntryResult, eventLogResult, podcastResult, podcastCommentResult, podcastLikeResult] = await Promise.all([
+    const [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult, wishResult, lotteryTopicResult, lotteryEntryResult, eventLogResult, podcastResult, podcastCommentResult, podcastLikeResult, cabinArtworkResult] = await Promise.all([
       client.from("blog_posts").select("*").order("created_at", { ascending: false }),
       client.from("blog_comments").select("*").order("created_at", { ascending: true }),
       client.from("blog_accounts").select("id, handle, avatar, role"),
@@ -879,7 +886,8 @@ async function loadBlog() {
       client.from("health_event_logs").select("*").order("event_time", { ascending: false }).limit(500),
       client.from("blog_podcasts").select("*").order("publish_date", { ascending: false }).order("issue_no", { ascending: false }),
       client.from("podcast_comments").select("*").order("created_at", { ascending: true }),
-      client.from("podcast_likes").select("*")
+      client.from("podcast_likes").select("*"),
+      client.from("cabin_artworks").select("*").order("created_at", { ascending: false })
     ]);
     for (const result of [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult]) {
       if (result.error) throw result.error;
@@ -897,6 +905,7 @@ async function loadBlog() {
     podcasts = podcastResult.error ? [] : (podcastResult.data || []);
     podcastComments = podcastCommentResult.error ? [] : (podcastCommentResult.data || []);
     podcastLikes = podcastLikeResult.error ? [] : (podcastLikeResult.data || []);
+    cabinArtworks = cabinArtworkResult.error ? [] : (cabinArtworkResult.data || []);
     profiles = new Map((profileResult.data || []).map((item) => [item.id, { ...item, user_id: item.id }]));
     setSync("云端已同步");
     renderFeed();
@@ -905,6 +914,7 @@ async function loadBlog() {
     renderLottery();
     renderEventLogs();
     renderPodcasts();
+    renderCabinGallery();
   } catch {
     setSync("需要运行新版 SQL");
     elements.feed.innerHTML = `<div class="empty">新增了栏目历史和临时讨论区。请把新版 supabase-setup.sql 复制到 Supabase 的 SQL Editor 再运行一次。</div>`;
@@ -3020,6 +3030,140 @@ function setupPanelToggles() {
   });
 }
 
+function setupMimiPet() {
+  const pet = document.querySelector(".mimi-pet");
+  if (!pet) return;
+  const catButton = pet.querySelector(".mimi-pet__cat");
+  const catImage = catButton.querySelector("img");
+  const panel = pet.querySelector(".mimi-pet__panel");
+  const bubble = pet.querySelector(".mimi-pet__bubble");
+  const message = pet.querySelector(".mimi-pet__message");
+  const storageKey = "mimi-pet-care-v1";
+  const poses = [
+    "assets/mimi-pet/mimi-sit-cutout.jpg",
+    "assets/mimi-pet/mimi-alert.jpg",
+    "assets/mimi-pet/mimi-lean.jpg",
+    "assets/mimi-pet/mimi-play.jpg"
+  ];
+  const now = Date.now();
+  let state = { hunger: 78, mood: 82, health: 88, litter: 86, lastUpdate: now, lastDoctor: 0, pose: 0 };
+  try { state = { ...state, ...JSON.parse(localStorage.getItem(storageKey) || "{}") }; } catch {}
+  const elapsedHours = Math.max(0, (now - Number(state.lastUpdate || now)) / 3600000);
+  state.hunger = Math.max(24, state.hunger - elapsedHours * 1.4);
+  state.mood = Math.max(35, state.mood - elapsedHours * 0.45);
+  state.litter = Math.max(18, state.litter - elapsedHours * 0.9);
+  state.lastUpdate = now;
+  let audioContext = null;
+  let moveTimer = null;
+
+  const save = () => localStorage.setItem(storageKey, JSON.stringify(state));
+  const render = () => {
+    ["hunger", "mood", "health", "litter"].forEach((key) => {
+      const bar = pet.querySelector(`[data-mimi-stat="${key}"]`);
+      if (bar) bar.style.setProperty("--mimi-value", `${Math.max(0, Math.min(100, state[key]))}%`);
+    });
+    save();
+  };
+  const speak = (text, duration = 2600) => {
+    bubble.textContent = text;
+    bubble.classList.add("is-visible");
+    message.textContent = text;
+    window.clearTimeout(speak.timer);
+    speak.timer = window.setTimeout(() => bubble.classList.remove("is-visible"), duration);
+  };
+  const sound = (type) => {
+    try {
+      audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+      if (audioContext.state === "suspended") audioContext.resume();
+      const nowTime = audioContext.currentTime;
+      if (type === "step") {
+        [0, 0.16, 0.33, 0.5].forEach((delay) => {
+          const oscillator = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          oscillator.type = "triangle";
+          oscillator.frequency.value = 72 + Math.random() * 22;
+          gain.gain.setValueAtTime(0.035, nowTime + delay);
+          gain.gain.exponentialRampToValueAtTime(0.0001, nowTime + delay + 0.08);
+          oscillator.connect(gain).connect(audioContext.destination);
+          oscillator.start(nowTime + delay);
+          oscillator.stop(nowTime + delay + 0.09);
+        });
+      } else if (type === "purr") {
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        oscillator.type = "sawtooth";
+        oscillator.frequency.value = 27;
+        gain.gain.setValueAtTime(0.018, nowTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, nowTime + 1.5);
+        oscillator.connect(gain).connect(audioContext.destination);
+        oscillator.start(nowTime);
+        oscillator.stop(nowTime + 1.6);
+      } else if (type === "meow") {
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(530, nowTime);
+        oscillator.frequency.exponentialRampToValueAtTime(310, nowTime + 0.38);
+        gain.gain.setValueAtTime(0.035, nowTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, nowTime + 0.42);
+        oscillator.connect(gain).connect(audioContext.destination);
+        oscillator.start(nowTime);
+        oscillator.stop(nowTime + 0.45);
+      }
+    } catch {}
+  };
+  const move = () => {
+    if (!panel.hidden || pet.classList.contains("is-held")) return;
+    const safeWidth = Math.max(40, window.innerWidth - 150);
+    const safeHeight = Math.max(120, window.innerHeight - 230);
+    const x = 18 + Math.random() * safeWidth;
+    const y = 90 + Math.random() * safeHeight;
+    pet.style.setProperty("--mimi-x", `${x}px`);
+    pet.style.setProperty("--mimi-y", `${y}px`);
+    pet.classList.add("is-walking");
+    sound("step");
+    window.setTimeout(() => {
+      pet.classList.remove("is-walking");
+      state.pose = (state.pose + 1 + Math.floor(Math.random() * (poses.length - 1))) % poses.length;
+      catImage.src = poses[state.pose];
+      save();
+      if (Math.random() < 0.08) sound("meow");
+    }, 1800);
+  };
+  const scheduleMove = () => {
+    window.clearTimeout(moveTimer);
+    moveTimer = window.setTimeout(() => { move(); scheduleMove(); }, 14000 + Math.random() * 16000);
+  };
+
+  catButton.addEventListener("click", () => {
+    panel.hidden = !panel.hidden;
+    if (!panel.hidden) speak("你找到眯眯了。她正安静地看着你。", 2200);
+  });
+  pet.querySelector(".mimi-pet__close").addEventListener("click", () => { panel.hidden = true; });
+  pet.querySelectorAll("[data-mimi-action]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const action = button.dataset.mimiAction;
+      const reactions = {
+        food: () => { state.hunger = Math.min(100, state.hunger + 25); state.health = Math.min(100, state.health + 2); speak("眯眯认真地吃了几口猫粮。"); },
+        treat: () => { state.hunger = Math.min(100, state.hunger + 12); state.mood = Math.min(100, state.mood + 18); speak("猫条很好吃。她舔了舔鼻子。"); },
+        wand: () => { state.mood = Math.min(100, state.mood + 22); catImage.src = poses[3]; pet.classList.add("is-playing"); window.setTimeout(() => pet.classList.remove("is-playing"), 1800); speak("她盯紧逗猫棒，还是很有精神。"); },
+        pet: () => { state.mood = Math.min(100, state.mood + 12); sound("purr"); speak("她眯起眼睛，发出很轻的呼噜声。噢，是一只小猫咪"); },
+        hold: () => { state.mood = Math.min(100, state.mood + 8); pet.classList.toggle("is-held"); speak(pet.classList.contains("is-held") ? "你把眯眯抱起来了。她安静地靠着你。" : "你轻轻把她放回地上。"); },
+        litter: () => { state.litter = 100; speak("猫砂盆干净了。眯眯过来检查了一遍。"); },
+        doctor: () => { state.health = 100; state.lastDoctor = Date.now(); speak("完成了一次温柔的健康检查，一切都被好好记挂着。"); }
+      };
+      reactions[action]?.();
+      if (["treat", "wand"].includes(action) && Math.random() < 0.15) sound("meow");
+      render();
+    });
+  });
+  catImage.src = poses[state.pose % poses.length];
+  render();
+  scheduleMove();
+  document.body.append(panel);
+  window.addEventListener("resize", () => move());
+}
+
 function setupBookmarkPanels() {
   const panels = [
     { selector: ".auth-panel", label: "账号" },
@@ -3137,14 +3281,32 @@ function setupCabinExperience() {
   const note = $("#cabinRoomNote");
   const number = $("#cabinRoomNumber");
   const lightButton = $("#cabinLightToggle");
+  const treasureClue = $("#cabinTreasureClue");
+  const treasureDialog = $("#cabinTreasureDialog");
+  const treasureMessage = $("#cabinTreasureMessage");
   const rooms = {
     studio: { number: "ROOM 01", title: "夜色画室", note: "灯亮以后，街巷里的星星才慢慢出现。", image: "assets/cabin/painting-night.jpg", alt: "夜色街巷油画", detail: "assets/cabin/desk-lamp.jpg", detailAlt: "画室里的台灯" },
     water: { number: "ROOM 02", title: "水边房间", note: "胡桃木墙上，水面把光留在了睡莲之间。", image: "assets/cabin/painting-water.jpg", alt: "睡莲水面油画", detail: "assets/cabin/wood-lamp.jpg", detailAlt: "木质吊灯" },
     flowers: { number: "ROOM 03", title: "花与书房", note: "花、旧书和绿色墙面，在夜里有自己的呼吸。", image: "assets/cabin/painting-flowers.jpg", alt: "花与书静物油画", detail: "assets/cabin/flowers.jpg", detailAlt: "房间里的花束" },
-    hearth: { number: "ROOM 04", title: "炉边角落", note: "灯和薄雾守着这个角落，像一间一直有人等候的小屋。", image: "assets/cabin/hearth.jpg", alt: "暖色灯光与加湿器角落", detail: "assets/cabin/wood-lamp.jpg", detailAlt: "炉边的木质吊灯" }
+    hearth: { number: "ROOM 04", title: "炉边角落", note: "灯和薄雾守着这个角落，像一间一直有人等候的小屋。", image: "assets/cabin/hearth.jpg", alt: "暖色灯光与加湿器角落", detail: "assets/cabin/wood-lamp.jpg", detailAlt: "炉边的木质吊灯" },
+    child: { number: "ROOM 05", title: "儿童画室", note: "胡桃木矮柜和柔软地毯，等着新的颜色住进来。", image: "assets/cabin/flowers.jpg", alt: "儿童画室里的花", detail: "assets/cabin/painting-flowers.jpg", detailAlt: "儿童房预留画框" }
   };
   let lightOn = false;
   let footstepContext = null;
+  const dayKey = new Date().toISOString().slice(0, 10);
+  const roomKeys = Object.keys(rooms);
+  const dailyNumber = [...dayKey].reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  const treasureRoom = roomKeys[dailyNumber % roomKeys.length];
+  const treasureMessages = [
+    "今天会有一件小事，悄悄站到你这一边。",
+    "愿你不急着证明自己，也仍然被世界温柔看见。",
+    "今天留下的一点耐心，会在不远处变成好运。",
+    "你正在走的路，也许安静，但并没有白走。",
+    "愿今天的你既有边界，也有柔软。",
+    "某个迟来的答案，正在靠近你。",
+    "把心放慢一点，属于你的光不会错过你。"
+  ];
+  const todayMessage = treasureMessages[dailyNumber % treasureMessages.length];
 
   const playFootsteps = () => {
     try {
@@ -3173,6 +3335,7 @@ function setupCabinExperience() {
     experience.classList.toggle("is-lit", lightOn);
     lightButton.setAttribute("aria-pressed", String(lightOn));
     lightButton.querySelector("strong").textContent = lightOn ? "关灯" : "开灯";
+    treasureClue.hidden = !(lightOn && experience.dataset.cabinRoom === treasureRoom);
   };
 
   document.querySelectorAll("[data-room]").forEach((button) => {
@@ -3195,7 +3358,79 @@ function setupCabinExperience() {
     });
   });
   lightButton.addEventListener("click", () => setLight(!lightOn));
+  treasureClue.addEventListener("click", () => {
+    treasureMessage.textContent = todayMessage;
+    treasureDialog.showModal();
+    localStorage.setItem("cabin-treasure-found", dayKey);
+  });
+  treasureDialog.querySelector(".cabin-treasure-dialog__close").addEventListener("click", () => treasureDialog.close());
 }
+
+const defaultCabinArtworks = [
+  { id: "oil-night", category: "oil", title: "夜色街巷", image_url: "assets/cabin/painting-night.jpg" },
+  { id: "oil-water", category: "oil", title: "水面与睡莲", image_url: "assets/cabin/painting-water.jpg" },
+  { id: "oil-flowers", category: "oil", title: "花与旧书", image_url: "assets/cabin/painting-flowers.jpg" }
+];
+
+function renderCabinGallery() {
+  if (!elements.cabinGalleryGrid) return;
+  elements.cabinArtworkForm.hidden = profile?.role !== "owner";
+  document.querySelectorAll("[data-art-filter]").forEach((button) => button.classList.toggle("active", button.dataset.artFilter === activeCabinArtFilter));
+  const items = [...defaultCabinArtworks, ...cabinArtworks].filter((item) => item.category === activeCabinArtFilter);
+  if (!items.length) {
+    const waiting = activeCabinArtFilter === "child" ? "儿童房的画框已经挂好，等第一幅作品住进来。" : "这个展厅正在等待新的作品。";
+    elements.cabinGalleryGrid.innerHTML = `<div class="cabin-gallery__empty"><span></span><p>${waiting}</p></div>`;
+    return;
+  }
+  elements.cabinGalleryGrid.innerHTML = "";
+  items.forEach((item) => {
+    const figure = document.createElement("figure");
+    figure.className = `cabin-artwork cabin-artwork--${item.category}`;
+    figure.innerHTML = `<button type="button"><img src="${item.image_url}" alt="${escapeHtml(item.title)}" /></button><figcaption>${escapeHtml(item.title)}</figcaption>`;
+    figure.querySelector("button").addEventListener("click", () => {
+      const dialog = document.createElement("dialog");
+      dialog.className = "cabin-art-dialog";
+      dialog.innerHTML = `<button type="button" aria-label="关闭">×</button><img src="${item.image_url}" alt="${escapeHtml(item.title)}" /><p>${escapeHtml(item.title)}</p>`;
+      document.body.append(dialog);
+      dialog.querySelector("button").addEventListener("click", () => dialog.close());
+      dialog.addEventListener("close", () => dialog.remove());
+      dialog.showModal();
+    });
+    elements.cabinGalleryGrid.append(figure);
+  });
+}
+
+document.querySelectorAll("[data-art-filter]").forEach((button) => {
+  button.addEventListener("click", () => {
+    activeCabinArtFilter = button.dataset.artFilter;
+    renderCabinGallery();
+  });
+});
+
+elements.cabinArtworkForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (profile?.role !== "owner") return;
+  const file = elements.cabinArtworkImage.files?.[0];
+  if (!file) return;
+  setSync("添加画作中");
+  try {
+    const imageUrl = await compressPhoto(file, { maxSide: 1400, quality: 0.82 });
+    if (imageUrl.length > 1200000) throw new Error("image too large");
+    const { error } = await client.rpc("create_cabin_artwork", {
+      session_token: sessionToken,
+      category_input: elements.cabinArtworkCategory.value,
+      title_input: elements.cabinArtworkTitle.value.trim(),
+      image_input: imageUrl
+    });
+    if (error) throw error;
+    activeCabinArtFilter = elements.cabinArtworkCategory.value;
+    elements.cabinArtworkForm.reset();
+    await loadBlog();
+    setSync("画作已加入木屋");
+  } catch {
+    setSync("画作添加失败，请运行新版 SQL 或换一张较小的图片");
+  }
+});
 
 renderAvatarPreview();
 elements.bodyCount.textContent = `${elements.bodyInput.value.length} / ${elements.bodyInput.maxLength} 字`;
@@ -3207,6 +3442,7 @@ setCategory("文章");
 renderMysteryBox();
 setupBlogBookmarks();
 setupCabinExperience();
-setupMimiDrag();
+renderCabinGallery();
+setupMimiPet();
 setupAmbientSounds();
 refreshSession();
