@@ -2365,6 +2365,7 @@ function setupAmbientSounds() {
   let activeMode = "";
   let timers = [];
   let nodes = [];
+  let rainAudio = null;
   let lastTouchAt = 0;
 
   const clearSound = () => {
@@ -2377,6 +2378,11 @@ function setupAmbientSounds() {
       node.disconnect?.();
     });
     nodes = [];
+    if (rainAudio) {
+      rainAudio.pause();
+      rainAudio.currentTime = 0;
+      rainAudio = null;
+    }
   };
 
   const ensureAudio = async () => {
@@ -2395,8 +2401,8 @@ function setupAmbientSounds() {
       const label = button.querySelector(".sound-toggle__label");
       button.classList.toggle("is-playing", playing);
       if (!label) return;
-      const names = { bowl: "疗愈颂钵", stream: "溪流摇铃", cosmos: "宇宙的声音" };
-      const playingNames = { bowl: "颂钵播放中", stream: "溪流摇铃中", cosmos: "宇宙播放中" };
+      const names = { bowl: "疗愈颂钵", stream: "溪流摇铃", cosmos: "宇宙的声音", rain: "雨声" };
+      const playingNames = { bowl: "颂钵播放中", stream: "溪流摇铃中", cosmos: "宇宙播放中", rain: "雨声播放中" };
       label.textContent = playing ? playingNames[button.dataset.soundMode] : names[button.dataset.soundMode];
     });
   };
@@ -2501,10 +2507,17 @@ function setupAmbientSounds() {
   };
 
   const startMode = async (mode) => {
-    await ensureAudio();
     clearSound();
     activeMode = mode;
     updateButtons();
+    if (mode === "rain") {
+      rainAudio = new Audio("assets/audio/rain.wav");
+      rainAudio.loop = true;
+      rainAudio.volume = 0.58;
+      await rainAudio.play();
+      return;
+    }
+    await ensureAudio();
     if (mode === "stream") {
       startStream();
     } else if (mode === "cosmos") {

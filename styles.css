@@ -208,84 +208,6 @@ label {
   filter: blur(20px) saturate(1.05);
 }
 
-.hero__rain {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  overflow: hidden;
-  pointer-events: none;
-  opacity: 0.62;
-}
-
-.hero__rain span {
-  position: absolute;
-  inset: -45% -20%;
-  background-image: repeating-linear-gradient(105deg, transparent 0 28px, rgba(220, 235, 232, 0.28) 29px, transparent 31px 58px);
-  background-size: 76px 160px;
-  filter: blur(0.35px);
-  transform: translate3d(0, -22%, 0);
-  animation: rain-fall 1.35s linear infinite;
-}
-
-.hero__rain span:nth-child(2) {
-  background-size: 112px 210px;
-  opacity: 0.48;
-  animation-duration: 1.9s;
-  animation-delay: -0.8s;
-}
-
-.hero__rain span:nth-child(3) {
-  background-size: 148px 260px;
-  opacity: 0.3;
-  animation-duration: 2.6s;
-  animation-delay: -1.5s;
-}
-
-.hero__foliage {
-  position: absolute;
-  top: 8%;
-  right: -28px;
-  z-index: 2;
-  width: clamp(120px, 17vw, 220px);
-  height: 62%;
-  border-left: 3px solid rgba(35, 62, 37, 0.72);
-  border-radius: 50%;
-  opacity: 0.82;
-  filter: drop-shadow(0 12px 20px rgba(0, 0, 0, 0.38));
-  pointer-events: none;
-  transform: rotate(-13deg);
-  transform-origin: top center;
-  animation: foliage-sway 7s ease-in-out infinite;
-}
-
-.hero__foliage span {
-  position: absolute;
-  left: -5px;
-  width: clamp(42px, 6vw, 72px);
-  height: clamp(22px, 3.4vw, 40px);
-  border: 1px solid rgba(151, 180, 123, 0.16);
-  border-radius: 85% 10% 85% 14%;
-  background: linear-gradient(145deg, rgba(74, 111, 62, 0.88), rgba(20, 48, 31, 0.96));
-  box-shadow: inset 8px 4px 15px rgba(170, 194, 130, 0.1), 0 4px 12px rgba(0, 0, 0, 0.3);
-  transform-origin: left center;
-}
-
-.hero__foliage span:nth-child(1) { top: 7%; transform: rotate(-18deg); }
-.hero__foliage span:nth-child(2) { top: 22%; transform: translateX(-48px) scaleX(-1) rotate(-14deg); }
-.hero__foliage span:nth-child(3) { top: 38%; transform: rotate(8deg); }
-.hero__foliage span:nth-child(4) { top: 54%; transform: translateX(-52px) scaleX(-1) rotate(4deg); }
-.hero__foliage span:nth-child(5) { top: 69%; transform: rotate(15deg); }
-.hero__foliage span:nth-child(6) { top: 84%; transform: translateX(-42px) scaleX(-1) rotate(10deg); }
-
-@keyframes rain-fall {
-  to { transform: translate3d(-4%, 38%, 0); }
-}
-
-@keyframes foliage-sway {
-  0%, 100% { transform: rotate(-13deg); }
-  50% { transform: rotate(-9deg); }
-}
-
 @keyframes humidifier-mist {
   0% {
     opacity: 0;
@@ -3245,16 +3167,9 @@ select {
     padding-bottom: calc(70px + env(safe-area-inset-bottom));
   }
 
-  .hero__foliage {
-    right: -50px;
-    width: 130px;
-    opacity: 0.64;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero__rain span,
-  .hero__foliage,
   .hero__mist span,
   .mimi-companion__photo,
   .mimi-companion__glow {
