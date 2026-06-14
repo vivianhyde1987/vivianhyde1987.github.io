@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Rose & Rainbow Blog</title>
-    <link rel="stylesheet" href="styles.css?v=podcast-v1-20260614" />
+    <link rel="stylesheet" href="styles.css?v=podcast-recording-v2-20260614" />
   </head>
   <body>
     <div class="shell">
@@ -283,7 +283,14 @@
               </label>
               <label class="wide media-upload">
                 节目录音
-                <input id="podcastAudioInput" type="file" accept="audio/mpeg,audio/mp4,audio/wav,audio/ogg,audio/*" required />
+                <div class="podcast-recorder">
+                  <button id="podcastRecordStart" type="button">● 开始录制</button>
+                  <button id="podcastRecordStop" type="button" disabled>■ 完成录制</button>
+                  <span id="podcastRecordTime">00:00</span>
+                </div>
+                <audio id="podcastRecordPreview" controls hidden></audio>
+                <small class="podcast-upload-or">也可以选择已有录音</small>
+                <input id="podcastAudioInput" type="file" accept="audio/mpeg,audio/mp4,audio/wav,audio/ogg,audio/*" />
                 <small id="podcastAudioHint" class="file-hint">未选择音频</small>
               </label>
               <label class="wide media-upload">
@@ -398,6 +405,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
-    <script src="app.js?v=podcast-v1-20260614"></script>
+    <script src="app.js?v=podcast-recording-v2-20260614"></script>
   </body>
 </html>

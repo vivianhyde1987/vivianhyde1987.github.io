@@ -676,6 +676,137 @@ label {
   }
 }
 
+.podcast-recorder {
+  display: grid;
+  grid-template-columns: minmax(112px, auto) minmax(112px, auto) 60px;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 10px;
+}
+
+.podcast-recorder button {
+  min-height: 40px;
+}
+
+#podcastRecordStart {
+  background: #b62548;
+}
+
+#podcastRecordStop.is-recording {
+  border-color: rgba(255, 135, 151, 0.58);
+  animation: recorder-pulse 1.2s ease-in-out infinite;
+}
+
+#podcastRecordTime {
+  color: #fff3e6;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  text-align: center;
+}
+
+#podcastRecordPreview {
+  width: 100%;
+  margin: 4px 0 8px;
+}
+
+.podcast-upload-or {
+  display: block;
+  margin: 7px 0 2px;
+  color: rgba(255, 245, 232, 0.52);
+}
+
+.podcast-social {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.podcast-social span {
+  margin-left: auto;
+  color: rgba(255, 245, 232, 0.5);
+  font-size: 0.75rem;
+}
+
+.podcast-like.is-liked {
+  border-color: rgba(255, 157, 177, 0.48);
+  background: rgba(182, 37, 72, 0.3);
+}
+
+.podcast-comments {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.podcast-comment {
+  padding: 10px 12px;
+  border-left: 2px solid rgba(212, 167, 44, 0.32);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.podcast-comment--reply {
+  margin: 8px 0 0 18px;
+  border-left-color: rgba(182, 37, 72, 0.4);
+}
+
+.podcast-comment__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.podcast-comment__head small {
+  color: rgba(255, 245, 232, 0.44);
+}
+
+.podcast-comment p {
+  margin: 6px 0;
+  color: rgba(255, 250, 245, 0.82);
+  line-height: 1.55;
+}
+
+.podcast-comment__actions {
+  display: flex;
+  gap: 6px;
+}
+
+.podcast-comment__actions button {
+  min-height: 28px;
+  padding: 0 9px;
+  background: transparent;
+  font-size: 0.72rem;
+}
+
+.podcast-comment-form,
+.podcast-reply-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+@keyframes recorder-pulse {
+  50% { box-shadow: 0 0 0 5px rgba(182, 37, 72, 0.16); }
+}
+
+@media (max-width: 560px) {
+  .podcast-recorder {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  #podcastRecordTime {
+    grid-column: 1 / -1;
+  }
+
+  .podcast-comment-form,
+  .podcast-reply-form {
+    grid-template-columns: 1fr;
+  }
+}
+
 .content {
   display: grid;
   gap: 18px;

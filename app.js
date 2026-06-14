@@ -17,6 +17,9 @@ let lotteryTopics = [];
 let lotteryEntries = [];
 let eventLogs = [];
 let podcasts = [];
+let podcastComments = [];
+let podcastLikes = [];
+let pendingPodcastRecording = null;
 let archiveOpen = false;
 let medicineHistoryOpen = false;
 let activeInterest = "全部";
@@ -168,6 +171,10 @@ const elements = {
   podcastMusicInput: $("#podcastMusicInput"),
   podcastAudioHint: $("#podcastAudioHint"),
   podcastMusicHint: $("#podcastMusicHint"),
+  podcastRecordStart: $("#podcastRecordStart"),
+  podcastRecordStop: $("#podcastRecordStop"),
+  podcastRecordTime: $("#podcastRecordTime"),
+  podcastRecordPreview: $("#podcastRecordPreview"),
   podcastList: $("#podcastList"),
   copyInviteButton: $("#copyInviteButton"),
   posterButton: $("#posterButton"),
@@ -856,7 +863,7 @@ async function loadBlog() {
   if (!client) return;
   setSync("同步中");
   try {
-    const [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult, wishResult, lotteryTopicResult, lotteryEntryResult, eventLogResult, podcastResult] = await Promise.all([
+    const [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult, wishResult, lotteryTopicResult, lotteryEntryResult, eventLogResult, podcastResult, podcastCommentResult, podcastLikeResult] = await Promise.all([
       client.from("blog_posts").select("*").order("created_at", { ascending: false }),
       client.from("blog_comments").select("*").order("created_at", { ascending: true }),
       client.from("blog_accounts").select("id, handle, avatar, role"),
@@ -867,7 +874,9 @@ async function loadBlog() {
       client.from("lottery_topics").select("*").order("topic_date", { ascending: false }).limit(30),
       client.from("lottery_entries").select("*").order("created_at", { ascending: true }).limit(200),
       client.from("health_event_logs").select("*").order("event_time", { ascending: false }).limit(500),
-      client.from("blog_podcasts").select("*").order("publish_date", { ascending: false }).order("issue_no", { ascending: false })
+      client.from("blog_podcasts").select("*").order("publish_date", { ascending: false }).order("issue_no", { ascending: false }),
+      client.from("podcast_comments").select("*").order("created_at", { ascending: true }),
+      client.from("podcast_likes").select("*")
     ]);
     for (const result of [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult]) {
       if (result.error) throw result.error;
@@ -883,6 +892,8 @@ async function loadBlog() {
     lotteryEntries = lotteryEntryResult.error ? [] : (lotteryEntryResult.data || []);
     eventLogs = eventLogResult.error ? [] : (eventLogResult.data || []);
     podcasts = podcastResult.error ? [] : (podcastResult.data || []);
+    podcastComments = podcastCommentResult.error ? [] : (podcastCommentResult.data || []);
+    podcastLikes = podcastLikeResult.error ? [] : (podcastLikeResult.data || []);
     profiles = new Map((profileResult.data || []).map((item) => [item.id, { ...item, user_id: item.id }]));
     setSync("云端已同步");
     renderFeed();
@@ -1299,6 +1310,77 @@ function bindPodcastPlayer(card, podcast) {
   syncTime();
 }
 
+function podcastLikeCount(podcastId) {
+  return podcastLikes.filter((like) => like.podcast_id === podcastId).length;
+}
+
+function isPodcastLiked(podcastId) {
+  return Boolean(profile && podcastLikes.some((like) => like.podcast_id === podcastId && like.owner_id === profile.user_id));
+}
+
+async function togglePodcastLike(podcastId) {
+  if (!profile) return setMessage("请先登录，再点赞播客。", "error");
+  const { error } = await client.rpc("toggle_podcast_like", { session_token: sessionToken, podcast_uuid: podcastId });
+  if (error) return setMessage(rpcErrorText(error, "点赞失败"), "error");
+  await loadBlog();
+}
+
+function createPodcastCommentNode(comment, podcastId, isReply = false) {
+  const author = profiles.get(comment.owner_id);
+  const node = document.createElement("article");
+  node.className = isReply ? "podcast-comment podcast-comment--reply" : "podcast-comment";
+  node.innerHTML = `
+    <div class="podcast-comment__head"><strong>${escapeHtml(author?.handle || "朋友")}</strong><small>${formatDate(comment.created_at)}</small></div>
+    <p>${escapeHtml(comment.body)}</p>
+    <div class="podcast-comment__actions"></div>
+  `;
+  const actions = node.querySelector(".podcast-comment__actions");
+  if (profile) {
+    const reply = document.createElement("button");
+    reply.type = "button";
+    reply.textContent = "回复";
+    reply.addEventListener("click", () => {
+      node.querySelector(".podcast-reply-form")?.remove();
+      const form = document.createElement("form");
+      form.className = "podcast-reply-form";
+      form.innerHTML = `<input maxlength="500" placeholder="回复 ${escapeHtml(author?.handle || "朋友")}" required /><button type="submit">发送</button>`;
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const body = form.querySelector("input").value.trim();
+        if (!body) return;
+        const { error } = await client.rpc("create_podcast_comment", { session_token: sessionToken, podcast_uuid: podcastId, parent_uuid: comment.id, body_input: body });
+        if (error) return setMessage(rpcErrorText(error, "回复失败"), "error");
+        await loadBlog();
+      });
+      node.append(form);
+    });
+    actions.append(reply);
+  }
+  if (profile && (profile.role === "owner" || profile.user_id === comment.owner_id)) {
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.textContent = "删除";
+    remove.addEventListener("click", async () => {
+      const { error } = await client.rpc("delete_podcast_comment", { session_token: sessionToken, comment_uuid: comment.id });
+      if (error) return setMessage(rpcErrorText(error, "删除失败"), "error");
+      await loadBlog();
+    });
+    actions.append(remove);
+  }
+  podcastComments.filter((item) => item.parent_id === comment.id).forEach((reply) => node.append(createPodcastCommentNode(reply, podcastId, true)));
+  return node;
+}
+
+async function sharePodcast(podcast) {
+  const shareData = { title: `NO.${String(podcast.issue_no).padStart(3, "0")}期 ${podcast.topic}`, text: `来听这一期播客：${podcast.topic}`, url: window.location.href };
+  if (navigator.share) {
+    try { await navigator.share(shareData); } catch {}
+    return;
+  }
+  await navigator.clipboard.writeText(`${shareData.title}\n${shareData.url}`);
+  setMessage("播客链接已复制，可以发给朋友。", "ok");
+}
+
 function renderPodcasts() {
   if (!elements.podcastList) return;
   elements.podcastForm.hidden = profile?.role !== "owner";
@@ -1338,9 +1420,33 @@ function renderPodcasts() {
           ${podcast.music_url ? `<span class="podcast-music-mark">含背景音乐</span>` : ""}
         </div>
       </div>
+      <div class="podcast-social">
+        <button class="podcast-like ${isPodcastLiked(podcast.id) ? "is-liked" : ""}" type="button">${isPodcastLiked(podcast.id) ? "已赞" : "点赞"} ${podcastLikeCount(podcast.id)}</button>
+        <button class="podcast-share" type="button">转发</button>
+        <span>${podcastComments.filter((item) => item.podcast_id === podcast.id).length} 条留言</span>
+      </div>
+      <div class="podcast-comments"></div>
+      <form class="podcast-comment-form">
+        <input maxlength="500" placeholder="听完后说点什么" ${profile ? "" : "disabled"} required />
+        <button type="submit" ${profile ? "" : "disabled"}>留言</button>
+      </form>
       ${profile?.role === "owner" ? `<button class="podcast-delete" type="button">删除本期</button>` : ""}
     `;
     bindPodcastPlayer(card, podcast);
+    card.querySelector(".podcast-like").addEventListener("click", () => togglePodcastLike(podcast.id));
+    card.querySelector(".podcast-share").addEventListener("click", () => sharePodcast(podcast));
+    const commentsNode = card.querySelector(".podcast-comments");
+    podcastComments.filter((item) => item.podcast_id === podcast.id && !item.parent_id).forEach((comment) => commentsNode.append(createPodcastCommentNode(comment, podcast.id)));
+    card.querySelector(".podcast-comment-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!profile) return setMessage("请先登录，再留言。", "error");
+      const input = event.currentTarget.querySelector("input");
+      const body = input.value.trim();
+      if (!body) return;
+      const { error } = await client.rpc("create_podcast_comment", { session_token: sessionToken, podcast_uuid: podcast.id, parent_uuid: null, body_input: body });
+      if (error) return setMessage(rpcErrorText(error, "留言失败"), "error");
+      await loadBlog();
+    });
     card.querySelector(".podcast-delete")?.addEventListener("click", async () => {
       if (!window.confirm(`确定删除 NO.${String(podcast.issue_no).padStart(3, "0")} 期吗？`)) return;
       const { error } = await client.rpc("delete_blog_podcast", { session_token: sessionToken, podcast_uuid: podcast.id });
@@ -2129,16 +2235,75 @@ elements.clearVideoInput.addEventListener("click", () => {
 function updatePodcastFileHints() {
   const audioFile = elements.podcastAudioInput?.files?.[0] || null;
   const musicFile = elements.podcastMusicInput?.files?.[0] || null;
-  if (elements.podcastAudioHint) elements.podcastAudioHint.textContent = audioFile ? `已选择：${formatFileSize(audioFile.size)}` : "未选择音频";
+  if (elements.podcastAudioHint) elements.podcastAudioHint.textContent = pendingPodcastRecording
+    ? `录音已完成：${formatFileSize(pendingPodcastRecording.size)}`
+    : audioFile ? `已选择：${formatFileSize(audioFile.size)}` : "未选择音频";
   if (elements.podcastMusicHint) elements.podcastMusicHint.textContent = musicFile ? `已选择：${formatFileSize(musicFile.size)}` : "未选择背景音乐";
 }
 
-elements.podcastAudioInput?.addEventListener("change", updatePodcastFileHints);
+elements.podcastAudioInput?.addEventListener("change", () => {
+  pendingPodcastRecording = null;
+  elements.podcastRecordPreview.hidden = true;
+  elements.podcastRecordPreview.removeAttribute("src");
+  updatePodcastFileHints();
+});
 elements.podcastMusicInput?.addEventListener("change", updatePodcastFileHints);
+
+if (elements.podcastRecordStart && elements.podcastRecordStop) {
+  let recorder = null;
+  let recordingStream = null;
+  let chunks = [];
+  let recordTimer = null;
+  let recordStartedAt = 0;
+
+  elements.podcastRecordStart.addEventListener("click", async () => {
+    if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+      return setMessage("当前浏览器不支持直接录音，请使用上传录音。", "error");
+    }
+    try {
+      recordingStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const preferredType = ["audio/webm;codecs=opus", "audio/mp4", "audio/webm"].find((type) => MediaRecorder.isTypeSupported(type)) || "";
+      recorder = preferredType ? new MediaRecorder(recordingStream, { mimeType: preferredType }) : new MediaRecorder(recordingStream);
+      chunks = [];
+      recorder.addEventListener("dataavailable", (event) => { if (event.data.size) chunks.push(event.data); });
+      recorder.addEventListener("stop", () => {
+        const mimeType = recorder.mimeType || "audio/webm";
+        const extension = mimeType.includes("mp4") ? "m4a" : mimeType.includes("ogg") ? "ogg" : "webm";
+        pendingPodcastRecording = new File(chunks, `podcast-recording-${Date.now()}.${extension}`, { type: mimeType });
+        elements.podcastAudioInput.value = "";
+        elements.podcastRecordPreview.src = URL.createObjectURL(pendingPodcastRecording);
+        elements.podcastRecordPreview.hidden = false;
+        recordingStream?.getTracks().forEach((track) => track.stop());
+        window.clearInterval(recordTimer);
+        elements.podcastRecordStart.disabled = false;
+        elements.podcastRecordStop.disabled = true;
+        updatePodcastFileHints();
+      });
+      recorder.start(500);
+      recordStartedAt = Date.now();
+      elements.podcastRecordTime.textContent = "00:00";
+      recordTimer = window.setInterval(() => {
+        elements.podcastRecordTime.textContent = formatPodcastTime((Date.now() - recordStartedAt) / 1000);
+      }, 500);
+      elements.podcastRecordStart.disabled = true;
+      elements.podcastRecordStop.disabled = false;
+      elements.podcastRecordStop.classList.add("is-recording");
+      setMessage("正在录制，完成后点“完成录制”。", "ok");
+    } catch {
+      setMessage("没有获得麦克风权限，请允许访问麦克风后再试。", "error");
+    }
+  });
+
+  elements.podcastRecordStop.addEventListener("click", () => {
+    if (recorder?.state === "recording") recorder.stop();
+    elements.podcastRecordStop.classList.remove("is-recording");
+  });
+}
+
 elements.podcastForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
   if (profile?.role !== "owner") return setMessage("只有站主可以发布播客。", "error");
-  const audioFile = elements.podcastAudioInput.files?.[0] || null;
+  const audioFile = pendingPodcastRecording || elements.podcastAudioInput.files?.[0] || null;
   const musicFile = elements.podcastMusicInput.files?.[0] || null;
   if (!audioFile) return setMessage("请先选择节目录音。", "error");
   setSync("上传播客中");
@@ -2155,6 +2320,10 @@ elements.podcastForm?.addEventListener("submit", async (event) => {
     });
     if (error) throw error;
     elements.podcastForm.reset();
+    pendingPodcastRecording = null;
+    elements.podcastRecordPreview.hidden = true;
+    elements.podcastRecordPreview.removeAttribute("src");
+    elements.podcastRecordTime.textContent = "00:00";
     elements.podcastDateInput.value = new Date().toISOString().slice(0, 10);
     updatePodcastFileHints();
     setSync("播客已发布");
