@@ -16,6 +16,7 @@ let koiWishes = [];
 let lotteryTopics = [];
 let lotteryEntries = [];
 let eventLogs = [];
+let podcasts = [];
 let archiveOpen = false;
 let medicineHistoryOpen = false;
 let activeInterest = "全部";
@@ -159,6 +160,15 @@ const elements = {
   sleepRecordText: $("#sleepRecordText"),
   sleepQuizForm: $("#sleepQuizForm"),
   sleepSummary: $("#sleepSummary"),
+  podcastForm: $("#podcastForm"),
+  podcastDateInput: $("#podcastDateInput"),
+  podcastIssueInput: $("#podcastIssueInput"),
+  podcastTopicInput: $("#podcastTopicInput"),
+  podcastAudioInput: $("#podcastAudioInput"),
+  podcastMusicInput: $("#podcastMusicInput"),
+  podcastAudioHint: $("#podcastAudioHint"),
+  podcastMusicHint: $("#podcastMusicHint"),
+  podcastList: $("#podcastList"),
   copyInviteButton: $("#copyInviteButton"),
   posterButton: $("#posterButton"),
   sharePoster: $("#sharePoster"),
@@ -411,6 +421,22 @@ function renderWishPool() {
       </article>
     `;
   }).join("");
+}
+
+async function uploadPodcastAudio(file, kind = "episode") {
+  if (!file) return null;
+  const maxBytes = 100 * 1024 * 1024;
+  if (!file.type.startsWith("audio/")) throw new Error("not audio");
+  if (file.size > maxBytes) throw new Error("audio too large");
+  const extension = (file.name.split(".").pop() || "mp3").toLowerCase().replace(/[^a-z0-9]/g, "") || "mp3";
+  const path = `${profile.user_id}/${kind}-${Date.now()}-${Math.random().toString(36).slice(2)}.${extension}`;
+  const { error } = await client.storage.from("blog-audio").upload(path, file, {
+    cacheControl: "31536000",
+    contentType: file.type || "audio/mpeg",
+    upsert: false
+  });
+  if (error) throw error;
+  return client.storage.from("blog-audio").getPublicUrl(path).data.publicUrl;
 }
 
 function dailyMysteryFor(category) {
@@ -830,7 +856,7 @@ async function loadBlog() {
   if (!client) return;
   setSync("同步中");
   try {
-    const [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult, wishResult, lotteryTopicResult, lotteryEntryResult, eventLogResult] = await Promise.all([
+    const [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult, wishResult, lotteryTopicResult, lotteryEntryResult, eventLogResult, podcastResult] = await Promise.all([
       client.from("blog_posts").select("*").order("created_at", { ascending: false }),
       client.from("blog_comments").select("*").order("created_at", { ascending: true }),
       client.from("blog_accounts").select("id, handle, avatar, role"),
@@ -840,7 +866,8 @@ async function loadBlog() {
       client.from("koi_wishes").select("*").order("created_at", { ascending: false }).limit(80),
       client.from("lottery_topics").select("*").order("topic_date", { ascending: false }).limit(30),
       client.from("lottery_entries").select("*").order("created_at", { ascending: true }).limit(200),
-      client.from("health_event_logs").select("*").order("event_time", { ascending: false }).limit(500)
+      client.from("health_event_logs").select("*").order("event_time", { ascending: false }).limit(500),
+      client.from("blog_podcasts").select("*").order("publish_date", { ascending: false }).order("issue_no", { ascending: false })
     ]);
     for (const result of [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult]) {
       if (result.error) throw result.error;
@@ -855,6 +882,7 @@ async function loadBlog() {
     lotteryTopics = lotteryTopicResult.error ? [] : (lotteryTopicResult.data || []);
     lotteryEntries = lotteryEntryResult.error ? [] : (lotteryEntryResult.data || []);
     eventLogs = eventLogResult.error ? [] : (eventLogResult.data || []);
+    podcasts = podcastResult.error ? [] : (podcastResult.data || []);
     profiles = new Map((profileResult.data || []).map((item) => [item.id, { ...item, user_id: item.id }]));
     setSync("云端已同步");
     renderFeed();
@@ -862,6 +890,7 @@ async function loadBlog() {
     renderWishPool();
     renderLottery();
     renderEventLogs();
+    renderPodcasts();
   } catch {
     setSync("需要运行新版 SQL");
     elements.feed.innerHTML = `<div class="empty">新增了栏目历史和临时讨论区。请把新版 supabase-setup.sql 复制到 Supabase 的 SQL Editor 再运行一次。</div>`;
@@ -1178,6 +1207,148 @@ function renderChat() {
     return;
   }
   topMessages.forEach((message) => elements.chatList.append(createChatNode(message)));
+}
+
+function formatPodcastTime(seconds) {
+  if (!Number.isFinite(seconds) || seconds < 0) return "00:00";
+  const total = Math.floor(seconds);
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const secs = total % 60;
+  return hours
+    ? `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`
+    : `${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+}
+
+function bindPodcastPlayer(card, podcast) {
+  const voice = new Audio(podcast.audio_url);
+  const music = podcast.music_url ? new Audio(podcast.music_url) : null;
+  const playButton = card.querySelector(".podcast-play");
+  const progress = card.querySelector(".podcast-progress");
+  const timeText = card.querySelector(".podcast-time");
+  const speed = card.querySelector(".podcast-speed");
+  const volume = card.querySelector(".podcast-volume");
+  voice.preload = "metadata";
+  if (music) {
+    music.preload = "auto";
+    music.loop = true;
+  }
+
+  const syncTime = () => {
+    const duration = Number.isFinite(voice.duration) ? voice.duration : 0;
+    progress.max = duration || 1;
+    if (!progress.matches(":active")) progress.value = voice.currentTime || 0;
+    timeText.textContent = `${formatPodcastTime(voice.currentTime)} / ${formatPodcastTime(duration)}`;
+  };
+
+  const pause = () => {
+    voice.pause();
+    music?.pause();
+    playButton.textContent = "▶";
+    playButton.classList.remove("is-playing");
+    playButton.setAttribute("aria-label", "播放");
+  };
+
+  playButton.addEventListener("click", async () => {
+    if (!voice.paused) {
+      pause();
+      return;
+    }
+    document.querySelectorAll(".podcast-play.is-playing").forEach((button) => button.click());
+    if (music) {
+      music.currentTime = voice.currentTime % Math.max(music.duration || voice.duration || 1, 1);
+      music.playbackRate = voice.playbackRate;
+      music.volume = Number(volume.value) * 0.24;
+      await music.play().catch(() => {});
+    }
+    await voice.play();
+    playButton.textContent = "❚❚";
+    playButton.classList.add("is-playing");
+    playButton.setAttribute("aria-label", "暂停");
+  });
+
+  card.querySelector(".podcast-back").addEventListener("click", () => {
+    voice.currentTime = Math.max(0, voice.currentTime - 15);
+    if (music) music.currentTime = voice.currentTime % Math.max(music.duration || 1, 1);
+  });
+  card.querySelector(".podcast-forward").addEventListener("click", () => {
+    voice.currentTime = Math.min(voice.duration || Infinity, voice.currentTime + 15);
+    if (music) music.currentTime = voice.currentTime % Math.max(music.duration || 1, 1);
+  });
+  progress.addEventListener("input", () => {
+    voice.currentTime = Number(progress.value);
+    if (music) music.currentTime = voice.currentTime % Math.max(music.duration || 1, 1);
+    syncTime();
+  });
+  speed.addEventListener("change", () => {
+    voice.playbackRate = Number(speed.value);
+    if (music) music.playbackRate = voice.playbackRate;
+  });
+  volume.addEventListener("input", () => {
+    voice.volume = Number(volume.value);
+    if (music) music.volume = Number(volume.value) * 0.24;
+  });
+  voice.addEventListener("loadedmetadata", syncTime);
+  voice.addEventListener("timeupdate", syncTime);
+  voice.addEventListener("ended", () => {
+    playButton.classList.remove("is-playing");
+    pause();
+    voice.currentTime = 0;
+    syncTime();
+  });
+  syncTime();
+}
+
+function renderPodcasts() {
+  if (!elements.podcastList) return;
+  elements.podcastForm.hidden = profile?.role !== "owner";
+  if (!podcasts.length) {
+    elements.podcastList.innerHTML = `<div class="empty">还没有发布播客。</div>`;
+    return;
+  }
+  elements.podcastList.innerHTML = "";
+  podcasts.forEach((podcast) => {
+    const card = document.createElement("article");
+    card.className = "podcast-card";
+    card.innerHTML = `
+      <div class="podcast-card__head">
+        <div>
+          <time>${escapeHtml(podcast.publish_date || "")}</time>
+          <h3>${escapeHtml(podcast.topic)}</h3>
+        </div>
+        <strong>NO.${String(podcast.issue_no).padStart(3, "0")}期</strong>
+      </div>
+      <div class="podcast-player">
+        <div class="podcast-controls">
+          <button class="podcast-back" type="button" aria-label="后退15秒">↶15</button>
+          <button class="podcast-play" type="button" aria-label="播放">▶</button>
+          <button class="podcast-forward" type="button" aria-label="快进15秒">15↷</button>
+          <select class="podcast-speed" aria-label="播放倍速">
+            <option value="0.75">0.75×</option>
+            <option value="1" selected>1×</option>
+            <option value="1.25">1.25×</option>
+            <option value="1.5">1.5×</option>
+            <option value="2">2×</option>
+          </select>
+        </div>
+        <input class="podcast-progress" type="range" min="0" max="1" value="0" step="0.1" aria-label="播放进度" />
+        <div class="podcast-player__foot">
+          <span class="podcast-time">00:00 / 00:00</span>
+          <label class="podcast-volume-wrap">音量 <input class="podcast-volume" type="range" min="0" max="1" value="0.8" step="0.05" aria-label="音量" /></label>
+          ${podcast.music_url ? `<span class="podcast-music-mark">含背景音乐</span>` : ""}
+        </div>
+      </div>
+      ${profile?.role === "owner" ? `<button class="podcast-delete" type="button">删除本期</button>` : ""}
+    `;
+    bindPodcastPlayer(card, podcast);
+    card.querySelector(".podcast-delete")?.addEventListener("click", async () => {
+      if (!window.confirm(`确定删除 NO.${String(podcast.issue_no).padStart(3, "0")} 期吗？`)) return;
+      const { error } = await client.rpc("delete_blog_podcast", { session_token: sessionToken, podcast_uuid: podcast.id });
+      if (error) return setMessage(rpcErrorText(error, "删除失败"), "error");
+      await loadBlog();
+    });
+    elements.podcastList.append(card);
+  });
 }
 
 function createChatNode(message, isReply = false) {
@@ -1955,6 +2126,46 @@ elements.clearVideoInput.addEventListener("click", () => {
   updateMediaClearButtons();
 });
 
+function updatePodcastFileHints() {
+  const audioFile = elements.podcastAudioInput?.files?.[0] || null;
+  const musicFile = elements.podcastMusicInput?.files?.[0] || null;
+  if (elements.podcastAudioHint) elements.podcastAudioHint.textContent = audioFile ? `已选择：${formatFileSize(audioFile.size)}` : "未选择音频";
+  if (elements.podcastMusicHint) elements.podcastMusicHint.textContent = musicFile ? `已选择：${formatFileSize(musicFile.size)}` : "未选择背景音乐";
+}
+
+elements.podcastAudioInput?.addEventListener("change", updatePodcastFileHints);
+elements.podcastMusicInput?.addEventListener("change", updatePodcastFileHints);
+elements.podcastForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (profile?.role !== "owner") return setMessage("只有站主可以发布播客。", "error");
+  const audioFile = elements.podcastAudioInput.files?.[0] || null;
+  const musicFile = elements.podcastMusicInput.files?.[0] || null;
+  if (!audioFile) return setMessage("请先选择节目录音。", "error");
+  setSync("上传播客中");
+  try {
+    const audioUrl = await uploadPodcastAudio(audioFile, "episode");
+    const musicUrl = musicFile ? await uploadPodcastAudio(musicFile, "music") : null;
+    const { error } = await client.rpc("create_blog_podcast", {
+      session_token: sessionToken,
+      publish_date_input: elements.podcastDateInput.value,
+      issue_no_input: Number(elements.podcastIssueInput.value),
+      topic_input: elements.podcastTopicInput.value.trim(),
+      audio_url_input: audioUrl,
+      music_url_input: musicUrl
+    });
+    if (error) throw error;
+    elements.podcastForm.reset();
+    elements.podcastDateInput.value = new Date().toISOString().slice(0, 10);
+    updatePodcastFileHints();
+    setSync("播客已发布");
+    await loadBlog();
+  } catch (error) {
+    const message = error.message === "audio too large" ? "音频太大，请换 100MB 以内的文件" : "播客发布失败，请先运行新版 SQL";
+    setSync(message);
+    setMessage(message, "error");
+  }
+});
+
 elements.avatarImageInput.addEventListener("change", async () => {
   const file = elements.avatarImageInput.files?.[0] || null;
   if (!file) {
@@ -2648,6 +2859,7 @@ function setupBlogBookmarks() {
     { selector: ".mystery-box", label: "盲盒" },
     { selector: ".event-log", label: "健康" },
     { selector: ".sleep-panel", label: "睡眠" },
+    { selector: ".podcast-panel", label: "播客" },
     { selector: ".composer", label: "写文" },
     { selector: ".chat", label: "讨论" }
   ];
@@ -2695,6 +2907,8 @@ function setupBlogBookmarks() {
 renderAvatarPreview();
 elements.bodyCount.textContent = `${elements.bodyInput.value.length} / ${elements.bodyInput.maxLength} 字`;
 updateMediaClearButtons();
+updatePodcastFileHints();
+if (elements.podcastDateInput) elements.podcastDateInput.value = new Date().toISOString().slice(0, 10);
 switchAuthTab("login");
 setCategory("文章");
 renderMysteryBox();

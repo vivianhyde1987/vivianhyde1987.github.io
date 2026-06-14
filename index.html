@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Rose & Rainbow Blog</title>
-    <link rel="stylesheet" href="styles.css?v=rain-sound-20260614" />
+    <link rel="stylesheet" href="styles.css?v=podcast-v1-20260614" />
   </head>
   <body>
     <div class="shell">
@@ -263,6 +263,39 @@
             <div id="sleepSummary" class="sleep-summary" aria-live="polite"></div>
           </section>
 
+          <section class="podcast-panel panel" aria-label="播客">
+            <div class="panel__head">
+              <h2>播客</h2>
+              <span>声音手记</span>
+            </div>
+            <form id="podcastForm" class="podcast-form" hidden>
+              <label>
+                日期
+                <input id="podcastDateInput" type="date" required />
+              </label>
+              <label>
+                期数
+                <input id="podcastIssueInput" type="number" min="1" max="9999" placeholder="例如：12" required />
+              </label>
+              <label class="wide">
+                主题
+                <input id="podcastTopicInput" maxlength="100" placeholder="这一期想聊什么" required />
+              </label>
+              <label class="wide media-upload">
+                节目录音
+                <input id="podcastAudioInput" type="file" accept="audio/mpeg,audio/mp4,audio/wav,audio/ogg,audio/*" required />
+                <small id="podcastAudioHint" class="file-hint">未选择音频</small>
+              </label>
+              <label class="wide media-upload">
+                背景音乐（可选）
+                <input id="podcastMusicInput" type="file" accept="audio/mpeg,audio/mp4,audio/wav,audio/ogg,audio/*" />
+                <small id="podcastMusicHint" class="file-hint">未选择背景音乐</small>
+              </label>
+              <button type="submit">发布这一期</button>
+            </form>
+            <div id="podcastList" class="podcast-list" aria-live="polite"></div>
+          </section>
+
           <section class="composer panel">
             <div class="panel__head">
               <h2>写一篇</h2>
@@ -365,6 +398,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
-    <script src="app.js?v=rain-sound-20260614"></script>
+    <script src="app.js?v=podcast-v1-20260614"></script>
   </body>
 </html>

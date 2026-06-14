@@ -111,6 +111,19 @@ create table if not exists public.health_event_logs (
   )
 );
 
+create table if not exists public.blog_podcasts (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid not null,
+  publish_date date not null default current_date,
+  issue_no integer not null unique check (issue_no between 1 and 9999),
+  topic text not null,
+  audio_url text not null,
+  music_url text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint podcast_topic_length check (char_length(topic) between 1 and 100)
+);
+
 alter table public.chat_messages
 add column if not exists parent_id uuid references public.chat_messages(id) on delete cascade;
 
@@ -133,6 +146,19 @@ set public = excluded.public,
     file_size_limit = excluded.file_size_limit,
     allowed_mime_types = excluded.allowed_mime_types;
 
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'blog-audio',
+  'blog-audio',
+  true,
+  104857600,
+  array['audio/mpeg', 'audio/mp3', 'audio/mp4', 'audio/x-m4a', 'audio/wav', 'audio/x-wav', 'audio/ogg', 'audio/webm']
+)
+on conflict (id) do update
+set public = excluded.public,
+    file_size_limit = excluded.file_size_limit,
+    allowed_mime_types = excluded.allowed_mime_types;
+
 alter table public.blog_posts drop constraint if exists blog_posts_owner_id_fkey;
 alter table public.blog_comments drop constraint if exists blog_comments_owner_id_fkey;
 alter table public.blog_post_likes drop constraint if exists blog_post_likes_owner_id_fkey;
@@ -148,6 +174,7 @@ alter table public.koi_wishes enable row level security;
 alter table public.lottery_topics enable row level security;
 alter table public.lottery_entries enable row level security;
 alter table public.health_event_logs enable row level security;
+alter table public.blog_podcasts enable row level security;
 
 drop policy if exists "accounts are readable" on public.blog_accounts;
 create policy "accounts are readable"
@@ -199,6 +226,11 @@ create policy "health event logs are readable"
 on public.health_event_logs for select
 using (true);
 
+drop policy if exists "podcasts are readable" on public.blog_podcasts;
+create policy "podcasts are readable"
+on public.blog_podcasts for select
+using (true);
+
 drop policy if exists "blog videos are public" on storage.objects;
 create policy "blog videos are public"
 on storage.objects for select
@@ -208,6 +240,16 @@ drop policy if exists "blog videos can be uploaded" on storage.objects;
 create policy "blog videos can be uploaded"
 on storage.objects for insert
 with check (bucket_id = 'blog-videos');
+
+drop policy if exists "blog audio is public" on storage.objects;
+create policy "blog audio is public"
+on storage.objects for select
+using (bucket_id = 'blog-audio');
+
+drop policy if exists "blog audio can be uploaded" on storage.objects;
+create policy "blog audio can be uploaded"
+on storage.objects for insert
+with check (bucket_id = 'blog-audio');
 
 create or replace function public.clean_blog_handle(raw_handle text)
 returns text
@@ -706,3 +748,47 @@ grant execute on function public.enter_lottery(uuid, uuid, text) to anon, authen
 
 -- After registering your owner ID, replace your-id and run once:
 -- update public.blog_accounts set role = 'owner' where handle = 'your-id';
+create or replace function public.create_blog_podcast(
+  session_token uuid,
+  publish_date_input date,
+  issue_no_input integer,
+  topic_input text,
+  audio_url_input text,
+  music_url_input text
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  account_row public.blog_accounts;
+  podcast_uuid uuid;
+begin
+  select * into account_row from public.account_from_token(session_token);
+  if account_row.id is null or account_row.role <> 'owner' then
+    raise exception 'Only the owner can publish podcasts';
+  end if;
+  insert into public.blog_podcasts(owner_id, publish_date, issue_no, topic, audio_url, music_url)
+  values (account_row.id, publish_date_input, issue_no_input, trim(topic_input), audio_url_input, nullif(music_url_input, ''))
+  returning id into podcast_uuid;
+  return podcast_uuid;
+end;
+$$;
+
+create or replace function public.delete_blog_podcast(session_token uuid, podcast_uuid uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  account_row public.blog_accounts;
+begin
+  select * into account_row from public.account_from_token(session_token);
+  if account_row.id is null or account_row.role <> 'owner' then
+    raise exception 'Only the owner can delete podcasts';
+  end if;
+  delete from public.blog_podcasts where id = podcast_uuid;
+end;
+$$;
