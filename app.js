@@ -3040,10 +3040,10 @@ function setupMimiPet() {
   const message = pet.querySelector(".mimi-pet__message");
   const storageKey = "mimi-pet-care-v1";
   const poses = [
-    "assets/mimi-pet/mimi-sit-cutout.jpg",
-    "assets/mimi-pet/mimi-alert.jpg",
-    "assets/mimi-pet/mimi-lean.jpg",
-    "assets/mimi-pet/mimi-play.jpg"
+    "mimi-sit-cutout.jpg",
+    "mimi-alert.jpg",
+    "mimi-lean.jpg",
+    "mimi-play.jpg"
   ];
   const now = Date.now();
   let state = { hunger: 78, mood: 82, health: 88, litter: 86, lastUpdate: now, lastDoctor: 0, pose: 0 };
@@ -3285,11 +3285,11 @@ function setupCabinExperience() {
   const treasureDialog = $("#cabinTreasureDialog");
   const treasureMessage = $("#cabinTreasureMessage");
   const rooms = {
-    studio: { number: "ROOM 01", title: "夜色画室", note: "灯亮以后，街巷里的星星才慢慢出现。", image: "assets/cabin/painting-night.jpg", alt: "夜色街巷油画", detail: "assets/cabin/desk-lamp.jpg", detailAlt: "画室里的台灯" },
-    water: { number: "ROOM 02", title: "水边房间", note: "胡桃木墙上，水面把光留在了睡莲之间。", image: "assets/cabin/painting-water.jpg", alt: "睡莲水面油画", detail: "assets/cabin/wood-lamp.jpg", detailAlt: "木质吊灯" },
-    flowers: { number: "ROOM 03", title: "花与书房", note: "花、旧书和绿色墙面，在夜里有自己的呼吸。", image: "assets/cabin/painting-flowers.jpg", alt: "花与书静物油画", detail: "assets/cabin/flowers.jpg", detailAlt: "房间里的花束" },
-    hearth: { number: "ROOM 04", title: "炉边角落", note: "灯和薄雾守着这个角落，像一间一直有人等候的小屋。", image: "assets/cabin/hearth.jpg", alt: "暖色灯光与加湿器角落", detail: "assets/cabin/wood-lamp.jpg", detailAlt: "炉边的木质吊灯" },
-    child: { number: "ROOM 05", title: "儿童画室", note: "胡桃木矮柜和柔软地毯，等着新的颜色住进来。", image: "assets/cabin/flowers.jpg", alt: "儿童画室里的花", detail: "assets/cabin/painting-flowers.jpg", detailAlt: "儿童房预留画框" }
+    studio: { number: "ROOM 01", title: "夜色画室", note: "灯亮以后，街巷里的星星才慢慢出现。", image: "cabin-painting-night.jpg", alt: "夜色街巷油画", detail: "cabin-desk-lamp.jpg", detailAlt: "画室里的台灯" },
+    water: { number: "ROOM 02", title: "水边房间", note: "胡桃木墙上，水面把光留在了睡莲之间。", image: "cabin-painting-water.jpg", alt: "睡莲水面油画", detail: "cabin-wood-lamp.jpg", detailAlt: "木质吊灯" },
+    flowers: { number: "ROOM 03", title: "花与书房", note: "花、旧书和绿色墙面，在夜里有自己的呼吸。", image: "cabin-painting-flowers.jpg", alt: "花与书静物油画", detail: "cabin-flowers.jpg", detailAlt: "房间里的花束" },
+    hearth: { number: "ROOM 04", title: "炉边角落", note: "灯和薄雾守着这个角落，像一间一直有人等候的小屋。", image: "cabin-hearth.jpg", alt: "暖色灯光与加湿器角落", detail: "cabin-wood-lamp.jpg", detailAlt: "炉边的木质吊灯" },
+    child: { number: "ROOM 05", title: "儿童画室", note: "胡桃木矮柜和柔软地毯，等着新的颜色住进来。", image: "cabin-flowers.jpg", alt: "儿童画室里的花", detail: "cabin-painting-flowers.jpg", detailAlt: "儿童房预留画框" }
   };
   let lightOn = false;
   let footstepContext = null;
@@ -3367,9 +3367,9 @@ function setupCabinExperience() {
 }
 
 const defaultCabinArtworks = [
-  { id: "oil-night", category: "oil", title: "夜色街巷", image_url: "assets/cabin/painting-night.jpg" },
-  { id: "oil-water", category: "oil", title: "水面与睡莲", image_url: "assets/cabin/painting-water.jpg" },
-  { id: "oil-flowers", category: "oil", title: "花与旧书", image_url: "assets/cabin/painting-flowers.jpg" }
+  { id: "oil-night", category: "oil", title: "夜色街巷", image_url: "cabin-painting-night.jpg" },
+  { id: "oil-water", category: "oil", title: "水面与睡莲", image_url: "cabin-painting-water.jpg" },
+  { id: "oil-flowers", category: "oil", title: "花与旧书", image_url: "cabin-painting-flowers.jpg" }
 ];
 
 function renderCabinGallery() {
