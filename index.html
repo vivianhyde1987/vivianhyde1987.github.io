@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Rose & Rainbow Blog</title>
-    <link rel="stylesheet" href="styles.css?v=mobile-side-tabs-v1-20260614" />
+    <link rel="stylesheet" href="styles.css?v=mimi-cutout-motion-v2-20260614" />
   </head>
   <body>
     <div class="shell">
@@ -327,8 +327,9 @@
               </nav>
               <div class="cabin-room">
                 <div class="cabin-room__scene">
-                  <img id="cabinRoomImage" src="cabin-painting-night.jpg" alt="小木屋画室" />
-                  <img id="cabinRoomDetail" class="cabin-room__detail" src="cabin-desk-lamp.jpg" alt="画室里的台灯" />
+                  <div class="cabin-wall-lines" aria-hidden="true"></div>
+                  <img id="cabinRoomImage" class="cabin-room__painting" src="cabin-painting-night.jpg" alt="小木屋画室" />
+                  <img id="cabinRoomDetail" class="cabin-room__prop" src="cabin-lamp-cutout.png" alt="画室里的台灯" />
                   <div class="cabin-room__darkness"></div>
                   <div class="cabin-room__lamp-glow"></div>
                   <div class="cabin-furniture" aria-hidden="true"><span class="cabin-chair"></span><span class="cabin-table"></span></div>
@@ -423,7 +424,7 @@
 
     <div class="mimi-pet" aria-label="眯眯，12岁的棕虎斑母猫">
       <button class="mimi-pet__cat" type="button" aria-label="和眯眯互动">
-        <img src="mimi-sit-cutout.jpg" alt="棕虎斑猫眯眯" />
+        <img src="mimi-sit-transparent.png" alt="棕虎斑猫眯眯" />
         <span class="mimi-pet__shadow"></span>
       </button>
       <div class="mimi-pet__bubble" aria-live="polite">眯眯在这里。</div>
@@ -445,6 +446,10 @@
           <button type="button" data-mimi-action="doctor">去医院</button>
         </div>
         <p class="mimi-pet__message">她不太爱叫，但会安静地待在你附近。</p>
+        <details class="mimi-care-log">
+          <summary>照顾记录 <span id="mimiCareCount">0条</span></summary>
+          <div id="mimiCareList" class="mimi-care-log__list"><p>还没有人留下照顾记录。</p></div>
+        </details>
       </section>
     </div>
 
@@ -482,6 +487,6 @@
       <p id="cabinTreasureMessage"></p>
     </dialog>
 
-    <script src="app.js?v=flat-image-assets-v1-20260614"></script>
+    <script src="app.js?v=mimi-cutout-motion-v2-20260614"></script>
   </body>
 </html>
