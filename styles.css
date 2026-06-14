@@ -3722,6 +3722,61 @@ h2 {
   line-height: 1.55;
 }
 
+.mimi-care-log {
+  margin-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(244, 221, 188, 0.72);
+}
+
+.mimi-care-log summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 2px 2px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  list-style: none;
+}
+
+.mimi-care-log summary::-webkit-details-marker { display: none; }
+
+.mimi-care-log summary::before {
+  content: "+";
+  margin-right: 7px;
+  color: #dca96a;
+}
+
+.mimi-care-log[open] summary::before { content: "−"; }
+
+.mimi-care-log summary span {
+  margin-left: auto;
+  color: rgba(244, 221, 188, 0.42);
+  font-size: 0.68rem;
+}
+
+.mimi-care-log__list {
+  display: grid;
+  gap: 6px;
+  max-height: 190px;
+  margin-top: 9px;
+  overflow-y: auto;
+}
+
+.mimi-care-log__list article {
+  display: grid;
+  grid-template-columns: minmax(50px, auto) 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.045);
+  font-size: 0.7rem;
+}
+
+.mimi-care-log__list strong { color: #f2d8b4; font-weight: 500; }
+.mimi-care-log__list time { color: rgba(244, 221, 188, 0.4); white-space: nowrap; }
+.mimi-care-log__list p { margin: 5px 0; font-size: 0.72rem; }
+
 @keyframes mimi-walk {
   from { transform: translateY(0) rotate(-1deg); }
   to { transform: translateY(-5px) rotate(1deg); }

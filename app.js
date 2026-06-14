@@ -22,6 +22,7 @@ let podcastLikes = [];
 let pendingPodcastRecording = null;
 let podcastMusicMode = "off";
 let cabinArtworks = [];
+let mimiCareLogs = [];
 let activeCabinArtFilter = "oil";
 let archiveOpen = false;
 let medicineHistoryOpen = false;
@@ -873,7 +874,7 @@ async function loadBlog() {
   if (!client) return;
   setSync("同步中");
   try {
-    const [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult, wishResult, lotteryTopicResult, lotteryEntryResult, eventLogResult, podcastResult, podcastCommentResult, podcastLikeResult, cabinArtworkResult] = await Promise.all([
+    const [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult, wishResult, lotteryTopicResult, lotteryEntryResult, eventLogResult, podcastResult, podcastCommentResult, podcastLikeResult, cabinArtworkResult, mimiCareResult] = await Promise.all([
       client.from("blog_posts").select("*").order("created_at", { ascending: false }),
       client.from("blog_comments").select("*").order("created_at", { ascending: true }),
       client.from("blog_accounts").select("id, handle, avatar, role"),
@@ -887,7 +888,8 @@ async function loadBlog() {
       client.from("blog_podcasts").select("*").order("publish_date", { ascending: false }).order("issue_no", { ascending: false }),
       client.from("podcast_comments").select("*").order("created_at", { ascending: true }),
       client.from("podcast_likes").select("*"),
-      client.from("cabin_artworks").select("*").order("created_at", { ascending: false })
+      client.from("cabin_artworks").select("*").order("created_at", { ascending: false }),
+      client.from("mimi_care_logs").select("*").order("created_at", { ascending: false }).limit(60)
     ]);
     for (const result of [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult]) {
       if (result.error) throw result.error;
@@ -906,6 +908,7 @@ async function loadBlog() {
     podcastComments = podcastCommentResult.error ? [] : (podcastCommentResult.data || []);
     podcastLikes = podcastLikeResult.error ? [] : (podcastLikeResult.data || []);
     cabinArtworks = cabinArtworkResult.error ? [] : (cabinArtworkResult.data || []);
+    mimiCareLogs = mimiCareResult.error ? [] : (mimiCareResult.data || []);
     profiles = new Map((profileResult.data || []).map((item) => [item.id, { ...item, user_id: item.id }]));
     setSync("云端已同步");
     renderFeed();
@@ -915,6 +918,7 @@ async function loadBlog() {
     renderEventLogs();
     renderPodcasts();
     renderCabinGallery();
+    renderMimiCareLogs();
   } catch {
     setSync("需要运行新版 SQL");
     elements.feed.innerHTML = `<div class="empty">新增了栏目历史和临时讨论区。请把新版 supabase-setup.sql 复制到 Supabase 的 SQL Editor 再运行一次。</div>`;
@@ -3141,7 +3145,7 @@ function setupMimiPet() {
   });
   pet.querySelector(".mimi-pet__close").addEventListener("click", () => { panel.hidden = true; });
   pet.querySelectorAll("[data-mimi-action]").forEach((button) => {
-    button.addEventListener("click", () => {
+    button.addEventListener("click", async () => {
       const action = button.dataset.mimiAction;
       const reactions = {
         food: () => { state.hunger = Math.min(100, state.hunger + 25); state.health = Math.min(100, state.health + 2); speak("眯眯认真地吃了几口猫粮。"); },
@@ -3155,6 +3159,7 @@ function setupMimiPet() {
       reactions[action]?.();
       if (["treat", "wand"].includes(action) && Math.random() < 0.15) sound("meow");
       render();
+      await saveMimiCareLog(action);
     });
   });
   catImage.src = poses[state.pose % poses.length];
@@ -3162,6 +3167,52 @@ function setupMimiPet() {
   scheduleMove();
   document.body.append(panel);
   window.addEventListener("resize", () => move());
+}
+
+const mimiCareLabels = {
+  food: "喂了猫粮",
+  treat: "喂了猫条",
+  wand: "陪眯眯玩逗猫棒",
+  pet: "摸了摸眯眯",
+  hold: "抱了抱眯眯",
+  litter: "铲了猫砂",
+  doctor: "带眯眯做了健康检查"
+};
+
+function renderMimiCareLogs() {
+  const list = document.querySelector("#mimiCareList");
+  const count = document.querySelector("#mimiCareCount");
+  if (!list || !count) return;
+  count.textContent = `${mimiCareLogs.length}条`;
+  if (!mimiCareLogs.length) {
+    list.innerHTML = "<p>还没有人留下照顾记录。</p>";
+    return;
+  }
+  list.innerHTML = mimiCareLogs.map((record) => `
+    <article>
+      <span>${escapeHtml(record.caretaker_name || "访客")}</span>
+      <strong>${escapeHtml(mimiCareLabels[record.action] || "陪伴了眯眯")}</strong>
+      <time>${formatDate(record.created_at)}</time>
+    </article>
+  `).join("");
+}
+
+async function saveMimiCareLog(action) {
+  if (!mimiCareLabels[action]) return;
+  const localRecord = {
+    id: `local-${Date.now()}`,
+    action,
+    caretaker_name: profile?.handle || "访客",
+    created_at: new Date().toISOString()
+  };
+  mimiCareLogs = [localRecord, ...mimiCareLogs].slice(0, 60);
+  renderMimiCareLogs();
+  if (!client) return;
+  const { error } = await client.rpc("create_mimi_care_log", {
+    session_token: sessionToken || null,
+    action_input: action
+  });
+  if (!error) await loadBlog();
 }
 
 function setupBookmarkPanels() {
