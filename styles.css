@@ -774,6 +774,19 @@ label {
   transition: opacity 700ms ease, filter 700ms ease, transform 900ms ease;
 }
 
+.cabin-room__scene img.is-cabin-draggable {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.cabin-room__scene img.is-cabin-draggable.is-dragging {
+  z-index: 8;
+  cursor: grabbing;
+  filter: brightness(1.05) saturate(1) drop-shadow(0 22px 26px rgba(0, 0, 0, 0.62));
+  transition: none;
+}
+
 .cabin-room__painting[data-aspect="portrait"] {
   top: 7%;
   left: 12%;
@@ -812,9 +825,9 @@ label {
 .cabin-room__pendant {
   position: absolute;
   top: 1%;
-  right: 3%;
+  right: 7%;
   z-index: 4;
-  width: 42%;
+  width: 24%;
   height: auto;
   object-fit: contain;
   object-position: center top;

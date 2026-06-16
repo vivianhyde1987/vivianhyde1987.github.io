@@ -3609,12 +3609,20 @@ function setupCabinExperience() {
   const treasureMessage = $("#cabinTreasureMessage");
   const scene = experience.querySelector(".cabin-room__scene");
   const materialMap = getBlogMaterials().roomMap || fallbackBlogMaterials.roomMap;
+  const cabinAssetPositionKey = "cabin-asset-positions-v1";
+  const cabinAssetLayers = [
+    ["painting", image],
+    ["prop", detailImage],
+    ["plant", plantImage],
+    ["accent", accentImage],
+    ["pendant", pendantImage]
+  ];
   const rooms = {
     studio: { number: "ROOM 01", title: "夜色画室", note: "灯亮以后，街巷里的星星才慢慢出现。", image: materialMap.studio.painting, alt: "夜色街巷装框画", aspect: "portrait", detail: materialMap.studio.prop, detailAlt: "桌上的暖光台灯", prop: "lamp", pendant: false, assets: materialMap.studio, layout: { theme: "studio", paintingSize: "34%", paintingHeight: "67%", paintingX: "9%", paintingY: "6%", propSize: "17%", propX: "76%", propY: "14%", plantSize: "18%", plantX: "54%", plantY: "13%", pendantSize: "28%", moodColor: "#9b6a3f", floorTone: "#2d190f" } },
-    water: { number: "ROOM 02", title: "水边房间", note: "胡桃木墙上，水面把光留在了睡莲之间。", image: materialMap.water.painting, alt: "睡莲水面装框画", aspect: "landscape", detail: materialMap.water.prop, detailAlt: "绿色墙钟", prop: "clock", pendant: true, assets: materialMap.water, layout: { theme: "water", paintingSize: "51%", paintingHeight: "52%", paintingX: "7%", paintingY: "10%", propSize: "12%", propX: "78%", propY: "52%", plantSize: "19%", plantX: "59%", plantY: "12%", pendantSize: "27%", moodColor: "#6f8f86", floorTone: "#20221d" } },
-    flowers: { number: "ROOM 03", title: "花与书房", note: "花、旧书和绿色墙面，在夜里有自己的呼吸。", image: materialMap.flowers.painting, alt: "花与书静物装框画", aspect: "landscape", detail: materialMap.flowers.plantDetail, detailAlt: "桌上的淡粉菊花瓶", prop: "flowers", pendant: true, assets: materialMap.flowers, layout: { theme: "flowers", paintingSize: "46%", paintingHeight: "51%", paintingX: "6%", paintingY: "9%", propSize: "16%", propX: "78%", propY: "10%", plantSize: "19%", plantX: "58%", plantY: "10%", pendantSize: "25%", moodColor: "#8b9a68", floorTone: "#272016" } },
+    water: { number: "ROOM 02", title: "水边房间", note: "胡桃木墙上，水面把光留在了睡莲之间。", image: materialMap.water.painting, alt: "睡莲水面装框画", aspect: "landscape", detail: materialMap.water.prop, detailAlt: "绿色墙钟", prop: "clock", pendant: true, assets: materialMap.water, layout: { theme: "water", paintingSize: "51%", paintingHeight: "52%", paintingX: "7%", paintingY: "10%", propSize: "12%", propX: "78%", propY: "52%", plantSize: "19%", plantX: "59%", plantY: "12%", pendantSize: "18%", moodColor: "#6f8f86", floorTone: "#20221d" } },
+    flowers: { number: "ROOM 03", title: "花与书房", note: "花、旧书和绿色墙面，在夜里有自己的呼吸。", image: materialMap.flowers.painting, alt: "花与书静物装框画", aspect: "landscape", detail: materialMap.flowers.plantDetail, detailAlt: "桌上的淡粉菊花瓶", prop: "flowers", pendant: true, assets: materialMap.flowers, layout: { theme: "flowers", paintingSize: "46%", paintingHeight: "51%", paintingX: "6%", paintingY: "9%", propSize: "16%", propX: "78%", propY: "10%", plantSize: "19%", plantX: "58%", plantY: "10%", pendantSize: "17%", moodColor: "#8b9a68", floorTone: "#272016" } },
     hearth: { number: "ROOM 04", title: "炉边角落", note: "灯和薄雾守着这个角落，像一间一直有人等候的小屋。", image: materialMap.hearth.scene, alt: "暖色灯光与加湿器角落", aspect: "landscape", detail: materialMap.hearth.lamp, detailAlt: "桌上的暖光灯", prop: "lamp", pendant: false, assets: materialMap.hearth, layout: { theme: "hearth", paintingSize: "56%", paintingHeight: "62%", paintingX: "5%", paintingY: "7%", propSize: "15%", propX: "76%", propY: "10%", plantSize: "0%", plantX: "0%", plantY: "0%", pendantSize: "0%", moodColor: "#b06f3a", floorTone: "#32190d" } },
-    child: { number: "ROOM 05", title: "儿童画室", note: "胡桃木矮柜和柔软地毯，等着新的颜色住进来。", image: materialMap.child.painting, alt: "儿童房里的竹影装框画", aspect: "portrait", detail: materialMap.child.prop, detailAlt: "绿色墙钟", prop: "clock", pendant: true, assets: materialMap.child, layout: { theme: "child", paintingSize: "30%", paintingHeight: "66%", paintingX: "8%", paintingY: "7%", propSize: "9%", propX: "87%", propY: "17%", plantSize: "13%", plantX: "72%", plantY: "12%", accentSize: "29%", accentX: "42%", accentY: "10%", pendantSize: "22%", moodColor: "#b99764", floorTone: "#312116" } }
+    child: { number: "ROOM 05", title: "儿童画室", note: "胡桃木矮柜和柔软地毯，等着新的颜色住进来。", image: materialMap.child.painting, alt: "儿童房里的竹影装框画", aspect: "portrait", detail: materialMap.child.prop, detailAlt: "绿色墙钟", prop: "clock", pendant: true, assets: materialMap.child, layout: { theme: "child", paintingSize: "30%", paintingHeight: "66%", paintingX: "8%", paintingY: "7%", propSize: "9%", propX: "87%", propY: "17%", plantSize: "13%", plantX: "72%", plantY: "12%", accentSize: "29%", accentX: "42%", accentY: "10%", pendantSize: "16%", moodColor: "#b99764", floorTone: "#312116" } }
   };
   let lightOn = false;
   const dayKey = new Date().toISOString().slice(0, 10);
@@ -3684,6 +3692,76 @@ function setupCabinExperience() {
     };
     Object.entries(variables).forEach(([key, value]) => { if (value) scene.style.setProperty(key, value); });
   };
+  const readCabinAssetPositions = () => {
+    try { return JSON.parse(localStorage.getItem(cabinAssetPositionKey) || "{}"); } catch { return {}; }
+  };
+  const writeCabinAssetPosition = (roomId, layer, position) => {
+    const positions = readCabinAssetPositions();
+    positions[roomId] = { ...(positions[roomId] || {}), [layer]: position };
+    localStorage.setItem(cabinAssetPositionKey, JSON.stringify(positions));
+  };
+  const applyCabinAssetPosition = (roomId, layer, element) => {
+    const position = readCabinAssetPositions()[roomId]?.[layer];
+    element.dataset.cabinLayer = layer;
+    element.dataset.cabinRoomLayer = `${roomId}:${layer}`;
+    if (!position) {
+      element.style.removeProperty("top");
+      element.style.removeProperty("left");
+      element.style.removeProperty("right");
+      element.style.removeProperty("bottom");
+      return;
+    }
+    element.style.left = `${position.left}%`;
+    element.style.top = `${position.top}%`;
+    element.style.right = "auto";
+    element.style.bottom = "auto";
+  };
+  const makeCabinAssetDraggable = (element, layer) => {
+    if (!element) return;
+    element.classList.add("is-cabin-draggable");
+    element.title = "可以拖动调整位置";
+    element.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0) return;
+      const roomId = experience.dataset.cabinRoom || "studio";
+      if (element.hidden || experience.classList.contains("is-music-room") || experience.classList.contains("is-pet-room")) return;
+      event.preventDefault();
+      element.setPointerCapture?.(event.pointerId);
+      element.classList.add("is-dragging");
+      const sceneRect = scene.getBoundingClientRect();
+      const elementRect = element.getBoundingClientRect();
+      const offsetX = event.clientX - elementRect.left;
+      const offsetY = event.clientY - elementRect.top;
+      const move = (moveEvent) => {
+        const maxLeft = Math.max(0, sceneRect.width - elementRect.width);
+        const maxTop = Math.max(0, sceneRect.height - elementRect.height);
+        const leftPx = Math.max(0, Math.min(maxLeft, moveEvent.clientX - sceneRect.left - offsetX));
+        const topPx = Math.max(0, Math.min(maxTop, moveEvent.clientY - sceneRect.top - offsetY));
+        const left = Number(((leftPx / sceneRect.width) * 100).toFixed(2));
+        const top = Number(((topPx / sceneRect.height) * 100).toFixed(2));
+        element.style.left = `${left}%`;
+        element.style.top = `${top}%`;
+        element.style.right = "auto";
+        element.style.bottom = "auto";
+        element.dataset.dragLeft = String(left);
+        element.dataset.dragTop = String(top);
+      };
+      const finish = () => {
+        element.classList.remove("is-dragging");
+        element.removeEventListener("pointermove", move);
+        element.removeEventListener("pointerup", finish);
+        element.removeEventListener("pointercancel", finish);
+        if (element.dataset.dragLeft && element.dataset.dragTop) {
+          writeCabinAssetPosition(roomId, layer, {
+            left: Number(element.dataset.dragLeft),
+            top: Number(element.dataset.dragTop)
+          });
+        }
+      };
+      element.addEventListener("pointermove", move);
+      element.addEventListener("pointerup", finish, { once: true });
+      element.addEventListener("pointercancel", finish, { once: true });
+    });
+  };
   const applyCabinRoomAssets = (roomId, room = rooms[roomId]) => {
     const assets = BLOG_MATERIALS.roomMap?.[roomId] || room?.assets;
     const fallbackAssets = fallbackBlogMaterials.roomMap[roomId] || {};
@@ -3713,7 +3791,9 @@ function setupCabinExperience() {
     detailImage.alt = room.detailAlt;
     detailImage.dataset.prop = room.prop;
     applyRoomLayout(room);
+    cabinAssetLayers.forEach(([layer, element]) => applyCabinAssetPosition(roomId, layer, element));
   };
+  cabinAssetLayers.forEach(([layer, element]) => makeCabinAssetDraggable(element, layer));
 
   const setLight = (value) => {
     lightOn = value;
@@ -3857,24 +3937,25 @@ function setupCabinMusicRoom() {
     const voiceGain = context.createGain();
     const filter = context.createBiquadFilter();
     filter.type = "lowpass";
-    filter.frequency.value = 3500;
+    filter.frequency.value = 4200;
     voiceGain.gain.setValueAtTime(0.0001, now);
-    voiceGain.gain.linearRampToValueAtTime(0.2, now + 0.025);
-    voiceGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.5);
+    voiceGain.gain.linearRampToValueAtTime(0.19, now + 0.018);
+    voiceGain.gain.exponentialRampToValueAtTime(0.045, now + 1.5);
+    voiceGain.gain.exponentialRampToValueAtTime(0.0001, now + 4.8);
     filter.connect(voiceGain).connect(master);
     [1, 2, 3.01].forEach((multiple, index) => {
       const oscillator = context.createOscillator();
       const gain = context.createGain();
       oscillator.type = index === 0 ? "triangle" : "sine";
       oscillator.frequency.value = frequency * multiple;
-      gain.gain.value = index === 0 ? 0.86 : 0.12 / index;
+      gain.gain.value = index === 0 ? 0.84 : 0.14 / index;
       oscillator.connect(gain).connect(filter);
       oscillator.start(now);
-      oscillator.stop(now + 2.6);
+      oscillator.stop(now + 4.9);
       oscillators.push(oscillator);
     });
     animateButton(button);
-    return registerVoice({ oscillators, gain: voiceGain }, 2.6, 0.28);
+    return registerVoice({ oscillators, gain: voiceGain }, 4.9, 0.8);
   };
   const playBowl = async (frequency, button) => {
     await ensureAudio();
@@ -3882,48 +3963,77 @@ function setupCabinMusicRoom() {
     const oscillators = [];
     const voiceGain = context.createGain();
     const filter = context.createBiquadFilter();
+    const tremolo = context.createOscillator();
+    const tremoloGain = context.createGain();
     filter.type = "lowpass";
-    filter.frequency.value = 4600;
+    filter.frequency.value = 5200;
+    filter.Q.value = 0.8;
+    tremolo.type = "sine";
+    tremolo.frequency.value = 0.46;
+    tremoloGain.gain.value = 0.018;
+    tremolo.connect(tremoloGain).connect(voiceGain.gain);
     voiceGain.gain.setValueAtTime(0.0001, now);
-    voiceGain.gain.linearRampToValueAtTime(0.14, now + 0.12);
-    voiceGain.gain.exponentialRampToValueAtTime(0.0001, now + 7.2);
+    voiceGain.gain.linearRampToValueAtTime(0.13, now + 0.28);
+    voiceGain.gain.exponentialRampToValueAtTime(0.052, now + 5.4);
+    voiceGain.gain.exponentialRampToValueAtTime(0.0001, now + 14.5);
     filter.connect(voiceGain).connect(master);
-    [1, 2.71, 4.16, 5.43].forEach((multiple, index) => {
+    [1, 1.502, 2.01, 2.71, 4.16, 5.43].forEach((multiple, index) => {
       const oscillator = context.createOscillator();
       const gain = context.createGain();
       oscillator.type = "sine";
-      oscillator.frequency.value = frequency * multiple;
-      gain.gain.value = 0.85 / (index + 1);
+      oscillator.frequency.value = frequency * multiple + (index % 2 ? 1.7 : -0.9);
+      gain.gain.value = index === 0 ? 0.72 : 0.22 / index;
       oscillator.connect(gain).connect(filter);
-      oscillator.start(now);
-      oscillator.stop(now + 7.3);
+      oscillator.start(now + index * 0.018);
+      oscillator.stop(now + 14.7);
       oscillators.push(oscillator);
     });
+    tremolo.start(now);
+    tremolo.stop(now + 14.7);
+    oscillators.push(tremolo);
     animateButton(button);
-    return registerVoice({ oscillators, gain: voiceGain }, 7.3, 0.7);
+    return registerVoice({ oscillators, gain: voiceGain }, 14.7, 2.2);
   };
-  const playGuitar = async (frequency, button) => {
-    await ensureAudio();
+  const playGuitarString = (frequency, destination, startOffset = 0, level = 0.18, decay = 4.2) => {
     const length = Math.max(2, Math.round(context.sampleRate / frequency));
-    const buffer = context.createBuffer(1, context.sampleRate * 3, context.sampleRate);
+    const buffer = context.createBuffer(1, context.sampleRate * decay, context.sampleRate);
     const data = buffer.getChannelData(0);
-    for (let index = 0; index < length; index += 1) data[index] = Math.random() * 2 - 1;
-    for (let index = length; index < data.length; index += 1) data[index] = 0.994 * 0.5 * (data[index - length] + data[index - length + 1]);
+    for (let index = 0; index < length; index += 1) data[index] = (Math.random() * 2 - 1) * Math.pow(1 - index / length, 0.22);
+    for (let index = length; index < data.length - 1; index += 1) {
+      data[index] = 0.996 * 0.5 * (data[index - length] + data[index - length + 1]);
+    }
     const source = context.createBufferSource();
     const gain = context.createGain();
     const filter = context.createBiquadFilter();
-    const now = context.currentTime;
+    const now = context.currentTime + startOffset;
     filter.type = "lowpass";
-    filter.frequency.setValueAtTime(3200, now);
-    filter.frequency.exponentialRampToValueAtTime(900, now + 2.7);
-    gain.gain.setValueAtTime(0.3, now);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.8);
+    filter.frequency.setValueAtTime(4200, now);
+    filter.frequency.exponentialRampToValueAtTime(1250, now + decay - 0.45);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(level, now + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + decay);
     source.buffer = buffer;
-    source.connect(filter).connect(gain).connect(master);
+    source.connect(filter).connect(gain).connect(destination);
     source.start(now);
-    source.stop(now + 2.9);
+    source.stop(now + decay + 0.04);
+    return source;
+  };
+  const playGuitar = async (frequency, button) => {
+    await ensureAudio();
+    const now = context.currentTime;
+    const sources = [];
+    const chordGain = context.createGain();
+    chordGain.gain.setValueAtTime(0.0001, now);
+    chordGain.gain.linearRampToValueAtTime(1, now + 0.018);
+    chordGain.gain.exponentialRampToValueAtTime(0.0001, now + 5.4);
+    chordGain.connect(master);
+    const chordIntervals = [1, 1.2599, 1.4983, 2];
+    chordIntervals.forEach((multiple, index) => {
+      sources.push(playGuitarString(frequency * multiple, chordGain, index * 0.045, index === 0 ? 0.18 : 0.105, 4.8 - index * 0.35));
+    });
+    sources.push(playGuitarString(frequency * 0.5, chordGain, 0.018, 0.08, 5.2));
     animateButton(button);
-    return registerVoice({ source, gain }, 2.9, 0.24);
+    return registerVoice({ oscillators: sources, gain: chordGain }, 5.4, 0.9);
   };
 
   const bindInstrumentButtons = (selector, playVoice, dataKey) => {
