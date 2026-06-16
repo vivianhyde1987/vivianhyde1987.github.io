@@ -126,6 +126,26 @@ const fallbackBlogMaterials = {
 
 const BLOG_MATERIALS = window.ROSE_BLOG_MATERIALS || fallbackBlogMaterials;
 const getBlogMaterials = () => BLOG_MATERIALS;
+const homepageImageMaterials = {
+  hero: "cabin-hearth.jpg",
+  cards: [
+    "cabin-art-flowers.jpg",
+    "cabin-art-night.jpg",
+    "cabin-art-water.jpg",
+    "cabin-painting-flowers.jpg",
+    "cabin-painting-night.jpg",
+    "cabin-painting-water.jpg"
+  ],
+  pet: "assets/blog-materials/original/source-01-0589d5f1a87d.jpg"
+};
+
+function preferCompleteHomepageImage(src, index = 0) {
+  if (!src) return homepageImageMaterials.cards[index % homepageImageMaterials.cards.length];
+  if (src.includes("assets/blog-materials/vector/")) {
+    return homepageImageMaterials.cards[index % homepageImageMaterials.cards.length] || src;
+  }
+  return src;
+}
 
 function getBlogMaterialPath(path) {
   if (!path) return "";
@@ -1133,7 +1153,7 @@ function renderFeed() {
     node.querySelector(".post__body").textContent = post.body;
 
     const image = node.querySelector(".post__image");
-    const articleIllustrations = BLOG_MATERIALS.articleIllustrations || [];
+    const articleIllustrations = homepageImageMaterials.cards;
     const illustrationSeed = String(post.id || post.title || "article")
       .split("")
       .reduce((sum, character) => sum + character.charCodeAt(0), 0);
@@ -4212,7 +4232,7 @@ const defaultCabinArtworks = getBlogMaterials().gallerySeeds.map((item, index) =
   id: `material-seed-${index}`,
   category: item.category,
   title: item.title,
-  image_url: item.src
+  image_url: preferCompleteHomepageImage(item.src, index)
 }));
 
 function renderCabinGallery() {
@@ -4229,7 +4249,7 @@ function renderCabinGallery() {
   elements.cabinGalleryGrid.innerHTML = "";
   items.forEach((item) => {
     const figure = document.createElement("figure");
-    figure.className = `cabin-artwork cabin-artwork--${item.category}`;
+    figure.className = `cabin-artwork cabin-artwork--${item.category} home-visual-card`;
     figure.innerHTML = `<button type="button"><img src="${item.image_url}" alt="${escapeHtml(item.title)}" loading="lazy" decoding="async" /></button><figcaption>${escapeHtml(item.title)}</figcaption>`;
     figure.querySelector("button").addEventListener("click", () => {
       const dialog = document.createElement("dialog");
