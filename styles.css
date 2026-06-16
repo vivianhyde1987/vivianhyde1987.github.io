@@ -138,6 +138,7 @@ label {
   position: relative;
   min-height: clamp(600px, 78vh, 760px);
   overflow: hidden;
+  isolation: isolate;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 8px;
   box-shadow: var(--shadow);
@@ -188,6 +189,62 @@ label {
   border-radius: 6px;
   filter: saturate(0.82) sepia(0.08) brightness(0.86);
   box-shadow: 0 10px 34px rgba(0, 0, 0, 0.28);
+}
+
+.home-idol-atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  mix-blend-mode: soft-light;
+}
+
+.home-idol-atmosphere::after {
+  position: absolute;
+  inset: -12%;
+  content: "";
+  background:
+    radial-gradient(circle at 18% 28%, rgba(255, 196, 139, 0.08), transparent 28%),
+    radial-gradient(circle at 84% 34%, rgba(206, 83, 56, 0.08), transparent 30%),
+    repeating-radial-gradient(circle at 40% 40%, rgba(255, 244, 226, 0.08) 0 1px, transparent 1px 4px);
+  opacity: 0.24;
+  filter: blur(0.4px);
+}
+
+.home-idol-atmosphere__figure {
+  position: absolute;
+  top: 2%;
+  bottom: 0;
+  width: min(42vw, 520px);
+  background-repeat: no-repeat;
+  background-size: contain;
+  opacity: 0.48;
+  filter: blur(2px) sepia(0.34) saturate(0.68) brightness(0.82);
+  mix-blend-mode: screen;
+  transform: translateZ(0);
+  -webkit-mask-image:
+    radial-gradient(ellipse at center, #000 0 44%, rgba(0, 0, 0, 0.48) 66%, transparent 82%),
+    linear-gradient(90deg, transparent, #000 18%, #000 78%, transparent);
+  mask-image:
+    radial-gradient(ellipse at center, #000 0 44%, rgba(0, 0, 0, 0.48) 66%, transparent 82%),
+    linear-gradient(90deg, transparent, #000 18%, #000 78%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
+.home-idol-atmosphere__figure--left {
+  left: -6%;
+  background-image: url("assets/home-hero/idol-atmosphere-left.png");
+  background-position: left center;
+}
+
+.home-idol-atmosphere__figure--right {
+  right: -7%;
+  width: min(46vw, 610px);
+  background-image: url("assets/home-hero/idol-atmosphere-right.png");
+  background-position: right center;
+  opacity: 0.38;
 }
 
 .hero__shade {
@@ -4906,6 +4963,22 @@ select {
 
   .home-hero-img {
     max-height: none;
+  }
+
+  .home-idol-atmosphere {
+    opacity: 0.5;
+  }
+
+  .home-idol-atmosphere__figure--left {
+    display: none;
+  }
+
+  .home-idol-atmosphere__figure--right {
+    top: 18%;
+    right: -34%;
+    width: 86vw;
+    opacity: 0.22;
+    filter: blur(5px) sepia(0.38) saturate(0.48) brightness(0.72);
   }
 
   .topbar,
