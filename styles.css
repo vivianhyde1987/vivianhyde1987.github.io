@@ -194,10 +194,10 @@ label {
 .home-idol-atmosphere {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: 2;
   overflow: hidden;
   pointer-events: none;
-  mix-blend-mode: soft-light;
+  mix-blend-mode: normal;
 }
 
 .home-idol-atmosphere::after {
@@ -208,7 +208,7 @@ label {
     radial-gradient(circle at 18% 28%, rgba(255, 196, 139, 0.08), transparent 28%),
     radial-gradient(circle at 84% 34%, rgba(206, 83, 56, 0.08), transparent 30%),
     repeating-radial-gradient(circle at 40% 40%, rgba(255, 244, 226, 0.08) 0 1px, transparent 1px 4px);
-  opacity: 0.24;
+  opacity: 0.32;
   filter: blur(0.4px);
 }
 
@@ -219,8 +219,8 @@ label {
   width: min(42vw, 520px);
   background-repeat: no-repeat;
   background-size: contain;
-  opacity: 0.48;
-  filter: blur(2px) sepia(0.34) saturate(0.68) brightness(0.82);
+  opacity: 0.64;
+  filter: blur(1.3px) sepia(0.32) saturate(0.82) brightness(0.9);
   mix-blend-mode: screen;
   transform: translateZ(0);
   -webkit-mask-image:
@@ -244,7 +244,7 @@ label {
   width: min(46vw, 610px);
   background-image: url("assets/home-hero/idol-atmosphere-right.png");
   background-position: right center;
-  opacity: 0.38;
+  opacity: 0.58;
 }
 
 .hero__shade {
@@ -4974,7 +4974,7 @@ select {
   }
 
   .home-idol-atmosphere {
-    opacity: 0.5;
+    opacity: 0.72;
   }
 
   .home-idol-atmosphere__figure--left {
@@ -4985,8 +4985,8 @@ select {
     top: 18%;
     right: -34%;
     width: 86vw;
-    opacity: 0.22;
-    filter: blur(5px) sepia(0.38) saturate(0.48) brightness(0.72);
+    opacity: 0.34;
+    filter: blur(4px) sepia(0.38) saturate(0.58) brightness(0.82);
   }
 
   .topbar,
