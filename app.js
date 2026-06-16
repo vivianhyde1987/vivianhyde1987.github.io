@@ -30,6 +30,7 @@ let medicineHistoryOpen = false;
 let activeInterest = "全部";
 let activeCategory = "文章";
 let activeMysteryCategory = "健康";
+let feedVisibleCount = 8;
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -758,104 +759,14 @@ function renderLotteryHistory() {
   `;
 }
 
-function renderLottery() {
-  const topic = currentLotteryTopic();
-  const entries = topic ? lotteryEntries.filter((entry) => entry.topic_id === topic.id) : [];
-  const winner = winnerForTopic(topic, entries);
-  const hasEntered = Boolean(profile && entries.some((entry) => entry.owner_id === profile.user_id));
 
-  elements.lotteryTopicForm.hidden = profile?.role !== "owner";
-  elements.lotteryEntryForm.hidden = !profile || !topic || hasEntered;
-
-  if (!topic) {
-    elements.lotteryTopicCard.innerHTML = `<p>今天还没有讨论话题。等站主发布后，朋友们就可以参与抽奖。</p>`;
-    elements.lotteryResult.innerHTML = "";
-    elements.lotteryEntries.innerHTML = "";
-    return;
-  }
-
-  elements.lotteryTopicCard.innerHTML = `
-    <span>${escapeHtml(topic.topic_date)}</span>
-    <strong>${escapeHtml(topic.topic_text)}</strong>
-    <small>参与后将自动开奖，奖品：站主邀请喝 Manner 一次。</small>
-  `;
-
-  if (!profile) {
-    elements.lotteryResult.innerHTML = `<p>登录 ID 后可以参与今日抽奖。</p>`;
-  } else if (winner) {
-    const winnerProfile = profiles.get(winner.owner_id);
-    elements.lotteryResult.innerHTML = `
-      <strong>今日获奖 ID：${escapeHtml(winnerProfile?.handle || "朋友")}</strong>
-      <span>奖品：站主邀请喝 Manner 一次</span>
-    `;
-  } else {
-    elements.lotteryResult.innerHTML = `<p>还没有朋友参与，第一条留言会点亮今日抽奖。</p>`;
-  }
-
-  elements.lotteryEntries.innerHTML = entries.length ? entries.map((entry) => {
-    const author = profiles.get(entry.owner_id);
-    return `
-      <article>
-        <strong>${escapeHtml(author?.handle || "朋友")}</strong>
-        <p>${escapeHtml(entry.body)}</p>
-        <small>${formatDate(entry.created_at)}</small>
-      </article>
-    `;
-  }).join("") : `<p>暂无参与留言。</p>`;
-}
 
 function currentLotteryTopic() {
   const week = lotteryWeekKey();
   return lotteryTopics.find((topic) => topic.topic_date === week) || null;
 }
 
-function renderLottery() {
-  const topic = currentLotteryTopic();
-  const entries = topic ? lotteryEntries.filter((entry) => entry.topic_id === topic.id) : [];
-  const winner = isLotteryDrawn(topic) ? winnerForTopic(topic, entries) : null;
-  const hasEntered = Boolean(profile && entries.some((entry) => entry.owner_id === profile.user_id));
 
-  elements.lotteryTopicForm.hidden = profile?.role !== "owner";
-  elements.lotteryEntryForm.hidden = !profile || !topic || hasEntered || isLotteryDrawn(topic);
-
-  if (!topic) {
-    elements.lotteryTopicCard.innerHTML = `<p>本周还没有讨论话题。站主发布后，朋友们就可以参与本周抽奖。</p>`;
-    elements.lotteryResult.innerHTML = `<p>统一开奖时间：每周日 21:00。</p>`;
-    elements.lotteryEntries.innerHTML = "";
-    return;
-  }
-
-  elements.lotteryTopicCard.innerHTML = `
-    <span>本周开奖：${escapeHtml(formatLotteryDrawTime(topic.topic_date))}</span>
-    <strong>${escapeHtml(topic.topic_text)}</strong>
-    <small>奖品：站主邀请喝 Manner 一次。每个 ID 本周可参与一次。</small>
-  `;
-
-  if (!profile) {
-    elements.lotteryResult.innerHTML = `<p>登录 ID 后可以参与本周抽奖。开奖时间：${escapeHtml(formatLotteryDrawTime(topic.topic_date))}。</p>`;
-  } else if (!isLotteryDrawn(topic)) {
-    elements.lotteryResult.innerHTML = `<p>本周已有 ${entries.length} 位朋友参与。周日 21:00 自动公布获奖 ID。</p>`;
-  } else if (winner) {
-    const winnerProfile = profiles.get(winner.owner_id);
-    elements.lotteryResult.innerHTML = `
-      <strong>本周获奖 ID：${escapeHtml(winnerProfile?.handle || "朋友")}</strong>
-      <span>奖品：站主邀请喝 Manner 一次</span>
-    `;
-  } else {
-    elements.lotteryResult.innerHTML = `<p>本周还没有朋友参与，所以这周暂不开奖。</p>`;
-  }
-
-  elements.lotteryEntries.innerHTML = entries.length ? entries.map((entry) => {
-    const author = profiles.get(entry.owner_id);
-    return `
-      <article>
-        <strong>${escapeHtml(author?.handle || "朋友")}</strong>
-        <p>${escapeHtml(entry.body)}</p>
-        <small>${formatDate(entry.created_at)}</small>
-      </article>
-    `;
-  }).join("") : `<p>暂无参与留言。</p>`;
-}
 
 function renderLottery() {
   const topic = currentLotteryTopic();
@@ -1029,27 +940,35 @@ async function refreshSession() {
   await loadBlog();
 }
 
-async function loadBlog() {
-  if (!client) return;
-  setSync("同步中");
+async function safeQuery(label, queryPromise, fallback = []) {
   try {
-    const [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult, wishResult, lotteryTopicResult, lotteryEntryResult, eventLogResult, podcastResult, podcastCommentResult, podcastLikeResult, cabinArtworkResult, mimiCareResult, cabinRecordingResult] = await Promise.all([
-      client.from("blog_posts").select("*").order("created_at", { ascending: false }),
-      client.from("blog_comments").select("*").order("created_at", { ascending: true }),
+    const result = await queryPromise;
+    if (result.error) {
+      console.warn(`[${label}]`, result.error);
+      return fallback;
+    }
+    return result.data || fallback;
+  } catch (error) {
+    console.warn(`[${label}]`, error);
+    return fallback;
+  }
+}
+
+let extendedBlogLoaded = false;
+let extendedBlogLoading = null;
+
+async function loadBlog(options = {}) {
+  if (!client) return;
+  const forceExtended = Boolean(options.forceExtended);
+  setSync("???");
+  try {
+    const [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult] = await Promise.all([
+      client.from("blog_posts").select("*").order("created_at", { ascending: false }).limit(80),
+      client.from("blog_comments").select("*").order("created_at", { ascending: true }).limit(500),
       client.from("blog_accounts").select("id, handle, avatar, role"),
       client.from("blog_post_likes").select("*"),
       client.from("chat_messages").select("*").order("created_at", { ascending: false }).limit(80),
-      client.from("chat_message_likes").select("*"),
-      client.from("koi_wishes").select("*").order("created_at", { ascending: false }).limit(80),
-      client.from("lottery_topics").select("*").order("topic_date", { ascending: false }).limit(30),
-      client.from("lottery_entries").select("*").order("created_at", { ascending: true }).limit(200),
-      client.from("health_event_logs").select("*").order("event_time", { ascending: false }).limit(500),
-      client.from("blog_podcasts").select("*").order("publish_date", { ascending: false }).order("issue_no", { ascending: false }),
-      client.from("podcast_comments").select("*").order("created_at", { ascending: true }),
-      client.from("podcast_likes").select("*"),
-      client.from("cabin_artworks").select("*").order("created_at", { ascending: false }),
-      client.from("mimi_care_logs").select("*").order("created_at", { ascending: false }).limit(60),
-      client.from("cabin_music_recordings").select("*").order("created_at", { ascending: false }).limit(40)
+      client.from("chat_message_likes").select("*")
     ]);
     for (const result of [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult]) {
       if (result.error) throw result.error;
@@ -1060,20 +979,52 @@ async function loadBlog() {
     likes = likeResult.data || [];
     chatMessages = chatResult.data || [];
     chatLikes = chatLikeResult.data || [];
-    koiWishes = wishResult.error ? [] : (wishResult.data || []);
-    lotteryTopics = lotteryTopicResult.error ? [] : (lotteryTopicResult.data || []);
-    lotteryEntries = lotteryEntryResult.error ? [] : (lotteryEntryResult.data || []);
-    eventLogs = eventLogResult.error ? [] : (eventLogResult.data || []);
-    podcasts = podcastResult.error ? [] : (podcastResult.data || []);
-    podcastComments = podcastCommentResult.error ? [] : (podcastCommentResult.data || []);
-    podcastLikes = podcastLikeResult.error ? [] : (podcastLikeResult.data || []);
-    cabinArtworks = cabinArtworkResult.error ? [] : (cabinArtworkResult.data || []);
-    mimiCareLogs = mimiCareResult.error ? [] : (mimiCareResult.data || []);
-    cabinRecordings = cabinRecordingResult.error ? [] : (cabinRecordingResult.data || []);
     profiles = new Map((profileResult.data || []).map((item) => [item.id, { ...item, user_id: item.id }]));
-    setSync("云端已同步");
+    setSync("?????");
     renderFeed();
     renderChat();
+    renderWishPool();
+    if (forceExtended) {
+      await loadExtendedBlogData({ force: true });
+    } else {
+      scheduleExtendedBlogLoad();
+    }
+  } catch (error) {
+    console.error("[loadBlog:core]", error);
+    setSync("?????? SQL");
+    elements.feed.innerHTML = `<div class="empty">?????????????????? supabase-setup.sql ??? Supabase ? SQL Editor ??????</div>`;
+    elements.chatList.innerHTML = `<div class="empty">???????????</div>`;
+  }
+}
+
+async function loadExtendedBlogData({ force = false } = {}) {
+  if (!client) return;
+  if (extendedBlogLoaded && !force) return;
+  if (extendedBlogLoading) return extendedBlogLoading;
+  extendedBlogLoading = (async () => {
+    const [wishData, lotteryTopicData, lotteryEntryData, eventLogData, podcastData, podcastCommentData, podcastLikeData, cabinArtworkData, mimiCareData, cabinRecordingData] = await Promise.all([
+      safeQuery("koi_wishes", client.from("koi_wishes").select("*").order("created_at", { ascending: false }).limit(80)),
+      safeQuery("lottery_topics", client.from("lottery_topics").select("*").order("topic_date", { ascending: false }).limit(30)),
+      safeQuery("lottery_entries", client.from("lottery_entries").select("*").order("created_at", { ascending: true }).limit(200)),
+      safeQuery("health_event_logs", client.from("health_event_logs").select("*").order("event_time", { ascending: false }).limit(180)),
+      safeQuery("blog_podcasts", client.from("blog_podcasts").select("*").order("publish_date", { ascending: false }).order("issue_no", { ascending: false }).limit(40)),
+      safeQuery("podcast_comments", client.from("podcast_comments").select("*").order("created_at", { ascending: true }).limit(240)),
+      safeQuery("podcast_likes", client.from("podcast_likes").select("*")),
+      safeQuery("cabin_artworks", client.from("cabin_artworks").select("*").order("created_at", { ascending: false }).limit(80)),
+      safeQuery("mimi_care_logs", client.from("mimi_care_logs").select("*").order("created_at", { ascending: false }).limit(40)),
+      safeQuery("cabin_music_recordings", client.from("cabin_music_recordings").select("*").order("created_at", { ascending: false }).limit(30))
+    ]);
+    koiWishes = wishData;
+    lotteryTopics = lotteryTopicData;
+    lotteryEntries = lotteryEntryData;
+    eventLogs = eventLogData;
+    podcasts = podcastData;
+    podcastComments = podcastCommentData;
+    podcastLikes = podcastLikeData;
+    cabinArtworks = cabinArtworkData;
+    mimiCareLogs = mimiCareData;
+    cabinRecordings = cabinRecordingData;
+    extendedBlogLoaded = true;
     renderWishPool();
     renderLottery();
     renderEventLogs();
@@ -1081,10 +1032,21 @@ async function loadBlog() {
     renderCabinGallery();
     renderMimiCareLogs();
     renderCabinRecordings();
-  } catch {
-    setSync("需要运行新版 SQL");
-    elements.feed.innerHTML = `<div class="empty">新增了栏目历史和临时讨论区。请把新版 supabase-setup.sql 复制到 Supabase 的 SQL Editor 再运行一次。</div>`;
-    elements.chatList.innerHTML = `<div class="empty">讨论区等待云端初始化。</div>`;
+  })().catch((error) => {
+    console.warn("[loadBlog:extended]", error);
+  }).finally(() => {
+    extendedBlogLoading = null;
+  });
+  return extendedBlogLoading;
+}
+
+function scheduleExtendedBlogLoad() {
+  if (extendedBlogLoaded || extendedBlogLoading) return;
+  const run = () => loadExtendedBlogData().catch((error) => console.warn("[loadBlog:extended]", error));
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(run, { timeout: 2500 });
+  } else {
+    window.setTimeout(run, 900);
   }
 }
 
@@ -1137,13 +1099,14 @@ function renderInterestFilters() {
 function renderFeed() {
   const articleCategories = new Set(["文章", "日志", "小说"]);
   const visible = posts.filter((post) => articleCategories.has(post.category));
+  const displayPosts = visible.slice(0, feedVisibleCount);
   elements.feed.innerHTML = "";
   if (!visible.length) {
     elements.feed.innerHTML = `<div class="empty">还没有历史文章。</div>`;
     return;
   }
 
-  visible.forEach((post) => {
+  displayPosts.forEach((post) => {
     const node = elements.postTemplate.content.firstElementChild.cloneNode(true);
     const author = profiles.get(post.owner_id);
     paintAvatar(node.querySelector(".user-avatar"), avatarFromProfile(author));
@@ -1205,6 +1168,17 @@ function renderFeed() {
     });
     elements.feed.append(node);
   });
+  if (visible.length > displayPosts.length) {
+    const more = document.createElement("button");
+    more.type = "button";
+    more.className = "load-more-button";
+    more.textContent = `查看更多 ${Math.min(8, visible.length - displayPosts.length)} 篇`;
+    more.addEventListener("click", () => {
+      feedVisibleCount += 8;
+      renderFeed();
+    });
+    elements.feed.append(more);
+  }
 }
 
 function likeCount(postId) {
@@ -1334,46 +1308,7 @@ function canDeleteChat(message) {
   return Boolean(profile && (profile.role === "owner" || message.owner_id === profile.user_id));
 }
 
-function renderChat() {
-  elements.chatList.innerHTML = "";
-  if (!chatMessages.length) {
-    elements.chatList.innerHTML = `<div class="empty">临时讨论区还没有消息。</div>`;
-    return;
-  }
 
-  chatMessages.forEach((message) => {
-    const author = profiles.get(message.owner_id);
-    const item = document.createElement("article");
-    item.className = "chat-message";
-    item.innerHTML = `
-      <div class="chat-message__head">
-        <strong>${escapeHtml(author?.handle || "朋友")}</strong>
-        ${message.body ? moodBubble(message.body) : ""}
-        <small>${formatDate(message.created_at)}</small>
-      </div>
-      ${message.body ? `<p>${escapeHtml(message.body)}</p>` : ""}
-      ${message.image_url ? `<img src="${message.image_url}" alt="聊天贴图" loading="lazy" decoding="async" />` : ""}
-      <div class="chat-message__actions"></div>
-    `;
-    const actions = item.querySelector(".chat-message__actions");
-    const likeButton = document.createElement("button");
-    likeButton.type = "button";
-    likeButton.className = isChatLiked(message.id) ? "is-liked" : "";
-    likeButton.textContent = `${isChatLiked(message.id) ? "已赞" : "点赞"} ${chatLikeCount(message.id)}`;
-    likeButton.disabled = !profile;
-    likeButton.addEventListener("click", () => toggleChatLike(message.id));
-    actions.append(likeButton);
-
-    if (canDeleteChat(message)) {
-      const deleteButton = document.createElement("button");
-      deleteButton.type = "button";
-      deleteButton.textContent = "删除";
-      deleteButton.addEventListener("click", () => deleteChatMessage(message.id));
-      actions.append(deleteButton);
-    }
-    elements.chatList.append(item);
-  });
-}
 
 async function toggleChatLike(messageId) {
   if (!profile) {
@@ -2593,52 +2528,6 @@ elements.avatarImageInput.addEventListener("change", async () => {
 
 elements.postForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  if (!profile) {
-    setMessage("请先登录，再写博客。", "error");
-    return;
-  }
-  const category = elements.categoryInput.value;
-  const interestType = category === "兴趣" ? elements.interestTypeInput.value : null;
-  const photoFile = elements.imageInput.files?.[0] || null;
-  const title = elements.titleInput.value.trim() || (category === "相册" && photoFile ? "相册照片" : "");
-  const body = elements.bodyInput.value.trim() || (category === "相册" && photoFile ? "分享一张照片。" : "");
-  if (!title || !body) {
-    setSync("请先填写标题和正文");
-    return;
-  }
-  setSync(photoFile ? "处理照片中" : "保存中");
-  let imageUrl = null;
-  try {
-    imageUrl = await compressPhoto(photoFile);
-  } catch {
-    setSync("照片处理失败，请换一张普通 JPG 或 PNG");
-    return;
-  }
-  if (imageUrl && imageUrl.length > 850000) {
-    setSync("照片还是太大，请换一张较小的照片");
-    return;
-  }
-  const { error } = await client.rpc("create_blog_post", {
-    session_token: sessionToken,
-    category_input: category,
-    title_input: title,
-    body_input: body,
-    image_input: imageUrl
-  });
-  if (error) {
-    setSync(rpcErrorText(error, "保存失败"));
-    return;
-  }
-  setSync("已保存");
-  activeCategory = category;
-  elements.postForm.reset();
-  updateMediaClearButtons();
-  await loadBlog();
-  setCategory(activeCategory, true);
-});
-
-elements.postForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
   event.stopImmediatePropagation();
   if (!profile) {
     setMessage("请先登录，再写博客。", "error");
@@ -2695,44 +2584,6 @@ elements.postForm.addEventListener("submit", async (event) => {
   await loadBlog();
   setCategory(activeCategory, true);
 }, { capture: true });
-
-elements.chatForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  if (!profile) {
-    setMessage("请先登录，再进入讨论区。", "error");
-    return;
-  }
-  const body = elements.chatBodyInput.value.trim();
-  const file = elements.chatImageInput.files?.[0] || null;
-  if (!body && !file) {
-    setSync("讨论区消息不能为空");
-    return;
-  }
-  setSync(file ? "处理贴图中" : "发送中");
-  let imageUrl = null;
-  try {
-    imageUrl = await compressPhoto(file, { maxSide: 720, quality: 0.7 });
-  } catch {
-    setSync("贴图处理失败，请换一张普通 JPG 或 PNG");
-    return;
-  }
-  if (imageUrl && imageUrl.length > 650000) {
-    setSync("贴图太大，请换一张较小的图片");
-    return;
-  }
-  const { error } = await client.rpc("create_chat_message", {
-    session_token: sessionToken,
-    body_input: body,
-    image_input: imageUrl
-  });
-  if (error) {
-    setSync(rpcErrorText(error, "讨论区发送失败"));
-    return;
-  }
-  elements.chatForm.reset();
-  setSync("已发送");
-  await loadBlog();
-});
 
 elements.chatForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -4396,6 +4247,77 @@ elements.cabinArtworkForm?.addEventListener("submit", async (event) => {
   }
 });
 
+const deferredModules = {
+  ambient: false,
+  cabin: false,
+  cabinMusic: false,
+  mimi: false,
+  extended: false
+};
+
+function initExtendedDataOnce() {
+  if (deferredModules.extended) return;
+  deferredModules.extended = true;
+  loadExtendedBlogData().catch((error) => console.warn("[Deferred:extended]", error));
+}
+
+function initCabinOnce() {
+  if (deferredModules.cabin) return;
+  deferredModules.cabin = true;
+  setupCabinExperience();
+  renderCabinGallery();
+}
+
+function initMimiOnce() {
+  if (deferredModules.mimi) return;
+  deferredModules.mimi = true;
+  initCabinOnce();
+  setupMimiPet();
+}
+
+function initCabinMusicOnce() {
+  if (deferredModules.cabinMusic) return;
+  deferredModules.cabinMusic = true;
+  initCabinOnce();
+  setupCabinMusicRoom();
+}
+
+function initAmbientOnce() {
+  if (deferredModules.ambient) return;
+  deferredModules.ambient = true;
+  setupAmbientSounds();
+}
+
+function setupDeferredModules() {
+  initAmbientOnce();
+  const observe = (selector, init) => {
+    const target = document.querySelector(selector);
+    if (!target) return;
+    if (!("IntersectionObserver" in window)) return;
+    const observer = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      observer.disconnect();
+      init();
+      initExtendedDataOnce();
+    }, { rootMargin: "260px 0px" });
+    observer.observe(target);
+  };
+  observe(".podcast-panel", initExtendedDataOnce);
+  observe(".event-log", initExtendedDataOnce);
+  observe(".lottery-panel", initExtendedDataOnce);
+  document.querySelectorAll('[data-bookmark-target=".cabin-panel"]').forEach((button) => {
+    button.addEventListener("click", () => { initCabinOnce(); initMimiOnce(); initCabinMusicOnce(); initExtendedDataOnce(); });
+  });
+  document.querySelectorAll('[data-bookmark-target=".podcast-panel"], [data-bookmark-target=".event-log"], [data-bookmark-target=".lottery-panel"], [data-bookmark-target=".wish-pool"]').forEach((button) => {
+    button.addEventListener("click", initExtendedDataOnce);
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) return;
+    CabinAudioManager.stopRoomSounds();
+    CabinAudioManager.stopAllVoices?.();
+  });
+}
+
 renderAvatarPreview();
 elements.bodyCount.textContent = `${elements.bodyInput.value.length} / ${elements.bodyInput.maxLength} 字`;
 updateMediaClearButtons();
@@ -4405,9 +4327,5 @@ switchAuthTab("login");
 setCategory("文章");
 renderMysteryBox();
 setupBlogBookmarks();
-setupCabinExperience();
-setupCabinMusicRoom();
-renderCabinGallery();
-setupMimiPet();
-setupAmbientSounds();
+setupDeferredModules();
 refreshSession();

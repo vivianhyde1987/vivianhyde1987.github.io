@@ -4102,6 +4102,14 @@ h2 {
   display: none;
 }
 
+.load-more-button {
+  width: min(260px, 100%);
+  margin: 10px auto 0;
+  border-color: rgba(231, 190, 132, 0.24);
+  color: rgba(246, 224, 194, 0.86);
+  background: rgba(45, 31, 24, 0.72);
+}
+
 .post__video[hidden] {
   display: none;
 }
