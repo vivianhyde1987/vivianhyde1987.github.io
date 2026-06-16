@@ -780,11 +780,63 @@ label {
   user-select: none;
 }
 
+.cabin-room__scene img.is-cabin-flipped {
+  scale: -1 1;
+}
+
 .cabin-room__scene img.is-cabin-draggable.is-dragging {
   z-index: 8;
   cursor: grabbing;
   filter: brightness(1.05) saturate(1) drop-shadow(0 22px 26px rgba(0, 0, 0, 0.62));
   transition: none;
+}
+
+.cabin-asset-control {
+  position: absolute;
+  z-index: 12;
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid rgba(234, 197, 149, 0.55);
+  border-radius: 999px;
+  background: rgba(32, 18, 12, 0.78);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+}
+
+.cabin-asset-control__button,
+.cabin-asset-restore {
+  border: 1px solid rgba(255, 229, 190, 0.5);
+  color: #f7dfbf;
+  background: rgba(112, 61, 38, 0.78);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  cursor: pointer;
+}
+
+.cabin-asset-control__button {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-size: 15px;
+  line-height: 1;
+}
+
+.cabin-asset-control__button:hover,
+.cabin-asset-restore:hover {
+  background: rgba(155, 83, 50, 0.92);
+}
+
+.cabin-asset-restore {
+  position: absolute;
+  left: 18px;
+  bottom: 18px;
+  z-index: 12;
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 13px;
 }
 
 .cabin-room__painting[data-aspect="portrait"] {

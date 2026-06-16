@@ -912,6 +912,7 @@ function moodBubble(text) {
 
 function renderSession() {
   elements.sessionArea.replaceChildren();
+  window.updateCabinOwnerControls?.();
   elements.authStatus.textContent = profile ? `已登录：${profile.handle}` : "未登录";
 
   if (!profile) {
@@ -3617,6 +3618,8 @@ function setupCabinExperience() {
     ["accent", accentImage],
     ["pendant", pendantImage]
   ];
+  const cabinAssetControls = new Map();
+  let cabinRestoreButton = null;
   const rooms = {
     studio: { number: "ROOM 01", title: "夜色画室", note: "灯亮以后，街巷里的星星才慢慢出现。", image: materialMap.studio.painting, alt: "夜色街巷装框画", aspect: "portrait", detail: materialMap.studio.prop, detailAlt: "桌上的暖光台灯", prop: "lamp", pendant: false, assets: materialMap.studio, layout: { theme: "studio", paintingSize: "34%", paintingHeight: "67%", paintingX: "9%", paintingY: "6%", propSize: "17%", propX: "76%", propY: "14%", plantSize: "18%", plantX: "54%", plantY: "13%", pendantSize: "28%", moodColor: "#9b6a3f", floorTone: "#2d190f" } },
     water: { number: "ROOM 02", title: "水边房间", note: "胡桃木墙上，水面把光留在了睡莲之间。", image: materialMap.water.painting, alt: "睡莲水面装框画", aspect: "landscape", detail: materialMap.water.prop, detailAlt: "绿色墙钟", prop: "clock", pendant: true, assets: materialMap.water, layout: { theme: "water", paintingSize: "51%", paintingHeight: "52%", paintingX: "7%", paintingY: "10%", propSize: "12%", propX: "78%", propY: "52%", plantSize: "19%", plantX: "59%", plantY: "12%", pendantSize: "18%", moodColor: "#6f8f86", floorTone: "#20221d" } },
@@ -3697,13 +3700,45 @@ function setupCabinExperience() {
   };
   const writeCabinAssetPosition = (roomId, layer, position) => {
     const positions = readCabinAssetPositions();
-    positions[roomId] = { ...(positions[roomId] || {}), [layer]: position };
+    const current = positions[roomId]?.[layer] || {};
+    positions[roomId] = { ...(positions[roomId] || {}), [layer]: { ...current, ...position } };
     localStorage.setItem(cabinAssetPositionKey, JSON.stringify(positions));
+  };
+  const canEditCabinAssets = () => profile?.role === "owner";
+  const hasHiddenCabinAssets = (roomId) => Object.values(readCabinAssetPositions()[roomId] || {}).some((asset) => asset?.hidden);
+  const clearHiddenCabinAssets = (roomId) => {
+    const positions = readCabinAssetPositions();
+    if (!positions[roomId]) return;
+    Object.keys(positions[roomId]).forEach((layer) => { positions[roomId][layer].hidden = false; });
+    localStorage.setItem(cabinAssetPositionKey, JSON.stringify(positions));
+  };
+  const positionCabinAssetControls = () => {
+    const roomId = experience.dataset.cabinRoom || "studio";
+    const sceneRect = scene.getBoundingClientRect();
+    cabinAssetLayers.forEach(([layer, element]) => {
+      const controls = cabinAssetControls.get(layer);
+      if (!controls) return;
+      const visible = canEditCabinAssets() && !element.hidden && !experience.classList.contains("is-music-room") && !experience.classList.contains("is-pet-room");
+      controls.hidden = !visible;
+      if (!visible) return;
+      const rect = element.getBoundingClientRect();
+      controls.style.left = `${Math.max(8, rect.right - sceneRect.left - 56)}px`;
+      controls.style.top = `${Math.max(8, rect.top - sceneRect.top + 8)}px`;
+      controls.dataset.cabinRoomLayer = `${roomId}:${layer}`;
+    });
+    if (cabinRestoreButton) {
+      cabinRestoreButton.hidden = !(canEditCabinAssets() && hasHiddenCabinAssets(roomId) && !experience.classList.contains("is-music-room") && !experience.classList.contains("is-pet-room"));
+    }
   };
   const applyCabinAssetPosition = (roomId, layer, element) => {
     const position = readCabinAssetPositions()[roomId]?.[layer];
     element.dataset.cabinLayer = layer;
     element.dataset.cabinRoomLayer = `${roomId}:${layer}`;
+    element.classList.toggle("is-cabin-flipped", Boolean(position?.flipped));
+    if (position?.hidden) {
+      element.hidden = true;
+      return;
+    }
     if (!position) {
       element.style.removeProperty("top");
       element.style.removeProperty("left");
@@ -3711,10 +3746,53 @@ function setupCabinExperience() {
       element.style.removeProperty("bottom");
       return;
     }
-    element.style.left = `${position.left}%`;
-    element.style.top = `${position.top}%`;
-    element.style.right = "auto";
-    element.style.bottom = "auto";
+    if (Number.isFinite(position.left) && Number.isFinite(position.top)) {
+      element.style.left = `${position.left}%`;
+      element.style.top = `${position.top}%`;
+      element.style.right = "auto";
+      element.style.bottom = "auto";
+    }
+  };
+  const createCabinAssetControls = () => {
+    cabinAssetLayers.forEach(([layer, element]) => {
+      const controls = document.createElement("div");
+      controls.className = "cabin-asset-control";
+      controls.hidden = true;
+      controls.innerHTML = `
+        <button type="button" class="cabin-asset-control__button" data-cabin-control="flip" title="转变方向" aria-label="转变方向">↔</button>
+        <button type="button" class="cabin-asset-control__button" data-cabin-control="hide" title="隐藏这个物件" aria-label="隐藏这个物件">×</button>
+      `;
+      controls.addEventListener("pointerdown", (event) => event.stopPropagation());
+      controls.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-cabin-control]");
+        if (!button || !canEditCabinAssets()) return;
+        const roomId = experience.dataset.cabinRoom || "studio";
+        const current = readCabinAssetPositions()[roomId]?.[layer] || {};
+        if (button.dataset.cabinControl === "flip") {
+          writeCabinAssetPosition(roomId, layer, { flipped: !current.flipped });
+          applyCabinAssetPosition(roomId, layer, element);
+          positionCabinAssetControls();
+          return;
+        }
+        writeCabinAssetPosition(roomId, layer, { hidden: true });
+        applyCabinRoomAssets(roomId, rooms[roomId]);
+      });
+      scene.append(controls);
+      cabinAssetControls.set(layer, controls);
+    });
+    cabinRestoreButton = document.createElement("button");
+    cabinRestoreButton.type = "button";
+    cabinRestoreButton.className = "cabin-asset-restore";
+    cabinRestoreButton.textContent = "恢复物件";
+    cabinRestoreButton.hidden = true;
+    cabinRestoreButton.addEventListener("click", () => {
+      const roomId = experience.dataset.cabinRoom || "studio";
+      clearHiddenCabinAssets(roomId);
+      applyCabinRoomAssets(roomId, rooms[roomId]);
+    });
+    scene.append(cabinRestoreButton);
+    window.addEventListener("resize", positionCabinAssetControls);
+    window.updateCabinOwnerControls = positionCabinAssetControls;
   };
   const makeCabinAssetDraggable = (element, layer) => {
     if (!element) return;
@@ -3723,6 +3801,7 @@ function setupCabinExperience() {
     element.addEventListener("pointerdown", (event) => {
       if (event.button !== 0) return;
       const roomId = experience.dataset.cabinRoom || "studio";
+      if (!canEditCabinAssets()) return;
       if (element.hidden || experience.classList.contains("is-music-room") || experience.classList.contains("is-pet-room")) return;
       event.preventDefault();
       element.setPointerCapture?.(event.pointerId);
@@ -3744,6 +3823,7 @@ function setupCabinExperience() {
         element.style.bottom = "auto";
         element.dataset.dragLeft = String(left);
         element.dataset.dragTop = String(top);
+        positionCabinAssetControls();
       };
       const finish = () => {
         element.classList.remove("is-dragging");
@@ -3756,6 +3836,7 @@ function setupCabinExperience() {
             top: Number(element.dataset.dragTop)
           });
         }
+        positionCabinAssetControls();
       };
       element.addEventListener("pointermove", move);
       element.addEventListener("pointerup", finish, { once: true });
@@ -3792,8 +3873,13 @@ function setupCabinExperience() {
     detailImage.dataset.prop = room.prop;
     applyRoomLayout(room);
     cabinAssetLayers.forEach(([layer, element]) => applyCabinAssetPosition(roomId, layer, element));
+    requestAnimationFrame(positionCabinAssetControls);
   };
-  cabinAssetLayers.forEach(([layer, element]) => makeCabinAssetDraggable(element, layer));
+  createCabinAssetControls();
+  cabinAssetLayers.forEach(([layer, element]) => {
+    makeCabinAssetDraggable(element, layer);
+    element.addEventListener("load", () => requestAnimationFrame(positionCabinAssetControls));
+  });
 
   const setLight = (value) => {
     lightOn = value;
@@ -3820,6 +3906,7 @@ function setupCabinExperience() {
       musicStudio.hidden = !isMusicRoom;
       petRoom.hidden = !isPetRoom;
       gallery.hidden = isMusicRoom || isPetRoom;
+      positionCabinAssetControls();
       const mimi = document.querySelector(".mimi-pet");
       const mimiPanel = document.querySelector(".mimi-pet__panel");
       if (isPetRoom && mimi) {
