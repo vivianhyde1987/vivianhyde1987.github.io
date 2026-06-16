@@ -3068,14 +3068,39 @@ function setupMimiPet() {
   const positionStorageKey = "mimi-cabin-room-positions-v1";
   const petAssets = getBlogMaterials().roomMap.pet;
   const idleSource = petAssets.mainCat || "mimi-sit-transparent.png";
-  const poses = [idleSource, petAssets.peeking || idleSource];
-  const walkFrames = [
-    petAssets.peeking,
-    petAssets.watchToy,
-    petAssets.playing,
-    petAssets.peeking
+  const getMimiAsset = (action = "idle") => {
+    const assets = getBlogMaterials().roomMap.pet || {};
+    const main = assets.mainCat || assets.idle || "mimi-sit-transparent.png";
+    const map = {
+      idle: assets.idle || main,
+      pet: assets.purr || assets.relaxed || main,
+      purr: assets.purr || assets.relaxed || main,
+      treat: assets.relaxed || assets.purr || main,
+      food: assets.peeking || main,
+      wand: assets.playing || assets.watchToy || main,
+      play: assets.playing || assets.watchToy || main,
+      walk: assets.walkingSide || assets.walking || main,
+      walking: assets.walkingSide || assets.walking || main,
+      peek: assets.peeking || main,
+      hold: assets.hold || assets.relaxed || main,
+      doctor: main
+    };
+    return map[action] || main;
+  };
+  window.getMimiAsset = getMimiAsset;
+  const poses = [getMimiAsset("idle"), getMimiAsset("peek")];
+  const walkFrames = (petAssets.walkFrames && petAssets.walkFrames.length
+    ? petAssets.walkFrames
+    : [getMimiAsset("walk"), petAssets.peeking, petAssets.watchToy, petAssets.playing]
+  ).filter(Boolean);
+  const stateImages = [
+    getMimiAsset("idle"),
+    getMimiAsset("purr"),
+    getMimiAsset("play"),
+    getMimiAsset("peek"),
+    getMimiAsset("hold"),
+    ...walkFrames
   ].filter(Boolean);
-  const stateImages = [idleSource, petAssets.relaxed, petAssets.playing, petAssets.watchToy, petAssets.peeking, ...walkFrames].filter(Boolean);
   stateImages.forEach((src) => {
     const preloadImage = new Image();
     preloadImage.loading = "lazy";
@@ -3343,11 +3368,11 @@ function setupMimiPet() {
     button.addEventListener("click", async () => {
       const action = button.dataset.mimiAction;
       const reactions = {
-        food: () => { state.hunger = Math.min(100, state.hunger + 25); state.health = Math.min(100, state.health + 2); setPetVisual(petAssets.peeking, "is-turning", 1700); speak("眯眯认真地吃了几口猫粮。"); },
-        treat: () => { state.hunger = Math.min(100, state.hunger + 12); state.mood = Math.min(100, state.mood + 18); setPetVisual(petAssets.relaxed, "is-idle-breathing", 1900); speak("猫条很好吃。她舔了舔鼻子。"); },
-        wand: () => { state.mood = Math.min(100, state.mood + 22); setPetVisual(petAssets.watchToy, "is-playing", 2100); speak("她盯紧逗猫棒，轻轻扑了过去。"); },
-        pet: () => { state.mood = Math.min(100, state.mood + 12); playRealPurr(); setPetVisual(petAssets.relaxed, "is-purring", 3000); speak("她眯起眼睛，轻轻呼噜了几秒。", 2600); },
-        hold: () => { state.mood = Math.min(100, state.mood + 8); pet.classList.toggle("is-held"); setPetVisual(pet.classList.contains("is-held") ? petAssets.relaxed : idleSource); speak(pet.classList.contains("is-held") ? "你把眯眯抱起来了。她安静地靠着你。" : "你轻轻把她放回地上。"); },
+        food: () => { state.hunger = Math.min(100, state.hunger + 25); state.health = Math.min(100, state.health + 2); setPetVisual(getMimiAsset("food"), "is-turning", 1700); speak("眯眯认真地吃了几口猫粮。"); },
+        treat: () => { state.hunger = Math.min(100, state.hunger + 12); state.mood = Math.min(100, state.mood + 18); setPetVisual(getMimiAsset("treat"), "is-idle-breathing", 1900); speak("猫条很好吃。她舔了舔鼻子。"); },
+        wand: () => { state.mood = Math.min(100, state.mood + 22); setPetVisual(getMimiAsset("play"), "is-playing", 2100); speak("她盯紧逗猫棒，轻轻扑了过去。"); },
+        pet: () => { state.mood = Math.min(100, state.mood + 12); playRealPurr(); setPetVisual(getMimiAsset("purr"), "is-purring", 3000); speak("她眯起眼睛，轻轻呼噜了几秒。", 2600); },
+        hold: () => { state.mood = Math.min(100, state.mood + 8); pet.classList.toggle("is-held"); setPetVisual(pet.classList.contains("is-held") ? getMimiAsset("hold") : getMimiAsset("idle")); speak(pet.classList.contains("is-held") ? "你把眯眯抱起来了。她安静地靠着你。" : "你轻轻把她放回地上。"); },
         litter: () => { state.litter = 100; speak("猫砂盆干净了。眯眯过来检查了一遍。"); },
         doctor: () => { state.health = 100; state.lastDoctor = Date.now(); speak("完成了一次温柔的健康检查，一切都被好好记挂着。"); }
       };
