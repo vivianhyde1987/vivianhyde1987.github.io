@@ -622,6 +622,80 @@ label {
   display: none;
 }
 
+.home-hero-people {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+  isolation: isolate;
+}
+
+.home-hero-people::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.34;
+  mix-blend-mode: overlay;
+  background:
+    radial-gradient(circle at 24% 28%, rgba(255, 202, 150, 0.18), transparent 32%),
+    radial-gradient(circle at 78% 34%, rgba(178, 73, 54, 0.18), transparent 34%),
+    linear-gradient(90deg, rgba(32, 16, 13, 0.42), transparent 32%, transparent 68%, rgba(29, 14, 12, 0.46));
+}
+
+.home-hero-person {
+  position: absolute;
+  top: -4%;
+  bottom: -5%;
+  width: min(47vw, 590px);
+  opacity: 0.43;
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: blur(1.4px) sepia(0.34) saturate(0.88) brightness(0.92) contrast(0.98);
+  mix-blend-mode: screen;
+  transform: translateZ(0);
+  -webkit-mask-image:
+    radial-gradient(ellipse at center, #000 42%, rgba(0, 0, 0, 0.72) 58%, transparent 82%),
+    linear-gradient(90deg, transparent 0%, #000 18%, #000 82%, transparent 100%);
+  mask-image:
+    radial-gradient(ellipse at center, #000 42%, rgba(0, 0, 0, 0.72) 58%, transparent 82%),
+    linear-gradient(90deg, transparent 0%, #000 18%, #000 82%, transparent 100%);
+}
+
+.home-hero-person--left {
+  left: -5%;
+  background-image: url("assets/home-hero/idol-atmosphere-left.png");
+  background-position: left center;
+}
+
+.home-hero-person--right {
+  right: -6%;
+  width: min(51vw, 660px);
+  opacity: 0.4;
+  background-image: url("assets/home-hero/idol-atmosphere-right.png");
+  background-position: right center;
+  filter: blur(1.8px) sepia(0.3) saturate(0.9) brightness(0.9) contrast(0.98);
+}
+
+@media (max-width: 860px) {
+  .home-hero-people {
+    opacity: 0.86;
+  }
+
+  .home-hero-person--left {
+    display: none;
+  }
+
+  .home-hero-person--right {
+    top: 14%;
+    right: -33%;
+    bottom: 0;
+    width: 88vw;
+    opacity: 0.32;
+    filter: blur(3.8px) sepia(0.28) saturate(0.82) brightness(0.86);
+  }
+}
+
 /* Long-term blog materials: coordinated walnut cabin layout. */
 .cabin-room__scene {
   --room-accent: #9b6a3f;
