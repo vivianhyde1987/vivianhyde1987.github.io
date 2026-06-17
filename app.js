@@ -3590,6 +3590,7 @@ function setupCabinExperience() {
   const treasureClue = $("#cabinTreasureClue");
   const treasureDialog = $("#cabinTreasureDialog");
   const treasureMessage = $("#cabinTreasureMessage");
+  const cabinRoom = experience.querySelector(".cabin-room");
   const scene = experience.querySelector(".cabin-room__scene");
   const materialMap = getBlogMaterials().roomMap || fallbackBlogMaterials.roomMap;
   const cabinAssetPositionKey = "cabin-asset-positions-v1";
@@ -3887,6 +3888,21 @@ function setupCabinExperience() {
     treasureClue.hidden = !(lightOn && experience.dataset.cabinRoom === treasureRoom);
   };
 
+  const startRoomTransition = () => {
+    if (cabinRoom) {
+      cabinRoom.classList.add("is-transitioning");
+      cabinRoom.classList.remove("is-loaded");
+    }
+    if (scene) scene.classList.add("is-loading");
+  };
+  const finishRoomTransition = () => {
+    if (cabinRoom) {
+      cabinRoom.classList.remove("is-transitioning");
+      cabinRoom.classList.add("is-loaded");
+    }
+    if (scene) scene.classList.remove("is-loading");
+  };
+
   document.querySelectorAll("[data-room]").forEach((button) => {
     button.addEventListener("click", () => {
       const room = rooms[button.dataset.room];
@@ -3924,7 +3940,15 @@ function setupCabinExperience() {
       title.textContent = room.title;
       note.textContent = room.note;
       setLight(false);
+      startRoomTransition();
       applyCabinRoomAssets(button.dataset.room, room);
+      let loadCount = 0;
+      const onAssetLoad = () => { loadCount++; if (loadCount >= 2) finishRoomTransition(); };
+      image.addEventListener("load", onAssetLoad, { once: true });
+      if (room.pendant && pendantImage) pendantImage.addEventListener("load", onAssetLoad, { once: true });
+      if (image.complete) onAssetLoad();
+      if (!room.pendant || (pendantImage && pendantImage.complete)) { if (loadCount < 2 && room.pendant && pendantImage && pendantImage.complete) onAssetLoad(); }
+      window.setTimeout(finishRoomTransition, 1500); // 兜底超时
     });
   });
   lightButton.addEventListener("click", () => setLight(!lightOn));
@@ -3934,6 +3958,47 @@ function setupCabinExperience() {
     localStorage.setItem("cabin-treasure-found", dayKey);
   });
   treasureDialog.querySelector(".cabin-treasure-dialog__close").addEventListener("click", () => treasureDialog.close());
+
+  // 键盘导航
+  experience.setAttribute("tabindex", "0");
+  experience.setAttribute("aria-label", "小木屋 — 使用左右箭头切换房间，回车或 L 键开关灯");
+  experience.addEventListener("keydown", (event) => {
+    if (event.target !== experience && event.target.closest("input, textarea, [contenteditable]")) return;
+    const currentRoom = experience.dataset.cabinRoom || "studio";
+    const isSpecial = currentRoom === "music" || currentRoom === "pet";
+    if (isSpecial && event.key === "ArrowLeft") {
+      event.preventDefault();
+      const prevRoom = roomKeys[roomKeys.length - 2]; // 儿童房
+      const btn = document.querySelector(`[data-room="${prevRoom}"]`);
+      if (btn) btn.click();
+      return;
+    }
+    if (isSpecial) return;
+    const currentIndex = roomKeys.indexOf(currentRoom);
+    if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+      if (currentIndex > 0) {
+        event.preventDefault();
+        const btn = document.querySelector(`[data-room="${roomKeys[currentIndex - 1]}"]`);
+        if (btn) btn.click();
+      }
+    }
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+      if (currentIndex < roomKeys.length - 1) {
+        event.preventDefault();
+        const btn = document.querySelector(`[data-room="${roomKeys[currentIndex + 1]}"]`);
+        if (btn) btn.click();
+      }
+    }
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      lightButton.click();
+    }
+    if (event.key === "l" || event.key === "L") {
+      event.preventDefault();
+      lightButton.click();
+    }
+  });
+
   applyCabinRoomAssets("studio", rooms.studio);
 }
 

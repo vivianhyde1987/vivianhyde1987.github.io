@@ -760,6 +760,8 @@ label {
   width: var(--painting-w);
   height: var(--painting-h);
   transform: perspective(900px) rotateY(1.1deg) rotate(-0.35deg) translateY(4px);
+  opacity: 1;
+  transition: opacity 350ms ease, transform 600ms ease;
 }
 
 .cabin-room__scene .cabin-room__prop,
@@ -769,6 +771,8 @@ label {
   left: var(--prop-x);
   width: var(--prop-w);
   height: 38%;
+  opacity: 1;
+  transition: opacity 350ms ease;
 }
 
 .cabin-room__plant,
@@ -833,6 +837,118 @@ label {
   .cabin-room__plant { max-height: 34%; }
   .cabin-room__accent { max-height: 35%; }
   .cabin-room__scene .cabin-room__prop { height: 31%; }
+}
+
+/* === 木屋增强 === */
+
+/* 房间切换过渡 */
+.cabin-room.is-transitioning .cabin-room__scene .cabin-room__painting,
+.cabin-room.is-transitioning .cabin-room__scene .cabin-room__prop,
+.cabin-room.is-transitioning .cabin-room__scene .cabin-room__pendant,
+.cabin-room.is-transitioning .cabin-room__scene .cabin-room__plant,
+.cabin-room.is-transitioning .cabin-room__scene .cabin-room__accent {
+  opacity: 0;
+  transition: opacity 150ms ease-out;
+}
+.cabin-room.is-loaded .cabin-room__scene .cabin-room__painting,
+.cabin-room.is-loaded .cabin-room__scene .cabin-room__prop,
+.cabin-room.is-loaded .cabin-room__scene .cabin-room__pendant {
+  opacity: 1;
+  transition: opacity 400ms ease-in;
+}
+
+/* 图片加载骨架屏 */
+.cabin-room__scene.is-loading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  background: linear-gradient(90deg, transparent 0%, rgba(241,200,139,0.06) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: cabin-shimmer 1.5s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes cabin-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* 宠物房导航徽章 */
+.cabin-map button[data-room="pet"]::after {
+  content: "🐾";
+  position: absolute;
+  top: -6px;
+  right: -4px;
+  font-size: 0.62rem;
+  animation: paw-bounce 2s ease-in-out infinite;
+  line-height: 1;
+}
+@keyframes paw-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* 乐器房移动端优化 */
+@media (max-width: 480px) {
+  .piano-keys {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(211,174,112,0.3) transparent;
+    padding-bottom: 8px;
+  }
+  .piano-keys button {
+    min-width: 30px;
+    min-height: 120px;
+    font-size: 0.6rem;
+  }
+  .piano-keys button.black {
+    min-height: 80px;
+  }
+  .singing-bowls {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  .singing-bowls button {
+    flex: 1 1 auto;
+    min-width: 70px;
+  }
+  .guitar-strings {
+    gap: 4px;
+  }
+  .guitar-strings button {
+    min-width: 42px;
+  }
+}
+
+/* 木屋键盘焦点环 */
+.cabin-experience:focus-visible {
+  outline: 2px solid rgba(211,174,112,0.5);
+  outline-offset: 4px;
+  border-radius: 10px;
+}
+
+/* 房间导航按钮悬浮增强 */
+.cabin-map button:hover:not(.active) {
+  background: rgba(211,174,112,0.12);
+}
+.cabin-map button:focus-visible {
+  outline: 2px solid rgba(211,174,112,0.5);
+  outline-offset: 2px;
+}
+
+/* 键盘快捷键提示 */
+.tip-keys {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 6px;
+  border: 1px solid rgba(211,174,112,0.25);
+  border-radius: 4px;
+  color: rgba(211,174,112,0.6);
+  font-family: inherit;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  vertical-align: middle;
 }
 
 .cabin-panel.bookmark-panel {
