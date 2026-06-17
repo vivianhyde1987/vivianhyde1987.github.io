@@ -19,15 +19,30 @@
     <meta name="twitter:title" content="Rose & Rainbow — 治愈系小木屋博客" />
     <meta name="twitter:description" content="在小木屋里记录声音、画作、猫咪与日常生活。" />
     <meta name="twitter:image" content="https://www.vivianhyde1987.com/cabin-hearth.jpg" />
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="stylesheet" href="styles.css?v=seo-og-v1" />
+    <link rel="preload" as="image" href="cabin-hearth.webp" type="image/webp" fetchpriority="high" />
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Vivian Hyde",
+      "url": "https://www.vivianhyde1987.com/",
+      "description": "治愈系个人博客作者，记录小木屋里的声音手记、水彩画作与猫咪日常。"
+    }
+    </script>
+    <link rel="stylesheet" href="styles.css?v=perf-jsonld-v1" />
     <link rel="stylesheet" href="materials.css?v=cabin-mimi-assets-fix-1" />
   </head>
   <body>
     <div class="shell">
       <header class="hero">
         <div class="home-hero-media home-visual-card">
-          <img class="home-hero-img" src="cabin-hearth.jpg" alt="暖光小木屋角落" loading="eager" decoding="async" />
+          <picture>
+            <source srcset="cabin-hearth.webp" type="image/webp" />
+            <img class="home-hero-img" src="cabin-hearth.jpg" alt="暖光小木屋角落" width="1206" height="1616" loading="eager" decoding="async" />
+          </picture>
         </div>
         <div class="home-hero-people" aria-hidden="true">
           <span class="home-hero-person home-hero-person--left"></span>
@@ -543,6 +558,6 @@
     </dialog>
 
     <script src="assets/blog-materials/manifest.js?v=home-hero-people-visible-1"></script>
-    <script src="app.js?v=cabin-enhanced-v1"></script>
+    <script src="app.js?v=perf-jsonld-v1"></script>
   </body>
 </html>
