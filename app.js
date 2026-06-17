@@ -4419,3 +4419,111 @@ renderMysteryBox();
 setupBlogBookmarks();
 setupDeferredModules();
 refreshSession();
+
+/* === 站点菜单 === */
+(function initSiteMenu() {
+  const menu = document.getElementById("siteMenu");
+  const trigger = document.getElementById("menuTrigger");
+  const closeBtn = document.getElementById("siteMenuClose");
+  const backdrop = document.getElementById("siteMenuBackdrop");
+  const homeReturn = document.getElementById("homeReturn");
+  const mainLayout = document.getElementById("mainLayout");
+  const soundStrip = document.getElementById("soundStrip");
+
+  if (!menu || !trigger) return;
+
+  const menuItems = menu.querySelectorAll(".site-menu__item");
+  const sectionMap = {
+    articles:  document.getElementById("articlesSection"),
+    sound:    soundStrip,
+    cabin:    document.getElementById("cabinPanel"),
+    lottery:  document.getElementById("lotteryPanel"),
+    mystery:  document.getElementById("mysteryPanel"),
+    hive:     document.getElementById("hivePanel"),
+    sleep:    document.getElementById("sleepPanel"),
+    podcast:  document.getElementById("podcastPanel"),
+  };
+
+  const backdropPanels = [
+    soundStrip,
+    document.getElementById("lotteryPanel"),
+    document.getElementById("mysteryPanel"),
+    document.getElementById("hivePanel"),
+    document.getElementById("sleepPanel"),
+    document.getElementById("podcastPanel"),
+    document.getElementById("cabinPanel"),
+  ];
+
+  function openMenu() {
+    menu.hidden = false;
+    requestAnimationFrame(() => menu.classList.add("is-open"));
+    trigger.setAttribute("aria-expanded", "true");
+  }
+
+  function closeMenu() {
+    menu.classList.remove("is-open");
+    trigger.setAttribute("aria-expanded", "false");
+    setTimeout(() => { if (!menu.classList.contains("is-open")) menu.hidden = true; }, 450);
+  }
+
+  function showHome() {
+    mainLayout.hidden = true;
+    soundStrip.hidden = true;
+    backdropPanels.forEach(p => { if (p) p.hidden = true; });
+    if (homeReturn) homeReturn.classList.remove("is-visible");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function showSection(key) {
+    showHome();
+    if (key === "articles") {
+      mainLayout.hidden = false;
+      const el = sectionMap[key];
+      if (el) {
+        el.hidden = false;
+        setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+      }
+    } else if (key === "sound") {
+      soundStrip.hidden = false;
+      setTimeout(() => soundStrip.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+    } else {
+      mainLayout.hidden = false;
+      const el = sectionMap[key];
+      if (el) {
+        el.hidden = false;
+        // Make sure sidebar is visible
+        const sidebar = document.querySelector(".sidebar");
+        if (sidebar) sidebar.style.display = "";
+        setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+      }
+    }
+    if (homeReturn) homeReturn.classList.add("is-visible");
+  }
+
+  trigger.addEventListener("click", openMenu);
+  if (closeBtn) closeBtn.addEventListener("click", closeMenu);
+  if (backdrop) backdrop.addEventListener("click", closeMenu);
+
+  menuItems.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const target = btn.dataset.menuTarget;
+      if (target) {
+        closeMenu();
+        setTimeout(() => showSection(target), 350);
+      }
+    });
+  });
+
+  if (homeReturn) {
+    homeReturn.addEventListener("click", () => {
+      showHome();
+    });
+  }
+
+  // Close menu on Escape
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && menu.classList.contains("is-open")) {
+      closeMenu();
+    }
+  });
+})();

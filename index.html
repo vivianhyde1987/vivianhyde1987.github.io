@@ -32,7 +32,7 @@
       "description": "治愈系个人博客作者，记录小木屋里的声音手记、水彩画作与猫咪日常。"
     }
     </script>
-    <link rel="stylesheet" href="styles.css?v=revert-v1" />
+    <link rel="stylesheet" href="styles.css?v=menu-v1" />
     <link rel="stylesheet" href="materials.css?v=cabin-mimi-assets-fix-1" />
   </head>
   <body>
@@ -62,12 +62,68 @@
               <span class="brand__thorn brand__thorn--two"></span>
             </span>
           </div>
+          <button class="menu-trigger" id="menuTrigger" type="button" aria-expanded="false" aria-controls="siteMenu" aria-label="打开菜单">
+            <span class="menu-trigger__icon" aria-hidden="true">☰</span>
+            <span class="menu-trigger__label">菜单</span>
+          </button>
           <div class="session" id="sessionArea"></div>
         </nav>
         <section class="hero__copy" aria-hidden="true"></section>
       </header>
 
-      <section class="notice-strip" aria-label="声音入口">
+      <div class="site-menu" id="siteMenu" aria-label="站点菜单" hidden>
+        <div class="site-menu__backdrop" id="siteMenuBackdrop"></div>
+        <div class="site-menu__panel">
+          <div class="site-menu__head">
+            <span class="site-menu__title">去哪里</span>
+            <button class="site-menu__close" id="siteMenuClose" type="button" aria-label="关闭菜单">✕</button>
+          </div>
+          <nav class="site-menu__nav" aria-label="菜单导航">
+            <button class="site-menu__item" type="button" data-menu-target="articles">
+              <span class="site-menu__icon">✎</span>
+              <span class="site-menu__label">文章手记</span>
+              <span class="site-menu__hint">写下和看见</span>
+            </button>
+            <button class="site-menu__item" type="button" data-menu-target="sound">
+              <span class="site-menu__icon">♪</span>
+              <span class="site-menu__label">疗愈声音</span>
+              <span class="site-menu__hint">颂钵 · 溪流 · 宇宙</span>
+            </button>
+            <button class="site-menu__item" type="button" data-menu-target="cabin">
+              <span class="site-menu__icon">⌂</span>
+              <span class="site-menu__label">小木屋</span>
+              <span class="site-menu__hint">沿着脚印去开灯</span>
+            </button>
+            <button class="site-menu__item" type="button" data-menu-target="lottery">
+              <span class="site-menu__icon">▽</span>
+              <span class="site-menu__label">每周抽奖</span>
+              <span class="site-menu__hint">围绕话题留下一句</span>
+            </button>
+            <button class="site-menu__item" type="button" data-menu-target="mystery">
+              <span class="site-menu__icon">▣</span>
+              <span class="site-menu__label">每日盲盒</span>
+              <span class="site-menu__hint">每天一条冷知识</span>
+            </button>
+            <button class="site-menu__item" type="button" data-menu-target="hive">
+              <span class="site-menu__icon">◉</span>
+              <span class="site-menu__label">荨麻疹记录</span>
+              <span class="site-menu__hint">风团计数 / 吃药 / 备注</span>
+            </button>
+            <button class="site-menu__item" type="button" data-menu-target="sleep">
+              <span class="site-menu__icon">☾</span>
+              <span class="site-menu__label">睡眠管理</span>
+              <span class="site-menu__hint">准备睡觉 / 今天感觉</span>
+            </button>
+            <button class="site-menu__item" type="button" data-menu-target="podcast">
+              <span class="site-menu__icon">☊</span>
+              <span class="site-menu__label">声音手记</span>
+              <span class="site-menu__hint">录制和分享你的声音</span>
+            </button>
+          </nav>
+        </div>
+      </div>
+
+      <section class="notice-strip" aria-label="声音入口" hidden id="soundStrip">
         <div class="sound-cluster" aria-label="疗愈声音">
           <button id="soundToggle" class="sound-toggle" type="button" data-sound-mode="bowl">
             <span class="sound-toggle__icon">◎</span>
@@ -84,7 +140,7 @@
         </div>
       </section>
 
-      <main class="layout">
+      <main class="layout" id="mainLayout" hidden>
         <aside class="sidebar" aria-label="账号">
           <section class="panel auth-panel">
             <div class="panel__head">
@@ -156,8 +212,8 @@
           </section>
         </aside>
 
-        <section class="content">
-          <section class="luck-panel panel" aria-label="抽奖">
+        <section class="content" id="articlesSection">
+          <section class="luck-panel panel" aria-label="抽奖" id="lotteryPanel">
             <div class="panel__head">
               <h2>抽奖</h2>
             </div>
@@ -184,7 +240,7 @@
             </div>
           </section>
 
-          <section class="mystery-box panel" aria-label="每日盲盒">
+          <section class="mystery-box panel" aria-label="每日盲盒" id="mysteryPanel">
             <div class="panel__head">
               <h2>每日盲盒</h2>
               <span>每天一条冷知识</span>
@@ -193,7 +249,7 @@
             <article id="mysteryBoxCard" class="mystery-box__card" aria-live="polite"></article>
           </section>
 
-          <section class="event-log panel" aria-label="定向事件记录">
+          <section class="event-log panel" aria-label="定向事件记录" id="hivePanel">
             <div class="panel__head">
               <h2>荨麻疹日常管理记录</h2>
               <span>风团计数 / 吃药 / 备注</span>
@@ -241,7 +297,7 @@
             <div id="eventLogList" class="event-log-list" aria-live="polite" hidden></div>
           </section>
 
-          <section class="sleep-panel panel" aria-label="睡眠管理">
+          <section class="sleep-panel panel" aria-label="睡眠管理" id="sleepPanel">
             <div class="panel__head">
               <h2>睡眠管理</h2>
               <span id="sleepNowText">现在时间</span>
@@ -297,7 +353,7 @@
             <div id="sleepSummary" class="sleep-summary" aria-live="polite"></div>
           </section>
 
-          <section class="podcast-panel panel" aria-label="播客">
+          <section class="podcast-panel panel" aria-label="播客" id="podcastPanel">
             <div class="panel__head">
               <h2>播客</h2>
               <span>声音手记</span>
@@ -349,7 +405,7 @@
             <div id="podcastList" class="podcast-list" aria-live="polite"></div>
           </section>
 
-          <section class="cabin-panel panel" aria-label="小木屋">
+          <section class="cabin-panel panel" aria-label="小木屋" id="cabinPanel">
             <div class="panel__head">
               <h2>小木屋</h2>
               <span>沿着脚印去开灯 <kbd class="tip-keys" aria-hidden="true">← → L</kbd></span>
@@ -548,6 +604,8 @@
       </article>
     </template>
 
+    <button class="home-return" id="homeReturn" type="button" hidden>↩ 返回首页</button>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <dialog id="cabinTreasureDialog" class="cabin-treasure-dialog">
@@ -558,6 +616,6 @@
     </dialog>
 
     <script src="assets/blog-materials/manifest.js?v=home-hero-people-visible-1"></script>
-    <script src="app.js?v=perf-jsonld-v1"></script>
+    <script src="app.js?v=menu-v1"></script>
   </body>
 </html>
