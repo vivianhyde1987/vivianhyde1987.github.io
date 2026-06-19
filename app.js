@@ -912,7 +912,7 @@ function openAccountBookmark() {
 function updateArchiveVisibility() {
   if (!elements.feed || !elements.archiveToggle) return;
   elements.feed.classList.toggle("is-collapsed", !archiveOpen);
-  elements.archiveToggle.textContent = archiveOpen ? "收起历史" : "展开历史";
+  elements.archiveToggle.textContent = archiveOpen ? "收起旧文" : "查看旧日志";
 }
 
 function bindArchiveToggle() {
@@ -920,6 +920,19 @@ function bindArchiveToggle() {
   elements.archiveToggle.addEventListener("click", () => {
     archiveOpen = !archiveOpen;
     updateArchiveVisibility();
+  });
+}
+
+function openArticleArchive() {
+  const mainLayout = document.getElementById("mainLayout");
+  const articlesSection = document.getElementById("articlesSection");
+  if (mainLayout) mainLayout.hidden = false;
+  if (articlesSection) articlesSection.hidden = false;
+  archiveOpen = true;
+  updateArchiveVisibility();
+  renderFeed();
+  requestAnimationFrame(() => {
+    (elements.archiveTitle || articlesSection)?.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 }
 
@@ -1058,10 +1071,10 @@ function setCategory(category, shouldScroll = false) {
   if (elements.interestTypeWrap) elements.interestTypeWrap.hidden = true;
   elements.archiveTitle.innerHTML = `
     <div class="archive-title__copy">
-      <span>文章手记</span>
+      <span>旧日志和文章</span>
       <small id="syncStatus">${escapeHtml(elements.syncStatus?.textContent || "准备同步")}</small>
     </div>
-    <button id="archiveToggle" type="button">${archiveOpen ? "收起历史" : "展开历史"}</button>
+    <button id="archiveToggle" type="button">${archiveOpen ? "收起旧文" : "查看旧日志"}</button>
   `;
   elements.syncStatus = $("#syncStatus");
   elements.archiveToggle = $("#archiveToggle");
@@ -3611,6 +3624,7 @@ function setupBlogBookmarks() {
   const panels = [
     { selector: ".auth-panel", label: "\u8d26\u53f7" },
     { selector: "#soundStrip", label: "\u58f0\u97f3", special: "sound" },
+    { selector: "#articlesSection", label: "\u6587\u7ae0", special: "articles" },
     { selector: ".podcast-panel", label: "\u64ad\u5ba2" },
     { selector: ".cabin-panel", label: "\u6728\u5c4b" },
     { selector: ".composer", label: "\u5199\u6587" },
@@ -3645,6 +3659,19 @@ function setupBlogBookmarks() {
           tab.classList.add("active");
           panel.scrollIntoView({ behavior: "smooth", block: "start" });
         }
+      });
+      rail.append(tab);
+      return;
+    }
+    if (special === "articles") {
+      const tab = document.createElement("button");
+      tab.type = "button";
+      tab.textContent = label;
+      tab.dataset.bookmarkTarget = selector;
+      tab.addEventListener("click", () => {
+        closeAll();
+        tab.classList.add("active");
+        openArticleArchive();
       });
       rail.append(tab);
       return;
