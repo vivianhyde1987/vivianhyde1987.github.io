@@ -1,4 +1,5 @@
 const cloudConfig = window.ROSE_BLOG_CONFIG || {};
+const retiredModulesEnabled = false;
 const hasCloud = Boolean(window.supabase && cloudConfig.supabaseUrl && cloudConfig.supabaseAnonKey);
 const client = hasCloud ? window.supabase.createClient(cloudConfig.supabaseUrl, cloudConfig.supabaseAnonKey) : null;
 const sessionKey = "rose-blog-session-token";
@@ -874,7 +875,7 @@ function renderSession() {
     renderFeed();
     renderChat();
     renderWishPool();
-    renderLottery();
+    if (retiredModulesEnabled) renderLottery();
     setMessage("已退出。");
   });
   elements.sessionArea.append(name, logout);
@@ -894,7 +895,7 @@ function renderSession() {
   elements.avatarImageInput.value = "";
   renderAvatarPreview();
   renderWishPool();
-  renderLottery();
+  if (retiredModulesEnabled) renderLottery();
 }
 
 function switchAuthTab(tab) {
@@ -989,7 +990,7 @@ async function loadBlog(options = {}) {
     if (forceExtended) {
       await loadExtendedBlogData({ force: true });
     } else {
-      scheduleExtendedBlogLoad();
+      // Extended modules load when their bookmark/section is opened.
     }
   })().catch((error) => {
     console.error("[loadBlog:core]", error);
@@ -1336,10 +1337,23 @@ function renderChat() {
   elements.chatList.innerHTML = "";
   const topMessages = chatMessages.filter((message) => !message.parent_id);
   if (!topMessages.length) {
-    elements.chatList.innerHTML = `<div class="empty">临时讨论区还没有消息。</div>`;
+    elements.chatList.innerHTML = `<div class="empty">\u4e34\u65f6\u8ba8\u8bba\u533a\u8fd8\u6ca1\u6709\u6d88\u606f\u3002</div>`;
     return;
   }
-  topMessages.forEach((message) => elements.chatList.append(createChatNode(message)));
+  const expanded = elements.chatList.dataset.expanded === "true";
+  const visibleCount = expanded ? topMessages.length : 30;
+  topMessages.slice(0, visibleCount).forEach((message) => elements.chatList.append(createChatNode(message)));
+  if (!expanded && topMessages.length > visibleCount) {
+    const more = document.createElement("button");
+    more.type = "button";
+    more.className = "chat-load-more";
+    more.textContent = `\u67e5\u770b\u66f4\u591a\u7559\u8a00\uff08\u8fd8\u6709 ${topMessages.length - visibleCount} \u6761\uff09`;
+    more.addEventListener("click", () => {
+      elements.chatList.dataset.expanded = "true";
+      renderChat();
+    });
+    elements.chatList.append(more);
+  }
 }
 
 function formatPodcastTime(seconds) {
@@ -2068,6 +2082,7 @@ async function saveSleepNote(prefix, note) {
   return true;
 }
 
+if (retiredModulesEnabled) {
 $$("[data-hive-area]").forEach((button) => {
   button.addEventListener("click", () => addHiveCount(button.dataset.hiveArea));
 });
@@ -2097,15 +2112,14 @@ if (elements.sleepQuizForm) {
     if (ok) setSync("今晚收尾已生成");
   });
 }
+}
 
 function siteUrl() {
   return "https://www.vivianhyde1987.com/";
 }
 
 function currentInviteText() {
-  const topic = currentLotteryTopic();
-  const topicText = topic?.topic_text ? `本周话题：${topic.topic_text}` : "来这间私人博客坐一会，留下今天的一句话。";
-  return `${topicText}\n可以注册 ID、留言、参加每周抽奖，也可以看看文章。\n${siteUrl()}`;
+  return `\u6765 The rough and smooth \u5750\u4e00\u4f1a\u513f\u3002\u8fd9\u91cc\u53ef\u4ee5\u6ce8\u518c ID\u3001\u7559\u8a00\u3001\u804a\u5929\uff0c\u4e5f\u53ef\u4ee5\u770b\u6587\u7ae0\u3001\u64ad\u5ba2\u548c\u5c0f\u6728\u5c4b\u3002\n${siteUrl()}`;
 }
 
 async function copyInviteText() {
@@ -2269,6 +2283,7 @@ elements.registerForm.addEventListener("submit", async (event) => {
   setMessage("注册成功，已经登录。", "ok");
 });
 
+if (retiredModulesEnabled && elements.lotteryTopicForm && elements.lotteryEntryForm) {
 elements.lotteryTopicForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!profile || profile.role !== "owner") {
@@ -2316,6 +2331,8 @@ elements.lotteryEntryForm.addEventListener("submit", async (event) => {
   setMessage("已参与今日抽奖。", "ok");
   await loadBlog();
 });
+
+}
 
 elements.avatarForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -4699,127 +4716,3 @@ setCategory("文章");
 setupBlogBookmarks();
 setupDeferredModules();
 refreshSession();
-
-/* === 站点菜单 === */
-(function initSiteMenu() {
-  const menu = document.getElementById("siteMenu");
-  const trigger = document.getElementById("menuTrigger");
-  const closeBtn = document.getElementById("siteMenuClose");
-  const backdrop = document.getElementById("siteMenuBackdrop");
-  const homeReturn = document.getElementById("homeReturn");
-  const mainLayout = document.getElementById("mainLayout");
-  const soundStrip = document.getElementById("soundStrip");
-
-  if (!menu || !trigger) return;
-
-  const menuItems = menu.querySelectorAll(".site-menu__item");
-  const sectionMap = {
-    articles:  document.getElementById("articlesSection"),
-    sound:    soundStrip,
-    cabin:    document.getElementById("cabinPanel"),
-    lottery:  document.getElementById("lotteryPanel"),
-    mystery:  document.getElementById("mysteryPanel"),
-    hive:     document.getElementById("hivePanel"),
-    sleep:    document.getElementById("sleepPanel"),
-    podcast:  document.getElementById("podcastPanel"),
-  };
-
-  const backdropPanels = [
-    soundStrip,
-    document.getElementById("lotteryPanel"),
-    document.getElementById("mysteryPanel"),
-    document.getElementById("hivePanel"),
-    document.getElementById("sleepPanel"),
-    document.getElementById("podcastPanel"),
-    document.getElementById("cabinPanel"),
-  ];
-
-  function openMenu() {
-    menu.hidden = false;
-    requestAnimationFrame(() => menu.classList.add("is-open"));
-    trigger.setAttribute("aria-expanded", "true");
-  }
-
-  function closeMenu() {
-    menu.classList.remove("is-open");
-    trigger.setAttribute("aria-expanded", "false");
-    setTimeout(() => { if (!menu.classList.contains("is-open")) menu.hidden = true; }, 450);
-  }
-
-  function showHome() {
-    mainLayout.hidden = true;
-    soundStrip.hidden = true;
-    backdropPanels.forEach(p => { if (p) p.hidden = true; });
-    if (homeReturn) homeReturn.classList.remove("is-visible");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
-  function showSection(key) {
-    showHome();
-    if (key === "articles") {
-      mainLayout.hidden = false;
-      const el = sectionMap[key];
-      if (el) {
-        el.hidden = false;
-        setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
-      }
-    } else if (key === "sound") {
-      initAmbientOnce();
-      soundStrip.hidden = false;
-      setTimeout(() => soundStrip.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
-    } else {
-      if (key === "cabin") {
-        initCabinOnce();
-        initMimiOnce();
-        initCabinMusicOnce();
-        initExtendedDataOnce();
-      }
-      if (key === "podcast") {
-        initExtendedDataOnce();
-      }
-      mainLayout.hidden = false;
-      const el = sectionMap[key];
-      if (el) {
-        el.hidden = false;
-        // Make sure sidebar is visible
-        const sidebar = document.querySelector(".sidebar");
-        if (sidebar) sidebar.style.display = "";
-        setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
-      }
-    }
-    if (homeReturn) homeReturn.classList.add("is-visible");
-  }
-
-  trigger.addEventListener("click", () => {
-    if (menu.classList.contains("is-open")) {
-      closeMenu();
-    } else {
-      openMenu();
-    }
-  });
-  if (closeBtn) closeBtn.addEventListener("click", closeMenu);
-  if (backdrop) backdrop.addEventListener("click", closeMenu);
-
-  menuItems.forEach(btn => {
-    btn.addEventListener("click", () => {
-      const target = btn.dataset.menuTarget;
-      if (target) {
-        closeMenu();
-        setTimeout(() => showSection(target), 350);
-      }
-    });
-  });
-
-  if (homeReturn) {
-    homeReturn.addEventListener("click", () => {
-      showHome();
-    });
-  }
-
-  // Close menu on Escape
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && menu.classList.contains("is-open")) {
-      closeMenu();
-    }
-  });
-})();
