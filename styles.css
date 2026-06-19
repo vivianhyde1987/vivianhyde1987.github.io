@@ -4689,6 +4689,493 @@ body.has-bookmark-open .mimi-pet {
   color: rgba(255, 231, 199, 0.82);
 }
 
+/* Cabin furniture polish: richer walnut furniture without changing room markup. */
+.cabin-room__scene {
+  background:
+    radial-gradient(circle at 74% 24%, color-mix(in srgb, var(--room-accent) 20%, transparent), transparent 34%),
+    linear-gradient(180deg, rgba(255, 221, 170, 0.035), transparent 28%),
+    repeating-linear-gradient(90deg, rgba(116, 70, 39, 0.12) 0 1px, transparent 1px 86px),
+    linear-gradient(90deg, #140c08, #2b180f 46%, #130b08);
+}
+
+.cabin-wall-lines {
+  background:
+    linear-gradient(180deg, rgba(255, 226, 184, 0.035), transparent 18%, rgba(0, 0, 0, 0.18) 70%),
+    repeating-linear-gradient(90deg, transparent 0 72px, rgba(255, 215, 154, 0.04) 73px, rgba(0, 0, 0, 0.28) 78px),
+    repeating-linear-gradient(0deg, transparent 0 112px, rgba(255, 220, 170, 0.026) 113px, transparent 116px);
+}
+
+.cabin-room__scene::before {
+  background:
+    radial-gradient(ellipse at 48% 8%, rgba(255, 211, 138, 0.08), transparent 38%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.026), transparent 19%),
+    repeating-linear-gradient(96deg, color-mix(in srgb, var(--room-floor) 96%, #6d4128) 0 28px, color-mix(in srgb, var(--room-floor) 76%, #0b0605) 29px 34px);
+}
+
+.cabin-furniture {
+  right: 4%;
+  left: 4%;
+  bottom: 1%;
+  z-index: 1;
+  height: 29%;
+  opacity: 0.95;
+  filter: drop-shadow(0 20px 26px rgba(0, 0, 0, 0.34));
+}
+
+.cabin-furniture::before {
+  content: "";
+  position: absolute;
+  right: 22%;
+  bottom: -2%;
+  left: 22%;
+  height: 34%;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse, rgba(139, 58, 56, 0.48), rgba(79, 38, 34, 0.2) 62%, transparent 72%),
+    repeating-radial-gradient(ellipse, rgba(236, 187, 127, 0.13) 0 2px, transparent 3px 8px);
+  transform: perspective(420px) rotateX(64deg);
+}
+
+.cabin-furniture::after {
+  content: "";
+  position: absolute;
+  top: 5%;
+  right: 6%;
+  width: 24%;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #2b1710, #8b5b35 45%, #2a160f);
+  box-shadow:
+    0 12px 18px rgba(0, 0, 0, 0.24),
+    9px 22px 0 -2px rgba(87, 54, 31, 0.76),
+    -6px 24px 0 -3px rgba(55, 32, 20, 0.7);
+}
+
+.cabin-table {
+  right: 6%;
+  bottom: 12%;
+  width: 32%;
+  height: 50%;
+  border: 0;
+  border-radius: 14px 14px 7px 7px;
+  background:
+    linear-gradient(180deg, rgba(255, 230, 175, 0.18), transparent 28%),
+    repeating-linear-gradient(90deg, #7b4d2c 0 18px, #5a341f 19px 23px, #8a5833 24px 42px);
+  box-shadow:
+    inset 0 8px 0 rgba(255, 222, 163, 0.08),
+    inset 0 -14px 22px rgba(26, 13, 8, 0.42),
+    0 18px 25px rgba(0, 0, 0, 0.38);
+  transform: perspective(520px) rotateX(5deg) skewX(-2deg);
+}
+
+.cabin-table::before,
+.cabin-table::after {
+  content: "";
+  position: absolute;
+  bottom: -42%;
+  width: 8%;
+  height: 50%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #744728, #28150d);
+  box-shadow: inset -2px 0 4px rgba(255, 210, 148, 0.12);
+}
+
+.cabin-table::before { left: 13%; }
+.cabin-table::after { right: 13%; }
+
+.cabin-chair {
+  left: 7%;
+  bottom: 7%;
+  width: 19%;
+  height: 73%;
+  border: 0;
+  border-radius: 20px 20px 10px 10px;
+  background:
+    radial-gradient(ellipse at 50% 20%, rgba(255, 221, 160, 0.12), transparent 48%),
+    repeating-linear-gradient(90deg, #5f3922 0 10px, #422415 11px 16px);
+  box-shadow:
+    inset 0 0 0 8px rgba(35, 19, 12, 0.62),
+    inset 0 -28px 0 rgba(29, 16, 11, 0.58),
+    0 20px 24px rgba(0, 0, 0, 0.34);
+}
+
+.cabin-chair::before {
+  content: "";
+  position: absolute;
+  right: 13%;
+  bottom: 15%;
+  left: 13%;
+  height: 30%;
+  border-radius: 12px 12px 8px 8px;
+  background: linear-gradient(180deg, #8a5840, #4a291b);
+  box-shadow: inset 0 5px 0 rgba(255, 219, 169, 0.08);
+}
+
+.cabin-chair::after {
+  content: "";
+  position: absolute;
+  right: 18%;
+  bottom: -20%;
+  left: 18%;
+  height: 28%;
+  border-right: 5px solid rgba(50, 28, 18, 0.88);
+  border-left: 5px solid rgba(50, 28, 18, 0.88);
+}
+
+.cabin-experience[data-cabin-theme="studio"] .cabin-chair {
+  width: 16%;
+  background:
+    linear-gradient(70deg, transparent 0 45%, #8c5a31 46% 51%, transparent 52%),
+    linear-gradient(-70deg, transparent 0 45%, #5e371f 46% 51%, transparent 52%);
+  box-shadow: none;
+}
+
+.cabin-experience[data-cabin-theme="studio"] .cabin-chair::before {
+  top: 4%;
+  right: 20%;
+  bottom: auto;
+  left: 20%;
+  height: 48%;
+  border: 8px solid #7a4b2e;
+  border-radius: 7px;
+  background: linear-gradient(145deg, rgba(239, 206, 154, 0.24), rgba(67, 40, 27, 0.36));
+}
+
+.cabin-experience[data-cabin-theme="studio"] .cabin-chair::after {
+  right: 38%;
+  bottom: 1%;
+  left: 38%;
+  height: 52%;
+  border-right: 5px solid #5c351d;
+  border-left: 5px solid #5c351d;
+}
+
+.cabin-experience[data-cabin-theme="water"] .cabin-chair {
+  left: 8%;
+  width: 22%;
+  border-radius: 46% 46% 18px 18px;
+  background:
+    repeating-radial-gradient(ellipse at 50% 48%, rgba(217, 184, 132, 0.16) 0 4px, transparent 5px 12px),
+    linear-gradient(180deg, #6b4933, #2f1c14);
+}
+
+.cabin-experience[data-cabin-theme="water"] .cabin-table {
+  right: 12%;
+  width: 25%;
+  height: 35%;
+  border-radius: 50%;
+  transform: perspective(520px) rotateX(58deg);
+}
+
+.cabin-experience[data-cabin-theme="water"] .cabin-furniture::before {
+  background:
+    radial-gradient(ellipse, rgba(81, 121, 119, 0.3), rgba(34, 55, 50, 0.18) 62%, transparent 72%),
+    repeating-linear-gradient(90deg, rgba(180, 221, 213, 0.1) 0 10px, transparent 12px 24px);
+}
+
+.cabin-experience[data-cabin-theme="flowers"] .cabin-furniture::after {
+  top: 0;
+  right: 7%;
+  width: 32%;
+  box-shadow:
+    0 12px 18px rgba(0, 0, 0, 0.24),
+    16px 25px 0 -3px rgba(94, 66, 39, 0.76),
+    -10px 38px 0 -3px rgba(71, 48, 31, 0.72);
+}
+
+.cabin-experience[data-cabin-theme="flowers"] .cabin-chair {
+  left: 6%;
+  width: 15%;
+  height: 56%;
+  border-radius: 12px;
+}
+
+.cabin-experience[data-cabin-theme="hearth"] .cabin-chair {
+  left: 6%;
+  width: 24%;
+  height: 66%;
+  border-radius: 28px 28px 12px 12px;
+  background:
+    linear-gradient(180deg, rgba(255, 205, 145, 0.13), transparent 32%),
+    linear-gradient(135deg, #7b3f2b, #3b1f18 64%);
+}
+
+.cabin-experience[data-cabin-theme="hearth"] .cabin-chair::before {
+  right: -8%;
+  left: -8%;
+  bottom: 21%;
+  height: 24%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #976143, #4d281d);
+}
+
+.cabin-experience[data-cabin-theme="hearth"] .cabin-furniture::before {
+  right: 15%;
+  left: 19%;
+  background:
+    radial-gradient(ellipse, rgba(150, 67, 47, 0.48), rgba(75, 38, 32, 0.2) 66%, transparent 75%),
+    repeating-linear-gradient(90deg, rgba(246, 185, 114, 0.11) 0 8px, transparent 9px 19px);
+}
+
+.cabin-experience[data-cabin-theme="child"] .cabin-chair {
+  left: 8%;
+  bottom: 8%;
+  width: 21%;
+  height: 35%;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 28% 35%, rgba(231, 157, 136, 0.38), transparent 22%),
+    radial-gradient(circle at 67% 42%, rgba(223, 180, 104, 0.36), transparent 23%),
+    linear-gradient(145deg, #7a4b33, #3c2319);
+}
+
+.cabin-experience[data-cabin-theme="child"] .cabin-table {
+  right: 10%;
+  width: 36%;
+  height: 42%;
+  border-radius: 12px;
+}
+
+.cabin-experience[data-cabin-theme="child"] .cabin-furniture::after {
+  top: 12%;
+  right: 7%;
+  width: 36%;
+  height: 36px;
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 226, 176, 0.12), transparent 42%),
+    repeating-linear-gradient(90deg, #6b4328 0 28px, #3f2518 29px 34px);
+}
+
+.cabin-pet-room {
+  background:
+    radial-gradient(circle at 24% 20%, rgba(251, 210, 142, 0.12), transparent 34%),
+    linear-gradient(180deg, transparent 0 68%, rgba(47, 28, 18, 0.97) 68%),
+    repeating-linear-gradient(90deg, #2c1a11 0 54px, #21140d 55px 61px);
+}
+
+.cabin-pet-room::before {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 32%;
+  background:
+    repeating-linear-gradient(96deg, #3f2618 0 30px, #2b190f 31px 36px),
+    linear-gradient(180deg, rgba(255, 220, 160, 0.06), transparent);
+  box-shadow: inset 0 20px 34px rgba(0, 0, 0, 0.28);
+}
+
+.pet-room__window {
+  border-color: #56341f;
+  border-radius: 12px;
+  box-shadow:
+    0 20px 32px rgba(0, 0, 0, 0.48),
+    0 0 34px rgba(240, 198, 132, 0.08),
+    inset 0 0 28px rgba(10, 12, 20, 0.65);
+}
+
+.pet-room__cat-tree {
+  filter: drop-shadow(0 23px 24px rgba(0, 0, 0, 0.34));
+}
+
+.tree-post {
+  background:
+    repeating-linear-gradient(0deg, #9b7352 0 5px, #6e4a32 6px 9px),
+    linear-gradient(90deg, rgba(255, 235, 190, 0.16), transparent);
+}
+
+.tree-platform {
+  height: 24px;
+  background:
+    linear-gradient(180deg, rgba(255, 230, 188, 0.12), transparent 46%),
+    radial-gradient(ellipse, #866044, #543420);
+}
+
+.tree-cave {
+  border-radius: 48% 48% 18px 18px;
+  background:
+    radial-gradient(circle at 50% 60%, rgba(14, 9, 7, 0.9) 0 31%, transparent 32%),
+    linear-gradient(180deg, #9b6c4c, #5d3a29);
+  box-shadow:
+    inset 0 0 0 18px rgba(129, 88, 62, 0.9),
+    0 14px 20px rgba(0, 0, 0, 0.3);
+}
+
+.pet-room__bed {
+  border-width: 14px;
+  background:
+    radial-gradient(ellipse at 50% 42%, #c69a78, #6a4536 68%),
+    repeating-radial-gradient(ellipse, rgba(255, 231, 198, 0.12) 0 2px, transparent 3px 9px);
+  box-shadow:
+    inset 0 8px 15px rgba(255, 226, 191, 0.1),
+    0 18px 24px rgba(0, 0, 0, 0.38);
+}
+
+.pet-room__rug {
+  height: 16%;
+  background:
+    radial-gradient(ellipse, rgba(143, 62, 61, 0.55), rgba(75, 35, 36, 0.18) 68%, transparent 74%),
+    repeating-radial-gradient(ellipse, rgba(236, 195, 134, 0.14) 0 2px, transparent 3px 10px);
+  transform: perspective(460px) rotateX(62deg);
+}
+
+.pet-room__wall-decor {
+  filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.22));
+}
+
+.pet-room__shelf {
+  height: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 226, 177, 0.14), transparent 42%),
+    linear-gradient(90deg, #3b2116, #9a6740 48%, #321d14);
+}
+
+.cabin-music-studio {
+  background:
+    radial-gradient(circle at 28% 16%, rgba(238, 194, 122, 0.13), transparent 30%),
+    linear-gradient(180deg, transparent 0 69%, rgba(42, 25, 16, 0.95) 69%),
+    repeating-linear-gradient(90deg, #26170f 0 44px, #1c110c 45px 50px);
+  box-shadow:
+    inset 0 -80px 90px rgba(0, 0, 0, 0.28),
+    0 18px 45px rgba(0, 0, 0, 0.24);
+}
+
+.music-room-decor {
+  min-height: 178px;
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 24% 24%, rgba(255, 213, 142, 0.16), transparent 28%),
+    linear-gradient(180deg, rgba(255, 230, 180, 0.04), transparent 54%),
+    repeating-linear-gradient(90deg, rgba(129, 81, 48, 0.2) 0 52px, rgba(41, 24, 15, 0.32) 53px 58px),
+    linear-gradient(135deg, rgba(84, 47, 29, 0.42), rgba(17, 11, 10, 0.78));
+}
+
+.music-room-decor::before {
+  content: "";
+  position: absolute;
+  right: 8%;
+  bottom: 7px;
+  left: 9%;
+  height: 34px;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse, rgba(111, 49, 45, 0.44), rgba(49, 26, 25, 0.12) 70%, transparent 76%),
+    repeating-linear-gradient(90deg, rgba(238, 183, 119, 0.1) 0 8px, transparent 9px 18px);
+  transform: perspective(460px) rotateX(62deg);
+}
+
+.grand-piano-decor {
+  bottom: 28px;
+  width: min(45%, 286px);
+  height: 104px;
+}
+
+.grand-piano-decor::before {
+  border-radius: 72% 28% 34% 46%;
+  background:
+    radial-gradient(ellipse at 34% 18%, rgba(255, 222, 166, 0.16), transparent 32%),
+    linear-gradient(145deg, #1e1111, #673823 60%, #120909);
+  box-shadow:
+    inset 0 7px 12px rgba(255, 229, 182, 0.08),
+    0 20px 24px rgba(0, 0, 0, 0.32);
+}
+
+.grand-piano-decor::after {
+  height: 13px;
+  background:
+    repeating-linear-gradient(90deg, #f6ead6 0 13px, #201411 14px 18px),
+    linear-gradient(180deg, #fff8e9, #bda98e);
+}
+
+.music-room-guitar-art {
+  right: 8%;
+  bottom: 18px;
+  width: min(20%, 112px);
+  max-height: 132px;
+}
+
+.music-room-guitar-art::after {
+  content: "";
+}
+
+.instrument--piano {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(255, 235, 190, 0.05), transparent 42%),
+    linear-gradient(135deg, rgba(42, 24, 17, 0.86), rgba(9, 5, 4, 0.72));
+}
+
+.instrument--piano::after {
+  content: "";
+  position: absolute;
+  right: 14%;
+  bottom: 5px;
+  width: 32%;
+  height: 20px;
+  border-radius: 12px 12px 7px 7px;
+  background:
+    linear-gradient(180deg, rgba(255, 225, 170, 0.1), transparent 50%),
+    linear-gradient(90deg, #6e4328, #3a2115);
+  box-shadow: 0 12px 14px rgba(0, 0, 0, 0.24);
+  pointer-events: none;
+}
+
+.piano-keys {
+  border-radius: 8px;
+  padding: 8px 8px 0;
+  background:
+    linear-gradient(180deg, #3d2317, #160c08 22%),
+    repeating-linear-gradient(90deg, rgba(255, 224, 178, 0.07) 0 22px, transparent 23px 46px);
+  box-shadow:
+    inset 0 10px 16px rgba(255, 227, 180, 0.05),
+    0 18px 24px rgba(0, 0, 0, 0.24);
+}
+
+.piano-keys button {
+  border-radius: 0 0 7px 7px;
+  box-shadow:
+    inset 0 -12px 18px rgba(82, 54, 36, 0.16),
+    inset 1px 0 0 rgba(255, 255, 255, 0.28);
+}
+
+@media (max-width: 680px) {
+  .cabin-furniture {
+    right: 2%;
+    left: 2%;
+    height: 23%;
+  }
+
+  .cabin-table {
+    right: 4%;
+    width: 30%;
+  }
+
+  .cabin-chair {
+    left: 5%;
+    width: 18%;
+  }
+
+  .cabin-furniture::after {
+    width: 22%;
+  }
+
+  .pet-room__wall-decor {
+    right: 45%;
+  }
+
+  .music-room-decor {
+    min-height: 136px;
+  }
+
+  .music-room-guitar-art {
+    right: 5%;
+    width: min(22%, 86px);
+  }
+}
+
 .mimi-pet__head {
   display: flex;
   align-items: center;
