@@ -3197,6 +3197,28 @@ function setupMimiPet() {
     window.clearTimeout(speak.timer);
     speak.timer = window.setTimeout(() => bubble.classList.remove("is-visible"), duration);
   };
+  const positionMimiPanel = () => {
+    if (panel.hidden) return;
+    const catRect = catButton.getBoundingClientRect();
+    const panelWidth = Math.min(330, Math.max(260, window.innerWidth - 84));
+    const panelHeight = Math.min(520, Math.floor(window.innerHeight * 0.72));
+    const gap = 14;
+    let left = catRect.right + gap;
+    if (left + panelWidth > window.innerWidth - 14) left = catRect.left - panelWidth - gap;
+    left = Math.max(12, Math.min(left, window.innerWidth - panelWidth - 12));
+    let top = catRect.top - 12;
+    if (window.innerWidth <= 680) top = 12;
+    top = Math.max(12, Math.min(top, window.innerHeight - panelHeight - 12));
+    panel.style.width = `${panelWidth}px`;
+    panel.style.left = `${left}px`;
+    panel.style.top = `${top}px`;
+    panel.style.right = "auto";
+    panel.style.bottom = "auto";
+  };
+  const openMimiPanel = () => {
+    panel.hidden = false;
+    requestAnimationFrame(positionMimiPanel);
+  };
   const sound = (type) => {
     try {
       const audioContext = CabinAudioManager.getContext();
@@ -3391,11 +3413,14 @@ function setupMimiPet() {
       playRealPurr();
       setPetVisual(getMimiAsset("purr"), "is-purring", 3000);
       speak("她轻轻呼噜了几秒。", 2400);
-      panel.hidden = false;
+      openMimiPanel();
       return;
     }
     panel.hidden = !panel.hidden;
-    if (!panel.hidden) speak("你找到眯眯了。她正安静地看着你。", 2200);
+    if (!panel.hidden) {
+      speak("你找到眯眯了。她正安静地看着你。", 2200);
+      positionMimiPanel();
+    }
   });
   pet.querySelector(".mimi-pet__close").addEventListener("click", () => { panel.hidden = true; });
   pet.querySelectorAll("[data-mimi-action]").forEach((button) => {
@@ -3427,6 +3452,7 @@ function setupMimiPet() {
     pet.dataset.pose = "sit";
     setPetVisual(idleSource);
     applyMimiRoomPosition();
+    positionMimiPanel();
     window.setTimeout(move, 1800);
     scheduleGrooming();
   });
@@ -3452,7 +3478,10 @@ function setupMimiPet() {
     pet.classList.add("is-in-pet-room");
     pet.dispatchEvent(new CustomEvent("mimi-enter-room", { detail: { roomId: "studio", container: defaultCabinHost } }));
   }
-  window.addEventListener("resize", () => { if (pet.classList.contains("is-in-pet-room")) applyMimiRoomPosition(); });
+  window.addEventListener("resize", () => {
+    if (pet.classList.contains("is-in-pet-room")) applyMimiRoomPosition();
+    positionMimiPanel();
+  });
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
       stopGrooming();
@@ -3563,25 +3592,46 @@ function setupBookmarkPanels() {
 
 function setupBlogBookmarks() {
   const panels = [
-    { selector: ".auth-panel", label: "账号" },
-    { selector: ".podcast-panel", label: "播客" },
-    { selector: ".cabin-panel", label: "木屋" },
-    { selector: ".composer", label: "写文" },
-    { selector: ".chat", label: "讨论" }
+    { selector: ".auth-panel", label: "\u8d26\u53f7" },
+    { selector: "#soundStrip", label: "\u58f0\u97f3", special: "sound" },
+    { selector: ".podcast-panel", label: "\u64ad\u5ba2" },
+    { selector: ".cabin-panel", label: "\u6728\u5c4b" },
+    { selector: ".composer", label: "\u5199\u6587" },
+    { selector: ".chat", label: "\u8ba8\u8bba" }
   ];
   const rail = document.createElement("nav");
   rail.className = "bookmark-rail";
-  rail.setAttribute("aria-label", "功能书签");
+  rail.setAttribute("aria-label", "\u529f\u80fd\u4e66\u7b7e");
   document.body.append(rail);
 
   const closeAll = () => {
     document.querySelectorAll(".bookmark-panel.is-bookmark-open").forEach((panel) => panel.classList.remove("is-bookmark-open"));
+    const soundStrip = document.querySelector("#soundStrip");
+    if (soundStrip) soundStrip.hidden = true;
     rail.querySelectorAll("button").forEach((button) => button.classList.remove("active"));
     document.body.classList.remove("has-bookmark-open");
   };
 
-  panels.forEach(({ selector, label }) => {
+  panels.forEach(({ selector, label, special }) => {
     const panel = document.querySelector(selector);
+    if (special === "sound") {
+      const tab = document.createElement("button");
+      tab.type = "button";
+      tab.textContent = label;
+      tab.dataset.bookmarkTarget = selector;
+      tab.addEventListener("click", () => {
+        const isOpen = panel && !panel.hidden;
+        closeAll();
+        if (!isOpen && panel) {
+          initAmbientOnce();
+          panel.hidden = false;
+          tab.classList.add("active");
+          panel.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+      rail.append(tab);
+      return;
+    }
     const head = panel?.querySelector(".panel__head");
     if (!panel || !head) return;
     document.body.append(panel);
@@ -3591,7 +3641,7 @@ function setupBlogBookmarks() {
       const close = document.createElement("button");
       close.type = "button";
       close.className = "panel-close";
-      close.textContent = "关闭";
+      close.textContent = "\u5173\u95ed";
       close.addEventListener("click", closeAll);
       head.append(close);
     }
