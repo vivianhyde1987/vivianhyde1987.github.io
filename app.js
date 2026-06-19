@@ -956,12 +956,14 @@ async function safeQuery(label, queryPromise, fallback = []) {
 
 let extendedBlogLoaded = false;
 let extendedBlogLoading = null;
+let blogCoreLoading = null;
 
 async function loadBlog(options = {}) {
   if (!client) return;
+  if (blogCoreLoading) return blogCoreLoading;
   const forceExtended = Boolean(options.forceExtended);
-  setSync("???");
-  try {
+  blogCoreLoading = (async () => {
+    setSync("???");
     const [postResult, commentResult, profileResult, likeResult, chatResult, chatLikeResult] = await Promise.all([
       client.from("blog_posts").select("*").order("created_at", { ascending: false }).limit(80),
       client.from("blog_comments").select("*").order("created_at", { ascending: true }).limit(500),
@@ -989,12 +991,15 @@ async function loadBlog(options = {}) {
     } else {
       scheduleExtendedBlogLoad();
     }
-  } catch (error) {
+  })().catch((error) => {
     console.error("[loadBlog:core]", error);
     setSync("?????? SQL");
     elements.feed.innerHTML = `<div class="empty">?????????????????? supabase-setup.sql ??? Supabase ? SQL Editor ??????</div>`;
     elements.chatList.innerHTML = `<div class="empty">???????????</div>`;
-  }
+  }).finally(() => {
+    blogCoreLoading = null;
+  });
+  return blogCoreLoading;
 }
 
 async function loadExtendedBlogData({ force = false } = {}) {
@@ -3112,6 +3117,8 @@ function setupMimiPet() {
   state.lastUpdate = now;
   let moveTimer = null;
   let walkFrameTimer = null;
+  let groomingTimer = null;
+  let groomingEndTimer = null;
   let lastX = 0;
   let currentMimiRoom = "studio";
   let currentMimiContainer = document.querySelector(".cabin-room__scene") || petRoom || document.body;
@@ -3126,6 +3133,26 @@ function setupMimiPet() {
   document.body.append(realPurr);
 
   const save = () => localStorage.setItem(storageKey, JSON.stringify(state));
+  const stopGrooming = () => {
+    window.clearTimeout(groomingTimer);
+    window.clearTimeout(groomingEndTimer);
+    pet.classList.remove("is-grooming");
+  };
+  const scheduleGrooming = () => {
+    window.clearTimeout(groomingTimer);
+    if (document.hidden || pet.dataset.pose !== "sit" || pet.classList.contains("is-walking") || pet.classList.contains("is-playing") || pet.classList.contains("is-held")) return;
+    groomingTimer = window.setTimeout(() => {
+      if (document.hidden || pet.dataset.pose !== "sit" || !panel.hidden || pet.classList.contains("is-dragging") || pet.classList.contains("is-walking") || pet.classList.contains("is-playing") || pet.classList.contains("is-held")) {
+        scheduleGrooming();
+        return;
+      }
+      pet.classList.add("is-grooming");
+      groomingEndTimer = window.setTimeout(() => {
+        pet.classList.remove("is-grooming");
+        scheduleGrooming();
+      }, 3000 + Math.random() * 2000);
+    }, 20000 + Math.random() * 25000);
+  };
   const readMimiPositions = () => {
     try { return JSON.parse(localStorage.getItem(positionStorageKey) || "{}"); } catch { return {}; }
   };
@@ -3258,13 +3285,14 @@ function setupMimiPet() {
     }
   };
   const setPetVisual = (src, className = "is-idle-breathing", duration = 0) => {
-    pet.classList.remove("is-idle-breathing", "is-purring", "is-playing", "is-stretching", "is-turning");
+    pet.classList.remove("is-idle-breathing", "is-purring", "is-playing", "is-stretching", "is-turning", "is-grooming");
     if (src) setImageSafe(catImage, src, "棕虎斑猫眯眯", fallbackBlogMaterials.roomMap.pet.mainCat);
     if (className) pet.classList.add(className);
     if (duration) window.setTimeout(() => setPetVisual(idleSource), duration);
   };
   const move = () => {
     if (!pet.classList.contains("is-in-pet-room") || !currentMimiContainer || !panel.hidden || pet.classList.contains("is-held") || pet.classList.contains("is-dragging")) return;
+    stopGrooming();
     const safeWidth = Math.max(70, currentMimiContainer.clientWidth - 150);
     const safeHeight = Math.max(120, currentMimiContainer.clientHeight - 155);
     const restingSpots = currentMimiRoom === "pet"
@@ -3282,7 +3310,7 @@ function setupMimiPet() {
     const spot = restingSpots[Math.floor(Math.random() * restingSpots.length)];
     const x = 18 + spot.x;
     const y = 36 + spot.y;
-    pet.style.setProperty("--mimi-face", x < lastX ? "-1" : "1");
+    pet.style.setProperty("--mimi-face", x > lastX ? "-1" : "1");
     lastX = x;
     pet.dataset.pose = "walk";
     pet.classList.remove("is-idle-breathing", "is-stretching", "is-turning");
@@ -3309,6 +3337,7 @@ function setupMimiPet() {
       const restingClass = Math.random() < 0.38 ? "is-stretching" : Math.random() < 0.35 ? "is-turning" : "is-idle-breathing";
       setPetVisual(idleSource, restingClass, restingClass === "is-idle-breathing" ? 0 : 1500);
       save();
+      scheduleGrooming();
       if (Math.random() < 0.08) sound("meow");
     }, 5400);
   };
@@ -3321,6 +3350,7 @@ function setupMimiPet() {
     if (!pet.classList.contains("is-in-pet-room") || !currentMimiContainer) return;
     event.preventDefault();
     event.stopPropagation();
+    stopGrooming();
     window.clearTimeout(moveTimer);
     window.clearInterval(walkFrameTimer);
     pet.classList.add("is-dragging");
@@ -3357,6 +3387,7 @@ function setupMimiPet() {
     }
     const idle = pet.dataset.pose === "sit" && panel.hidden && !pet.classList.contains("is-walking") && !pet.classList.contains("is-playing") && !pet.classList.contains("is-held");
     if (idle) {
+      stopGrooming();
       playRealPurr();
       setPetVisual(getMimiAsset("purr"), "is-purring", 3000);
       speak("她轻轻呼噜了几秒。", 2400);
@@ -3369,6 +3400,7 @@ function setupMimiPet() {
   pet.querySelectorAll("[data-mimi-action]").forEach((button) => {
     button.addEventListener("click", async () => {
       const action = button.dataset.mimiAction;
+      stopGrooming();
       const reactions = {
         food: () => { state.hunger = Math.min(100, state.hunger + 25); state.health = Math.min(100, state.health + 2); setPetVisual(getMimiAsset("food"), "is-turning", 1700); speak("眯眯认真地吃了几口猫粮。"); },
         treat: () => { state.hunger = Math.min(100, state.hunger + 12); state.mood = Math.min(100, state.mood + 18); setPetVisual(getMimiAsset("treat"), "is-idle-breathing", 1900); speak("猫条很好吃。她舔了舔鼻子。"); },
@@ -3388,25 +3420,29 @@ function setupMimiPet() {
     pet.querySelector('[data-mimi-action="wand"]')?.click();
   });
   pet.addEventListener("mimi-enter-room", (event) => {
+    stopGrooming();
     currentMimiRoom = event.detail?.roomId || currentMimiRoom || "studio";
     currentMimiContainer = event.detail?.container || currentMimiContainer || petRoom || document.body;
     pet.dataset.pose = "sit";
     setPetVisual(idleSource);
     applyMimiRoomPosition();
     window.setTimeout(move, 1800);
+    scheduleGrooming();
   });
   pet.addEventListener("mimi-leave-room", () => {
+    stopGrooming();
     CabinAudioManager.stop("mimi-purr");
     CabinAudioManager.stop("mimi-meow");
     CabinAudioManager.stop("mimi-steps");
     window.clearInterval(walkFrameTimer);
-    pet.classList.remove("is-walking", "is-playing", "is-purring", "is-stretching", "is-turning", "is-held");
+    pet.classList.remove("is-walking", "is-playing", "is-purring", "is-stretching", "is-turning", "is-held", "is-grooming");
     catImage.src = idleSource;
   });
   pet.dataset.pose = "sit";
   setPetVisual(idleSource);
   render();
   scheduleMove(6000);
+  scheduleGrooming();
   document.body.append(panel);
   const defaultCabinHost = document.querySelector(".cabin-experience .cabin-room__scene");
   if (defaultCabinHost) {
@@ -3416,6 +3452,13 @@ function setupMimiPet() {
     pet.dispatchEvent(new CustomEvent("mimi-enter-room", { detail: { roomId: "studio", container: defaultCabinHost } }));
   }
   window.addEventListener("resize", () => { if (pet.classList.contains("is-in-pet-room")) applyMimiRoomPosition(); });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      stopGrooming();
+      return;
+    }
+    scheduleGrooming();
+  });
 }
 
 const mimiCareLabels = {
@@ -4428,7 +4471,6 @@ function initAmbientOnce() {
 }
 
 function setupDeferredModules() {
-  initAmbientOnce();
   const observe = (selector, init) => {
     const target = document.querySelector(selector);
     if (!target) return;
@@ -4531,9 +4573,19 @@ refreshSession();
         setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
       }
     } else if (key === "sound") {
+      initAmbientOnce();
       soundStrip.hidden = false;
       setTimeout(() => soundStrip.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
     } else {
+      if (key === "cabin") {
+        initCabinOnce();
+        initMimiOnce();
+        initCabinMusicOnce();
+        initExtendedDataOnce();
+      }
+      if (key === "podcast") {
+        initExtendedDataOnce();
+      }
       mainLayout.hidden = false;
       const el = sectionMap[key];
       if (el) {
