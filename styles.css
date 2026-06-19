@@ -5799,6 +5799,42 @@ select {
   flex: 0 0 auto;
 }
 
+.topbar--below-hero {
+  justify-content: space-between;
+}
+
+.menu-trigger--side {
+  position: fixed;
+  top: 50%;
+  left: 10px;
+  z-index: 8200;
+  width: 32px;
+  min-height: 56px;
+  padding: 0;
+  border-radius: 999px;
+  border-color: rgba(255, 232, 190, 0.1);
+  background: rgba(18, 12, 13, 0.34);
+  color: rgba(255, 238, 215, 0.42);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.22);
+  opacity: 0.42;
+  transform: translateY(-50%);
+}
+
+.menu-trigger--side:hover,
+.menu-trigger--side[aria-expanded="true"] {
+  color: rgba(255, 238, 215, 0.86);
+  opacity: 0.9;
+}
+
+.menu-trigger--side .menu-trigger__label {
+  display: none;
+}
+
+.menu-trigger--side .menu-trigger__icon {
+  font-size: 0.86rem;
+  transform: rotate(90deg);
+}
+
 .hero .topbar {
   display: none;
 }
@@ -5833,6 +5869,12 @@ select {
   .topbar--below-hero .session button {
     min-height: 34px;
     padding: 0 10px;
+  }
+
+  .menu-trigger--side {
+    left: 6px;
+    width: 28px;
+    min-height: 48px;
   }
 }
 
