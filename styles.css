@@ -1784,6 +1784,91 @@ label {
 
 .piano-keys button.is-playing { transform: translateY(4px); filter: brightness(1.2); }
 
+.perfect-pitch-game {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(211, 174, 112, 0.2);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(231, 180, 105, 0.16), transparent 34%),
+    linear-gradient(135deg, rgba(78, 43, 25, 0.62), rgba(8, 5, 4, 0.72));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 236, 202, 0.06),
+    0 12px 28px rgba(0, 0, 0, 0.22);
+}
+
+.perfect-pitch-game__head,
+.perfect-pitch-game__stats,
+.perfect-pitch-game__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.perfect-pitch-game__head small {
+  color: rgba(211, 174, 112, 0.68);
+  letter-spacing: 0.12em;
+}
+
+.perfect-pitch-game__head h4 {
+  margin: 2px 0 0;
+  color: #f3d5a8;
+  font-size: 0.92rem;
+}
+
+.perfect-pitch-game select {
+  width: auto;
+  min-height: 34px;
+  border-color: rgba(211, 174, 112, 0.22);
+  background: rgba(21, 12, 8, 0.82);
+  color: #f3d5a8;
+  padding: 6px 9px;
+}
+
+.perfect-pitch-game__stats span {
+  min-height: 28px;
+  padding: 5px 9px;
+  border: 1px solid rgba(211, 174, 112, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 239, 210, 0.06);
+  color: rgba(245, 223, 190, 0.86);
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.perfect-pitch-game__feedback {
+  min-height: 24px;
+  margin: 0;
+  color: rgba(240, 218, 185, 0.72);
+  line-height: 1.55;
+  font-size: 0.82rem;
+}
+
+.perfect-pitch-game__actions {
+  justify-content: flex-start;
+}
+
+.perfect-pitch-game__actions button {
+  min-height: 36px;
+  padding: 0 12px;
+}
+
+.perfect-pitch-game.is-correct {
+  box-shadow:
+    0 0 0 1px rgba(236, 190, 104, 0.28),
+    0 0 32px rgba(217, 160, 78, 0.22),
+    inset 0 1px 0 rgba(255, 236, 202, 0.08);
+}
+
+.perfect-pitch-game.is-wrong {
+  border-color: rgba(182, 82, 82, 0.32);
+}
+
 .singing-bowls {
   display: flex;
   align-items: end;
@@ -1941,6 +2026,15 @@ label {
   .piano-keys { height: 118px; }
   .piano-keys button { min-height: 114px; }
   .piano-keys button.black { min-height: 72px; }
+  .perfect-pitch-game {
+    padding: 10px;
+  }
+  .perfect-pitch-game select {
+    width: 100%;
+  }
+  .perfect-pitch-game__actions button {
+    flex: 1;
+  }
   .music-recorder { grid-template-columns: 1fr 1fr; }
   .music-recorder input { grid-column: 1 / -1; }
   .music-recorder audio { grid-column: 1 / -1; }

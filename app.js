@@ -3982,6 +3982,7 @@ function setupCabinExperience() {
       experience.classList.add("is-walking");
       window.setTimeout(() => experience.classList.remove("is-walking"), 650);
       experience.dataset.cabinRoom = button.dataset.room;
+      document.dispatchEvent(new CustomEvent("cabin-room-change", { detail: { roomId: button.dataset.room } }));
       document.querySelectorAll("[data-room]").forEach((item) => item.classList.toggle("active", item === button));
       experience.classList.toggle("is-music-room", isMusicRoom);
       experience.classList.toggle("is-pet-room", isPetRoom);
@@ -4122,6 +4123,43 @@ function setupCabinMusicRoom() {
     window.setTimeout(() => perch.classList.remove("is-visible"), 4200);
     pianoPlayCount = 0;
   };
+  const pitchGameElements = {
+    root: $("#perfectPitchGame"),
+    difficulty: $("#pitchDifficulty"),
+    start: $("#pitchStart"),
+    replay: $("#pitchReplay"),
+    round: $("#pitchRound"),
+    score: $("#pitchScore"),
+    streak: $("#pitchStreak"),
+    feedback: $("#pitchFeedback")
+  };
+  const pianoNoteNames = new Map([
+    [261.63, "C"],
+    [277.18, "C#"],
+    [293.66, "D"],
+    [311.13, "D#"],
+    [329.63, "E"],
+    [349.23, "F"],
+    [369.99, "F#"],
+    [392, "G"],
+    [415.3, "G#"],
+    [440, "A"],
+    [466.16, "A#"],
+    [493.88, "B"],
+    [523.25, "C5"]
+  ]);
+  const perfectPitchState = {
+    active: false,
+    awaitingAnswer: false,
+    acceptingAnswer: false,
+    round: 0,
+    total: 10,
+    score: 0,
+    streak: 0,
+    currentNote: null,
+    notes: []
+  };
+  window.perfectPitchState = perfectPitchState;
 
 
   const ensureAudio = async () => {
@@ -4194,6 +4232,90 @@ function setupCabinMusicRoom() {
     });
     animateButton(button);
     return registerVoice({ oscillators, gain: voiceGain }, 4.9, 0.8);
+  };
+  const getPianoNotes = () => [...studio.querySelectorAll("[data-note]")]
+    .map((button) => ({ frequency: Number(button.dataset.note), button, name: pianoNoteNames.get(Number(button.dataset.note)) || button.textContent.trim() }))
+    .filter((note) => Number.isFinite(note.frequency));
+  const pickPitchNotes = () => {
+    const notes = getPianoNotes();
+    const difficulty = pitchGameElements.difficulty?.value || "normal";
+    const allowed = difficulty === "easy"
+      ? ["C", "D", "E", "F", "G"]
+      : difficulty === "normal"
+        ? ["C", "D", "E", "F", "G", "A", "B"]
+        : null;
+    return allowed ? notes.filter((note) => allowed.includes(note.name)) : notes;
+  };
+  const setPitchFeedback = (text, tone = "") => {
+    if (!pitchGameElements.feedback || !pitchGameElements.root) return;
+    pitchGameElements.feedback.textContent = text;
+    pitchGameElements.root.classList.remove("is-correct", "is-wrong", "is-finished");
+    if (tone) {
+      pitchGameElements.root.classList.add(`is-${tone}`);
+      window.setTimeout(() => pitchGameElements.root?.classList.remove(`is-${tone}`), 780);
+    }
+  };
+  const renderPerfectPitch = () => {
+    if (!pitchGameElements.root) return;
+    pitchGameElements.round.textContent = `${perfectPitchState.round}/${perfectPitchState.total}`;
+    pitchGameElements.score.textContent = `得分 ${perfectPitchState.score}`;
+    pitchGameElements.streak.textContent = `连对 ${perfectPitchState.streak}`;
+    pitchGameElements.replay.disabled = !perfectPitchState.active || !perfectPitchState.currentNote;
+    pitchGameElements.start.textContent = perfectPitchState.active ? "重新开始" : "开始挑战";
+  };
+  const playPitchPrompt = async () => {
+    if (!perfectPitchState.currentNote) return;
+    perfectPitchState.acceptingAnswer = false;
+    const voice = await playPiano(perfectPitchState.currentNote.frequency, perfectPitchState.currentNote.button);
+    window.setTimeout(() => voice?.release?.(), 980);
+    window.setTimeout(() => { perfectPitchState.acceptingAnswer = true; }, 1050);
+  };
+  const nextPitchRound = async () => {
+    if (perfectPitchState.round >= perfectPitchState.total) {
+      perfectPitchState.active = false;
+      perfectPitchState.awaitingAnswer = false;
+      perfectPitchState.acceptingAnswer = false;
+      const score = perfectPitchState.score;
+      const verdict = score >= 9 ? "像在夜里摸到一束准光。" : score >= 6 ? "耳朵已经很稳了，再玩一局会更准。" : "先慢慢听 C、D、E、F、G，感觉会醒过来。";
+      pitchGameElements.root?.classList.add("is-finished");
+      setPitchFeedback(`挑战结束：${score}/${perfectPitchState.total}。${verdict}`);
+      renderPerfectPitch();
+      return;
+    }
+    perfectPitchState.round += 1;
+    perfectPitchState.currentNote = perfectPitchState.notes[Math.floor(Math.random() * perfectPitchState.notes.length)];
+    perfectPitchState.awaitingAnswer = true;
+    setPitchFeedback("听音中……请等声音结束后在钢琴键上回答。");
+    renderPerfectPitch();
+    await playPitchPrompt();
+  };
+  const startPerfectPitch = async () => {
+    perfectPitchState.notes = pickPitchNotes();
+    if (!perfectPitchState.notes.length) return setPitchFeedback("没有可用的钢琴音。", "wrong");
+    Object.assign(perfectPitchState, { active: true, awaitingAnswer: false, acceptingAnswer: false, round: 0, score: 0, streak: 0, currentNote: null });
+    renderPerfectPitch();
+    await nextPitchRound();
+  };
+  const answerPerfectPitch = async (frequency) => {
+    if (!perfectPitchState.active || !perfectPitchState.awaitingAnswer || !perfectPitchState.acceptingAnswer) return;
+    perfectPitchState.awaitingAnswer = false;
+    perfectPitchState.acceptingAnswer = false;
+    const picked = getPianoNotes().find((note) => Math.abs(note.frequency - frequency) < 0.1);
+    const correct = Math.abs(frequency - perfectPitchState.currentNote.frequency) < 0.1;
+    if (correct) {
+      perfectPitchState.score += 1;
+      perfectPitchState.streak += 1;
+      setPitchFeedback(`答对了，是 ${perfectPitchState.currentNote.name}。`, "correct");
+      if (perfectPitchState.streak >= 3 && perch?.classList.contains("is-visible")) {
+        perch.textContent = "眯眯好像听懂了。";
+        window.setTimeout(() => { perch.textContent = "眯眯坐在琴盖上听了一会儿。"; }, 2600);
+      }
+    } else {
+      perfectPitchState.streak = 0;
+      setPitchFeedback(`差一点。你选了 ${picked?.name || "这个音"}，正确答案是 ${perfectPitchState.currentNote.name}。`, "wrong");
+    }
+    renderPerfectPitch();
+    window.setTimeout(nextPitchRound, 1050);
   };
   const playBowl = async (frequency, button) => {
     await ensureAudio();
@@ -4280,8 +4402,12 @@ function setupCabinMusicRoom() {
       button.addEventListener("pointerdown", async (event) => {
         event.preventDefault();
         button.setPointerCapture?.(event.pointerId);
-        pointerVoice = await playVoice(Number(button.dataset[dataKey]), button);
-        if (dataKey === "note") maybeShowMimiOnPiano();
+        const frequency = Number(button.dataset[dataKey]);
+        pointerVoice = await playVoice(frequency, button);
+        if (dataKey === "note") {
+          maybeShowMimiOnPiano();
+          answerPerfectPitch(frequency);
+        }
       });
       const release = () => { pointerVoice?.release?.(); pointerVoice = null; };
       button.addEventListener("pointerup", release);
@@ -4292,6 +4418,13 @@ function setupCabinMusicRoom() {
   bindInstrumentButtons("[data-note]", playPiano, "note");
   bindInstrumentButtons("[data-bowl]", playBowl, "bowl");
   bindInstrumentButtons("[data-string]", playGuitar, "string");
+  pitchGameElements.start?.addEventListener("click", startPerfectPitch);
+  pitchGameElements.replay?.addEventListener("click", playPitchPrompt);
+  pitchGameElements.difficulty?.addEventListener("change", () => {
+    if (!perfectPitchState.active) return;
+    startPerfectPitch();
+  });
+  renderPerfectPitch();
 
   const keyboardMap = { a: 261.63, w: 277.18, s: 293.66, e: 311.13, d: 329.63, f: 349.23, t: 369.99, g: 392, y: 415.3, h: 440, u: 466.16, j: 493.88, k: 523.25 };
   const isTypingTarget = (target) => target instanceof HTMLElement && (target.matches("input, textarea, select") || target.isContentEditable);
@@ -4301,12 +4434,19 @@ function setupCabinMusicRoom() {
     event.preventDefault();
     const matchingButton = [...studio.querySelectorAll("[data-note]")].find((button) => Math.abs(Number(button.dataset.note) - keyboardMap[key]) < 0.1);
     heldKeyboardVoices.set(key, await playPiano(keyboardMap[key], matchingButton));
+    answerPerfectPitch(keyboardMap[key]);
     maybeShowMimiOnPiano();
   });
   window.addEventListener("keyup", (event) => {
     const key = event.key.toLowerCase();
     heldKeyboardVoices.get(key)?.release?.();
     heldKeyboardVoices.delete(key);
+  });
+  document.addEventListener("cabin-room-change", (event) => {
+    if (event.detail?.roomId === "music") return;
+    perfectPitchState.awaitingAnswer = false;
+    perfectPitchState.acceptingAnswer = false;
+    CabinAudioManager.stopAllVoices?.();
   });
 
   startButton.addEventListener("click", async () => {

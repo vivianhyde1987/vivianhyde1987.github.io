@@ -32,7 +32,7 @@
       "description": "治愈系个人博客作者，记录小木屋里的声音手记、水彩画作与猫咪日常。"
     }
     </script>
-    <link rel="stylesheet" href="styles.css?v=home-menu-mimi-performance-1" />
+    <link rel="stylesheet" href="styles.css?v=perfect-pitch-game-1" />
     <link rel="stylesheet" href="materials.css?v=cabin-mimi-assets-fix-1" />
   </head>
   <body>
@@ -428,6 +428,26 @@
                 <section class="instrument instrument--piano"><h4>钢琴</h4><div class="piano-keys" aria-label="钢琴键盘">
                   <button type="button" data-note="261.63"><span>C</span></button><button class="black" type="button" data-note="277.18"><span>C♯</span></button><button type="button" data-note="293.66"><span>D</span></button><button class="black" type="button" data-note="311.13"><span>D♯</span></button><button type="button" data-note="329.63"><span>E</span></button><button type="button" data-note="349.23"><span>F</span></button><button class="black" type="button" data-note="369.99"><span>F♯</span></button><button type="button" data-note="392"><span>G</span></button><button class="black" type="button" data-note="415.3"><span>G♯</span></button><button type="button" data-note="440"><span>A</span></button><button class="black" type="button" data-note="466.16"><span>A♯</span></button><button type="button" data-note="493.88"><span>B</span></button><button type="button" data-note="523.25"><span>C5</span><small>高音 Do</small></button>
                 </div></section>
+                <section class="perfect-pitch-game" id="perfectPitchGame" aria-label="绝对音感挑战">
+                  <div class="perfect-pitch-game__head">
+                    <div><small>PIANO GAME</small><h4>绝对音感挑战</h4></div>
+                    <select id="pitchDifficulty" aria-label="选择难度">
+                      <option value="easy">简单 C-G</option>
+                      <option value="normal" selected>普通 C-B</option>
+                      <option value="hard">困难 全键</option>
+                    </select>
+                  </div>
+                  <div class="perfect-pitch-game__stats">
+                    <span id="pitchRound">0/10</span>
+                    <span id="pitchScore">得分 0</span>
+                    <span id="pitchStreak">连对 0</span>
+                  </div>
+                  <p id="pitchFeedback" class="perfect-pitch-game__feedback">点击开始，听一个音，再在钢琴键上回答。</p>
+                  <div class="perfect-pitch-game__actions">
+                    <button id="pitchStart" type="button">开始挑战</button>
+                    <button id="pitchReplay" type="button" disabled>再听一次</button>
+                  </div>
+                </section>
                 <section class="instrument instrument--bowls"><h4>颂钵</h4><div class="singing-bowls"><button type="button" data-bowl="174">低音钵</button><button type="button" data-bowl="285">中音钵</button><button type="button" data-bowl="396">高音钵</button></div></section>
                 <section class="instrument instrument--guitar"><h4>吉他</h4><div class="guitar-strings" aria-label="吉他琴弦"><button type="button" data-string="82.41">E</button><button type="button" data-string="110">A</button><button type="button" data-string="146.83">D</button><button type="button" data-string="196">G</button><button type="button" data-string="246.94">B</button><button type="button" data-string="329.63">e</button></div></section>
               </div>
@@ -599,6 +619,6 @@
     </dialog>
 
     <script src="assets/blog-materials/manifest.js?v=home-hero-people-visible-1"></script>
-    <script src="app.js?v=home-menu-mimi-performance-1"></script>
+    <script src="app.js?v=perfect-pitch-game-1"></script>
   </body>
 </html>
