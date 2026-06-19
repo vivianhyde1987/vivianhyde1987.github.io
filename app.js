@@ -3391,6 +3391,7 @@ function setupMimiPet() {
       playRealPurr();
       setPetVisual(getMimiAsset("purr"), "is-purring", 3000);
       speak("她轻轻呼噜了几秒。", 2400);
+      panel.hidden = false;
       return;
     }
     panel.hidden = !panel.hidden;
@@ -4739,7 +4740,13 @@ refreshSession();
     if (homeReturn) homeReturn.classList.add("is-visible");
   }
 
-  trigger.addEventListener("click", openMenu);
+  trigger.addEventListener("click", () => {
+    if (menu.classList.contains("is-open")) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
+  });
   if (closeBtn) closeBtn.addEventListener("click", closeMenu);
   if (backdrop) backdrop.addEventListener("click", closeMenu);
 

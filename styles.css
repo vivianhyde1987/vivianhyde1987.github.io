@@ -5552,16 +5552,18 @@ select {
   letter-spacing: 0.12em;
 }
 .site-menu__close {
-  width: 36px;
-  height: 36px;
+  width: auto;
+  height: 34px;
+  min-height: 34px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border: 1px solid rgba(255,255,255,0.14);
-  border-radius: 50%;
+  border-radius: 999px;
   background: rgba(255,255,255,0.04);
   color: rgba(255,250,242,0.72);
-  font-size: 1.1rem;
+  padding: 0 12px;
+  font-size: 0.78rem;
   cursor: pointer;
   transition: background 0.3s, border-color 0.3s;
 }
@@ -5805,34 +5807,59 @@ select {
 
 .menu-trigger--side {
   position: fixed;
-  top: 50%;
-  left: 10px;
+  top: 34%;
+  left: 12px;
   z-index: 8200;
-  width: 32px;
-  min-height: 56px;
-  padding: 0;
-  border-radius: 999px;
-  border-color: rgba(255, 232, 190, 0.1);
-  background: rgba(18, 12, 13, 0.34);
-  color: rgba(255, 238, 215, 0.42);
-  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.22);
-  opacity: 0.42;
+  width: auto;
+  min-height: 42px;
+  padding: 0 11px;
+  border-radius: 0 999px 999px 0;
+  border-color: rgba(255, 232, 190, 0.2);
+  border-left: 0;
+  background:
+    linear-gradient(90deg, rgba(72, 38, 25, 0.86), rgba(18, 12, 13, 0.74));
+  color: rgba(255, 238, 215, 0.82);
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 244, 224, 0.08);
+  opacity: 0.82;
   transform: translateY(-50%);
 }
 
 .menu-trigger--side:hover,
 .menu-trigger--side[aria-expanded="true"] {
   color: rgba(255, 238, 215, 0.86);
-  opacity: 0.9;
+  opacity: 1;
+  background:
+    linear-gradient(90deg, rgba(111, 61, 36, 0.92), rgba(27, 17, 15, 0.86));
 }
 
 .menu-trigger--side .menu-trigger__label {
-  display: none;
+  position: static;
+  display: inline;
+  width: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  opacity: 1;
+  transform: none;
+  font-size: 0.76rem;
+  letter-spacing: 0;
 }
 
 .menu-trigger--side .menu-trigger__icon {
-  font-size: 0.86rem;
-  transform: rotate(90deg);
+  font-size: 0.9rem;
+  transform: none;
+}
+
+.menu-trigger--side[aria-expanded="true"] .menu-trigger__label {
+  font-size: 0;
+}
+
+.menu-trigger--side[aria-expanded="true"] .menu-trigger__label::after {
+  content: "收起";
+  font-size: 0.76rem;
 }
 
 .hero .topbar {
@@ -5872,9 +5899,11 @@ select {
   }
 
   .menu-trigger--side {
-    left: 6px;
-    width: 28px;
-    min-height: 48px;
+    top: auto;
+    bottom: calc(94px + env(safe-area-inset-bottom));
+    left: 0;
+    min-height: 38px;
+    padding: 0 9px;
   }
 }
 
