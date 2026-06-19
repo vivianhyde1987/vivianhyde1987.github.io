@@ -1002,11 +1002,8 @@ async function loadExtendedBlogData({ force = false } = {}) {
   if (extendedBlogLoaded && !force) return;
   if (extendedBlogLoading) return extendedBlogLoading;
   extendedBlogLoading = (async () => {
-    const [wishData, lotteryTopicData, lotteryEntryData, eventLogData, podcastData, podcastCommentData, podcastLikeData, cabinArtworkData, mimiCareData, cabinRecordingData] = await Promise.all([
+    const [wishData, podcastData, podcastCommentData, podcastLikeData, cabinArtworkData, mimiCareData, cabinRecordingData] = await Promise.all([
       safeQuery("koi_wishes", client.from("koi_wishes").select("*").order("created_at", { ascending: false }).limit(80)),
-      safeQuery("lottery_topics", client.from("lottery_topics").select("*").order("topic_date", { ascending: false }).limit(30)),
-      safeQuery("lottery_entries", client.from("lottery_entries").select("*").order("created_at", { ascending: true }).limit(200)),
-      safeQuery("health_event_logs", client.from("health_event_logs").select("*").order("event_time", { ascending: false }).limit(180)),
       safeQuery("blog_podcasts", client.from("blog_podcasts").select("*").order("publish_date", { ascending: false }).order("issue_no", { ascending: false }).limit(40)),
       safeQuery("podcast_comments", client.from("podcast_comments").select("*").order("created_at", { ascending: true }).limit(240)),
       safeQuery("podcast_likes", client.from("podcast_likes").select("*")),
@@ -1015,9 +1012,9 @@ async function loadExtendedBlogData({ force = false } = {}) {
       safeQuery("cabin_music_recordings", client.from("cabin_music_recordings").select("*").order("created_at", { ascending: false }).limit(30))
     ]);
     koiWishes = wishData;
-    lotteryTopics = lotteryTopicData;
-    lotteryEntries = lotteryEntryData;
-    eventLogs = eventLogData;
+    lotteryTopics = [];
+    lotteryEntries = [];
+    eventLogs = [];
     podcasts = podcastData;
     podcastComments = podcastCommentData;
     podcastLikes = podcastLikeData;
@@ -1026,8 +1023,6 @@ async function loadExtendedBlogData({ force = false } = {}) {
     cabinRecordings = cabinRecordingData;
     extendedBlogLoaded = true;
     renderWishPool();
-    renderLottery();
-    renderEventLogs();
     renderPodcasts();
     renderCabinGallery();
     renderMimiCareLogs();
@@ -3360,6 +3355,13 @@ function setupMimiPet() {
       didDragMimi = false;
       return;
     }
+    const idle = pet.dataset.pose === "sit" && panel.hidden && !pet.classList.contains("is-walking") && !pet.classList.contains("is-playing") && !pet.classList.contains("is-held");
+    if (idle) {
+      playRealPurr();
+      setPetVisual(getMimiAsset("purr"), "is-purring", 3000);
+      speak("她轻轻呼噜了几秒。", 2400);
+      return;
+    }
     panel.hidden = !panel.hidden;
     if (!panel.hidden) speak("你找到眯眯了。她正安静地看着你。", 2200);
   });
@@ -3468,9 +3470,7 @@ function setupBookmarkPanels() {
     { selector: ".avatar-panel", label: "头像" },
     { selector: ".welcome-panel", label: "小站" },
     { selector: ".wish-pool", label: "许愿" },
-    { selector: ".lottery-panel", label: "抽奖" },
-    { selector: ".event-log", label: "健康" },
-    { selector: ".sleep-panel", label: "睡眠" },
+    { selector: ".lottery-panel", label: "抽奖" },
     { selector: ".composer", label: "写文" },
     { selector: ".chat", label: "讨论" }
   ];
@@ -3519,11 +3519,7 @@ function setupBookmarkPanels() {
 
 function setupBlogBookmarks() {
   const panels = [
-    { selector: ".auth-panel", label: "账号" },
-    { selector: ".luck-panel", label: "抽奖" },
-    { selector: ".mystery-box", label: "盲盒" },
-    { selector: ".event-log", label: "健康" },
-    { selector: ".sleep-panel", label: "睡眠" },
+    { selector: ".auth-panel", label: "账号" },
     { selector: ".podcast-panel", label: "播客" },
     { selector: ".cabin-panel", label: "木屋" },
     { selector: ".composer", label: "写文" },
@@ -3569,6 +3565,34 @@ function setupBlogBookmarks() {
       }
     });
     rail.append(tab);
+  });
+}
+
+function playNutShellShaker() {
+  CabinAudioManager.stop("nut-shell-shaker");
+  CabinAudioManager.play("nut-shell-shaker", (audioContext) => {
+    const now = audioContext.currentTime;
+    const output = audioContext.createGain();
+    output.gain.setValueAtTime(0.0001, now);
+    output.gain.linearRampToValueAtTime(0.06, now + 0.04);
+    output.gain.exponentialRampToValueAtTime(0.0001, now + 2);
+    output.connect(audioContext.destination);
+    const oscillators = [];
+    for (let i = 0; i < 18; i += 1) {
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      osc.type = i % 2 ? "triangle" : "square";
+      osc.frequency.value = 650 + Math.random() * 1800;
+      const start = now + i * 0.085;
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.linearRampToValueAtTime(0.018, start + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.09);
+      osc.connect(gain).connect(output);
+      osc.start(start);
+      osc.stop(start + 0.1);
+      oscillators.push(osc);
+    }
+    return { stop: () => oscillators.forEach((osc) => { try { osc.stop(); } catch {} }) };
   });
 }
 
@@ -3910,6 +3934,7 @@ function setupCabinExperience() {
       const isPetRoom = button.dataset.room === "pet";
       if (!room && !isMusicRoom && !isPetRoom) return;
       CabinAudioManager.stopRoomSounds();
+      CabinAudioManager.stop("nut-shell-shaker");
       playFootsteps();
       experience.classList.add("is-walking");
       window.setTimeout(() => experience.classList.remove("is-walking"), 650);
@@ -3999,6 +4024,13 @@ function setupCabinExperience() {
     }
   });
 
+  scene?.addEventListener("click", (event) => {
+    const target = event.target;
+    const source = target?.currentSrc || target?.src || "";
+    if (target?.id === "cabinRoomAccent" || source.includes("rattle-nut-shell-handmade")) {
+      playNutShellShaker();
+    }
+  });
   applyCabinRoomAssets("studio", rooms.studio);
 }
 
@@ -4033,6 +4065,21 @@ function setupCabinMusicRoom() {
   let startedAt = 0;
   let timer = null;
   const heldKeyboardVoices = new Map();
+  const guitarArt = document.querySelector("#musicRoomGuitarArt");
+  if (guitarArt) {
+    console.warn("[CabinMusic] 未找到吉他矢量素材，保留可弹奏吉他按钮。");
+  }
+  const perch = document.querySelector("#mimiPianoPerch");
+  let pianoPlayCount = 0;
+  const maybeShowMimiOnPiano = () => {
+    if (!perch) return;
+    pianoPlayCount += 1;
+    if (pianoPlayCount < 3 && Math.random() > 0.18) return;
+    perch.classList.add("is-visible");
+    window.setTimeout(() => perch.classList.remove("is-visible"), 4200);
+    pianoPlayCount = 0;
+  };
+
 
   const ensureAudio = async () => {
     if (!context) {
@@ -4191,6 +4238,7 @@ function setupCabinMusicRoom() {
         event.preventDefault();
         button.setPointerCapture?.(event.pointerId);
         pointerVoice = await playVoice(Number(button.dataset[dataKey]), button);
+        if (dataKey === "note") maybeShowMimiOnPiano();
       });
       const release = () => { pointerVoice?.release?.(); pointerVoice = null; };
       button.addEventListener("pointerup", release);
@@ -4202,7 +4250,7 @@ function setupCabinMusicRoom() {
   bindInstrumentButtons("[data-bowl]", playBowl, "bowl");
   bindInstrumentButtons("[data-string]", playGuitar, "string");
 
-  const keyboardMap = { a: 261.63, w: 277.18, s: 293.66, e: 311.13, d: 329.63, f: 349.23, t: 369.99, g: 392, y: 415.3, h: 440, u: 466.16, j: 493.88 };
+  const keyboardMap = { a: 261.63, w: 277.18, s: 293.66, e: 311.13, d: 329.63, f: 349.23, t: 369.99, g: 392, y: 415.3, h: 440, u: 466.16, j: 493.88, k: 523.25 };
   const isTypingTarget = (target) => target instanceof HTMLElement && (target.matches("input, textarea, select") || target.isContentEditable);
   window.addEventListener("keydown", async (event) => {
     const key = event.key.toLowerCase();
@@ -4210,6 +4258,7 @@ function setupCabinMusicRoom() {
     event.preventDefault();
     const matchingButton = [...studio.querySelectorAll("[data-note]")].find((button) => Math.abs(Number(button.dataset.note) - keyboardMap[key]) < 0.1);
     heldKeyboardVoices.set(key, await playPiano(keyboardMap[key], matchingButton));
+    maybeShowMimiOnPiano();
   });
   window.addEventListener("keyup", (event) => {
     const key = event.key.toLowerCase();
@@ -4392,13 +4441,11 @@ function setupDeferredModules() {
     }, { rootMargin: "260px 0px" });
     observer.observe(target);
   };
-  observe(".podcast-panel", initExtendedDataOnce);
-  observe(".event-log", initExtendedDataOnce);
-  observe(".lottery-panel", initExtendedDataOnce);
+  observe(".podcast-panel", initExtendedDataOnce);
   document.querySelectorAll('[data-bookmark-target=".cabin-panel"]').forEach((button) => {
     button.addEventListener("click", () => { initCabinOnce(); initMimiOnce(); initCabinMusicOnce(); initExtendedDataOnce(); });
   });
-  document.querySelectorAll('[data-bookmark-target=".podcast-panel"], [data-bookmark-target=".event-log"], [data-bookmark-target=".lottery-panel"], [data-bookmark-target=".wish-pool"]').forEach((button) => {
+  document.querySelectorAll('[data-bookmark-target=".podcast-panel"], [data-bookmark-target=".wish-pool"]').forEach((button) => {
     button.addEventListener("click", initExtendedDataOnce);
   });
   document.addEventListener("visibilitychange", () => {
@@ -4415,7 +4462,7 @@ updatePodcastFileHints();
 if (elements.podcastDateInput) elements.podcastDateInput.value = new Date().toISOString().slice(0, 10);
 switchAuthTab("login");
 setCategory("文章");
-renderMysteryBox();
+// Hidden homepage modules are kept in code but no longer shown.
 setupBlogBookmarks();
 setupDeferredModules();
 refreshSession();

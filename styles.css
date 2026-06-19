@@ -5643,3 +5643,176 @@ select {
     min-height: 48px;
   }
 }
+
+/* Cabin cleanup: hidden modules and warmer pet/music rooms. */
+.luck-panel[hidden],
+.mystery-box[hidden],
+.event-log[hidden],
+.sleep-panel[hidden] {
+  display: none !important;
+}
+
+.music-room-decor {
+  position: relative;
+  min-height: 150px;
+  margin: 0 0 14px;
+  overflow: hidden;
+  border: 1px solid rgba(232, 190, 132, 0.12);
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 26% 24%, rgba(231, 191, 119, 0.18), transparent 26%),
+    linear-gradient(135deg, rgba(83, 45, 28, 0.38), rgba(18, 12, 12, 0.74));
+}
+
+.grand-piano-decor {
+  position: absolute;
+  left: 9%;
+  bottom: 20px;
+  width: min(42%, 250px);
+  height: 86px;
+  filter: drop-shadow(0 18px 22px rgba(0, 0, 0, 0.42));
+}
+
+.grand-piano-decor::before {
+  content: "";
+  position: absolute;
+  inset: 8px 18px 28px 0;
+  border-radius: 70% 28% 34% 46%;
+  background: linear-gradient(145deg, #251413, #5b3020 60%, #140b0b);
+  transform: skewX(-8deg);
+}
+
+.grand-piano-decor::after {
+  content: "";
+  position: absolute;
+  left: 18%;
+  right: 12%;
+  bottom: 18px;
+  height: 11px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f7ead0 0 60%, #211414 60% 66%, #f7ead0 66% 100%);
+  box-shadow: 0 13px 0 -9px rgba(235, 202, 160, 0.55);
+}
+
+.grand-piano-decor span,
+.grand-piano-decor i {
+  position: absolute;
+  bottom: 0;
+  width: 4px;
+  height: 30px;
+  border-radius: 999px;
+  background: #221211;
+}
+
+.grand-piano-decor span { left: 22%; }
+.grand-piano-decor i { right: 20%; }
+
+.music-room-guitar-art {
+  position: absolute;
+  right: 10%;
+  bottom: 12px;
+  width: min(22%, 120px);
+  max-height: 118px;
+  object-fit: contain;
+  filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.38));
+}
+
+.mimi-piano-perch {
+  position: absolute;
+  left: 28%;
+  bottom: 98px;
+  max-width: 210px;
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 232, 190, 0.18);
+  border-radius: 999px;
+  background: rgba(18, 12, 12, 0.72);
+  color: rgba(255, 235, 205, 0.86);
+  font-size: 0.74rem;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 220ms ease, transform 220ms ease;
+  pointer-events: none;
+}
+
+.mimi-piano-perch.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.pet-room__wall-decor {
+  position: absolute;
+  top: 22px;
+  right: 31%;
+  left: 31%;
+  height: 130px;
+  pointer-events: none;
+}
+
+.pet-room__shelf {
+  position: absolute;
+  right: 0;
+  bottom: 22px;
+  left: 0;
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #3e2217, #8a5d38, #3a2116);
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.26);
+}
+
+.pet-room__mini-frame {
+  position: absolute;
+  bottom: 39px;
+  width: 42px;
+  height: 54px;
+  border: 5px solid #7b5132;
+  border-radius: 6px;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(150, 98, 60, 0.8), transparent 24%),
+    linear-gradient(145deg, #ead2b2, #7a4d36);
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.22);
+}
+
+.pet-room__mini-frame--one { left: 18%; transform: rotate(-3deg); }
+.pet-room__mini-frame--two { right: 18%; width: 50px; height: 42px; transform: rotate(3deg); }
+
+.pet-room__star-lights {
+  position: absolute;
+  top: 10px;
+  right: 8%;
+  left: 8%;
+  height: 28px;
+  border-top: 1px dashed rgba(255, 221, 157, 0.42);
+}
+
+.pet-room__star-lights::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: 8%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffd98a;
+  box-shadow: 38px 8px #ffd98a, 82px -1px #ffd98a, 122px 9px #ffd98a;
+  filter: drop-shadow(0 0 8px rgba(255, 217, 138, 0.56));
+}
+
+@media (max-width: 680px) {
+  .music-room-decor {
+    min-height: 120px;
+  }
+
+  .grand-piano-decor {
+    left: 6%;
+    width: 52%;
+    transform: scale(0.9);
+    transform-origin: left bottom;
+  }
+
+  .pet-room__wall-decor {
+    top: 16px;
+    right: 39%;
+    left: 5%;
+    height: 110px;
+  }
+}

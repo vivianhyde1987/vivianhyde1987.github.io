@@ -32,7 +32,7 @@
       "description": "治愈系个人博客作者，记录小木屋里的声音手记、水彩画作与猫咪日常。"
     }
     </script>
-    <link rel="stylesheet" href="styles.css?v=menu-calm-20260619" />
+    <link rel="stylesheet" href="styles.css?v=cabin-mimi-music-cleanup-1" />
     <link rel="stylesheet" href="materials.css?v=cabin-mimi-assets-fix-1" />
   </head>
   <body>
@@ -93,26 +93,6 @@
               <span class="site-menu__icon">⌂</span>
               <span class="site-menu__label">小木屋</span>
               <span class="site-menu__hint">沿着脚印去开灯</span>
-            </button>
-            <button class="site-menu__item" type="button" data-menu-target="lottery">
-              <span class="site-menu__icon">▽</span>
-              <span class="site-menu__label">每周抽奖</span>
-              <span class="site-menu__hint">围绕话题留下一句</span>
-            </button>
-            <button class="site-menu__item" type="button" data-menu-target="mystery">
-              <span class="site-menu__icon">▣</span>
-              <span class="site-menu__label">每日盲盒</span>
-              <span class="site-menu__hint">每天一条冷知识</span>
-            </button>
-            <button class="site-menu__item" type="button" data-menu-target="hive">
-              <span class="site-menu__icon">◉</span>
-              <span class="site-menu__label">荨麻疹记录</span>
-              <span class="site-menu__hint">风团计数 / 吃药 / 备注</span>
-            </button>
-            <button class="site-menu__item" type="button" data-menu-target="sleep">
-              <span class="site-menu__icon">☾</span>
-              <span class="site-menu__label">睡眠管理</span>
-              <span class="site-menu__hint">准备睡觉 / 今天感觉</span>
             </button>
             <button class="site-menu__item" type="button" data-menu-target="podcast">
               <span class="site-menu__icon">☊</span>
@@ -213,7 +193,7 @@
         </aside>
 
         <section class="content" id="articlesSection">
-          <section class="luck-panel panel" aria-label="抽奖" id="lotteryPanel">
+          <section class="luck-panel panel" aria-label="抽奖" id="lotteryPanel" hidden>
             <div class="panel__head">
               <h2>抽奖</h2>
             </div>
@@ -240,7 +220,7 @@
             </div>
           </section>
 
-          <section class="mystery-box panel" aria-label="每日盲盒" id="mysteryPanel">
+          <section class="mystery-box panel" aria-label="每日盲盒" id="mysteryPanel" hidden>
             <div class="panel__head">
               <h2>每日盲盒</h2>
               <span>每天一条冷知识</span>
@@ -249,7 +229,7 @@
             <article id="mysteryBoxCard" class="mystery-box__card" aria-live="polite"></article>
           </section>
 
-          <section class="event-log panel" aria-label="定向事件记录" id="hivePanel">
+          <section class="event-log panel" aria-label="定向事件记录" id="hivePanel" hidden>
             <div class="panel__head">
               <h2>荨麻疹日常管理记录</h2>
               <span>风团计数 / 吃药 / 备注</span>
@@ -297,7 +277,7 @@
             <div id="eventLogList" class="event-log-list" aria-live="polite" hidden></div>
           </section>
 
-          <section class="sleep-panel panel" aria-label="睡眠管理" id="sleepPanel">
+          <section class="sleep-panel panel" aria-label="睡眠管理" id="sleepPanel" hidden>
             <div class="panel__head">
               <h2>睡眠管理</h2>
               <span id="sleepNowText">现在时间</span>
@@ -442,9 +422,10 @@
             </div>
             <section id="cabinMusicStudio" class="cabin-music-studio" hidden aria-label="可演奏乐器房">
               <div class="music-studio__head"><div><small>ROOM 06</small><h3>夜色乐器房</h3></div><span>钢琴 · 颂钵 · 吉他</span></div>
+              <div class="music-room-decor" aria-hidden="true"><div class="grand-piano-decor"><span></span><i></i></div><img id="musicRoomGuitarArt" class="music-room-guitar-art" alt="吉他装饰" loading="lazy" decoding="async" hidden /><div class="mimi-piano-perch" id="mimiPianoPerch">眯眯坐在琴盖上听了一会儿。</div></div>
               <div class="music-instruments">
                 <section class="instrument instrument--piano"><h4>钢琴</h4><div class="piano-keys" aria-label="钢琴键盘">
-                  <button type="button" data-note="261.63"><span>C</span></button><button class="black" type="button" data-note="277.18"><span>C♯</span></button><button type="button" data-note="293.66"><span>D</span></button><button class="black" type="button" data-note="311.13"><span>D♯</span></button><button type="button" data-note="329.63"><span>E</span></button><button type="button" data-note="349.23"><span>F</span></button><button class="black" type="button" data-note="369.99"><span>F♯</span></button><button type="button" data-note="392"><span>G</span></button><button class="black" type="button" data-note="415.3"><span>G♯</span></button><button type="button" data-note="440"><span>A</span></button><button class="black" type="button" data-note="466.16"><span>A♯</span></button><button type="button" data-note="493.88"><span>B</span></button>
+                  <button type="button" data-note="261.63"><span>C</span></button><button class="black" type="button" data-note="277.18"><span>C♯</span></button><button type="button" data-note="293.66"><span>D</span></button><button class="black" type="button" data-note="311.13"><span>D♯</span></button><button type="button" data-note="329.63"><span>E</span></button><button type="button" data-note="349.23"><span>F</span></button><button class="black" type="button" data-note="369.99"><span>F♯</span></button><button type="button" data-note="392"><span>G</span></button><button class="black" type="button" data-note="415.3"><span>G♯</span></button><button type="button" data-note="440"><span>A</span></button><button class="black" type="button" data-note="466.16"><span>A♯</span></button><button type="button" data-note="493.88"><span>B</span></button><button type="button" data-note="523.25"><span>C5</span><small>高音 Do</small></button>
                 </div></section>
                 <section class="instrument instrument--bowls"><h4>颂钵</h4><div class="singing-bowls"><button type="button" data-bowl="174">低音钵</button><button type="button" data-bowl="285">中音钵</button><button type="button" data-bowl="396">高音钵</button></div></section>
                 <section class="instrument instrument--guitar"><h4>吉他</h4><div class="guitar-strings" aria-label="吉他琴弦"><button type="button" data-string="82.41">E</button><button type="button" data-string="110">A</button><button type="button" data-string="146.83">D</button><button type="button" data-string="196">G</button><button type="button" data-string="246.94">B</button><button type="button" data-string="329.63">e</button></div></section>
@@ -457,6 +438,7 @@
               <div class="cabin-recordings"><div class="cabin-recordings__head"><strong>留在房间里的作品</strong><span>访客即兴录音</span></div><div id="cabinRecordingList"></div></div>
             </section>
             <section id="cabinPetRoom" class="cabin-pet-room" hidden aria-label="眯眯的宠物房">
+              <div class="pet-room__wall-decor" aria-hidden="true"><span class="pet-room__shelf"></span><span class="pet-room__mini-frame pet-room__mini-frame--one"></span><span class="pet-room__mini-frame pet-room__mini-frame--two"></span><span class="pet-room__star-lights"></span></div>
               <div class="pet-room__window"><span class="pet-room__moon"></span><i></i><i></i><i></i></div>
               <div class="pet-room__cat-tree" aria-label="猫爬架"><span class="tree-post tree-post--one"></span><span class="tree-post tree-post--two"></span><span class="tree-platform tree-platform--one"></span><span class="tree-platform tree-platform--two"></span><span class="tree-cave"></span></div>
               <div class="pet-room__bed" aria-label="猫窝"><span>猫窝</span></div>
@@ -616,6 +598,6 @@
     </dialog>
 
     <script src="assets/blog-materials/manifest.js?v=home-hero-people-visible-1"></script>
-    <script src="app.js?v=menu-calm-20260619"></script>
+    <script src="app.js?v=cabin-mimi-music-cleanup-1"></script>
   </body>
 </html>
