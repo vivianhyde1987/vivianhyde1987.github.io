@@ -106,6 +106,108 @@ const CabinAudioManager = (() => {
 
 window.CabinAudioManager = CabinAudioManager;
 
+function playCabinFireAmbience() {
+  if (document.hidden) return null;
+  return CabinAudioManager.play("cabin-fire-ambience", (audioContext) => {
+    const nodes = [];
+    const timers = [];
+    const masterGain = audioContext.createGain();
+    const warmthFilter = audioContext.createBiquadFilter();
+    const emberGain = audioContext.createGain();
+    const emberOsc = audioContext.createOscillator();
+
+    masterGain.gain.setValueAtTime(0.0001, audioContext.currentTime);
+    masterGain.gain.exponentialRampToValueAtTime(0.055, audioContext.currentTime + 0.8);
+    warmthFilter.type = "lowpass";
+    warmthFilter.frequency.value = 1200;
+    warmthFilter.Q.value = 0.45;
+
+    emberOsc.type = "triangle";
+    emberOsc.frequency.value = 58;
+    emberGain.gain.value = 0.0045;
+    emberOsc.connect(emberGain).connect(masterGain);
+    emberOsc.start();
+    nodes.push(emberOsc);
+
+    const makeNoisePop = (volume = 0.018, duration = 0.08, high = false) => {
+      const frameCount = Math.max(1, Math.floor(audioContext.sampleRate * duration));
+      const buffer = audioContext.createBuffer(1, frameCount, audioContext.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < frameCount; i += 1) {
+        const tail = Math.pow(1 - i / frameCount, high ? 3.5 : 2.2);
+        data[i] = (Math.random() * 2 - 1) * tail;
+      }
+      const source = audioContext.createBufferSource();
+      const filter = audioContext.createBiquadFilter();
+      const gain = audioContext.createGain();
+      filter.type = high ? "bandpass" : "lowpass";
+      filter.frequency.value = high ? 2200 + Math.random() * 1400 : 420 + Math.random() * 520;
+      filter.Q.value = high ? 1.4 : 0.55;
+      gain.gain.setValueAtTime(0.0001, audioContext.currentTime);
+      gain.gain.exponentialRampToValueAtTime(volume, audioContext.currentTime + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + duration);
+      source.buffer = buffer;
+      source.connect(filter).connect(gain).connect(masterGain);
+      source.start();
+      source.stop(audioContext.currentTime + duration + 0.03);
+      nodes.push(source);
+      source.addEventListener?.("ended", () => {
+        const index = nodes.indexOf(source);
+        if (index >= 0) nodes.splice(index, 1);
+      }, { once: true });
+    };
+
+    const createSoftBed = () => {
+      const duration = 2.4;
+      const frameCount = Math.floor(audioContext.sampleRate * duration);
+      const buffer = audioContext.createBuffer(1, frameCount, audioContext.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < frameCount; i += 1) {
+        data[i] = (Math.random() * 2 - 1) * 0.22;
+      }
+      const source = audioContext.createBufferSource();
+      const gain = audioContext.createGain();
+      source.buffer = buffer;
+      source.loop = true;
+      gain.gain.value = 0.012;
+      source.connect(warmthFilter).connect(gain).connect(masterGain);
+      source.start();
+      nodes.push(source);
+    };
+
+    createSoftBed();
+    masterGain.connect(audioContext.destination);
+
+    timers.push(window.setInterval(() => {
+      if (document.hidden) return;
+      makeNoisePop(0.012 + Math.random() * 0.018, 0.055 + Math.random() * 0.08, Math.random() > 0.58);
+      if (Math.random() > 0.78) {
+        window.setTimeout(() => makeNoisePop(0.009, 0.045, true), 70 + Math.random() * 90);
+      }
+    }, 360 + Math.random() * 220));
+
+    return {
+      stop: () => {
+        timers.forEach((timer) => window.clearInterval(timer));
+        const now = audioContext.currentTime;
+        try {
+          masterGain.gain.cancelScheduledValues(now);
+          masterGain.gain.setTargetAtTime(0.0001, now, 0.16);
+        } catch (error) {
+          console.warn("[CabinFire] fade", error);
+        }
+        window.setTimeout(() => {
+          nodes.forEach((node) => {
+            try { node.stop?.(); } catch {}
+            try { node.disconnect?.(); } catch {}
+          });
+          try { masterGain.disconnect(); } catch {}
+        }, 420);
+      }
+    };
+  });
+}
+
 const fallbackBlogMaterials = {
   roomMap: {
     studio: { painting: "cabin-painting-night.jpg", prop: "cabin-lamp-cutout.png", plant: "cabin-flowers-cutout.png", accent: "#9b6a3f" },
@@ -3816,6 +3918,12 @@ function setupCabinExperience() {
       return { stop: () => sources.forEach((source) => { try { source.stop(); } catch {} }) };
     });
   };
+  const ensureCabinFireAmbience = () => {
+    if (document.hidden) return;
+    if (!CabinAudioManager.getActiveSourceNames().includes("cabin-fire-ambience")) {
+      playCabinFireAmbience();
+    }
+  };
 
   const applyRoomLayout = (room) => {
     const layout = room.layout || {};
@@ -4075,6 +4183,7 @@ function setupCabinExperience() {
       CabinAudioManager.stopRoomSounds();
       CabinAudioManager.stop("nut-shell-shaker");
       playFootsteps();
+      ensureCabinFireAmbience();
       experience.classList.add("is-walking");
       window.setTimeout(() => experience.classList.remove("is-walking"), 650);
       experience.dataset.cabinRoom = button.dataset.room;
@@ -4116,6 +4225,7 @@ function setupCabinExperience() {
       window.setTimeout(finishRoomTransition, 1500); // 兜底超时
     });
   });
+  experience.addEventListener("pointerdown", ensureCabinFireAmbience, { passive: true });
   lightButton.addEventListener("click", () => setLight(!lightOn));
   treasureClue.addEventListener("click", () => {
     treasureMessage.textContent = todayMessage;
