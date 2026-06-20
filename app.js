@@ -3894,6 +3894,20 @@ function setupCabinExperience() {
   waterVase.setAttribute("aria-hidden", "true");
   waterVase.hidden = true;
   scene.append(waterVase);
+  const decorLayer = document.createElement("div");
+  decorLayer.className = "cabin-decor-layer";
+  decorLayer.setAttribute("aria-hidden", "true");
+  decorLayer.innerHTML = `
+    <span class="cabin-decor cabin-decor--window"></span>
+    <span class="cabin-decor cabin-decor--shelf"></span>
+    <span class="cabin-decor cabin-decor--rug"></span>
+    <span class="cabin-decor cabin-decor--seat"></span>
+    <span class="cabin-decor cabin-decor--easel"></span>
+    <span class="cabin-decor cabin-decor--low-table"></span>
+    <span class="cabin-decor cabin-decor--small-props"></span>
+    <span class="cabin-decor cabin-decor--light-pool"></span>
+  `;
+  scene.append(decorLayer);
   const flowerExtraLeft = document.createElement("img");
   flowerExtraLeft.className = "cabin-flower-extra cabin-flower-extra--left";
   flowerExtraLeft.alt = "花房里的睡莲花苞";
