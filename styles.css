@@ -7405,3 +7405,55 @@ select {
     opacity: 0.62;
   }
 }
+
+/* Studio wall blend: match upper wall to the walnut bar artwork area. */
+.cabin-experience[data-cabin-theme="studio"] .cabin-room__scene {
+  background:
+    radial-gradient(circle at 44% 29%, rgba(165, 101, 55, 0.18), transparent 34%),
+    radial-gradient(ellipse at 50% 58%, rgba(111, 67, 39, 0.16), transparent 50%),
+    linear-gradient(180deg, #6f4328 0%, #7f5130 25%, #6a3f27 42%, rgba(63, 35, 21, 0.36) 44% 47%, rgba(24, 13, 9, 0.08) 48%),
+    repeating-linear-gradient(90deg, rgba(255, 213, 156, 0.04) 0 1px, transparent 1px 78px),
+    linear-gradient(90deg, #2a160e, #6f4328 43%, #29160e);
+}
+
+.cabin-experience.is-lit[data-cabin-theme="studio"] .cabin-room__scene {
+  background:
+    radial-gradient(circle at 44% 29%, rgba(226, 158, 91, 0.24), transparent 35%),
+    radial-gradient(ellipse at 50% 58%, rgba(176, 111, 61, 0.18), transparent 50%),
+    linear-gradient(180deg, #8d6040 0%, #9c6d48 25%, #805437 42%, rgba(93, 55, 33, 0.34) 44% 47%, rgba(33, 18, 11, 0.06) 48%),
+    repeating-linear-gradient(90deg, rgba(255, 225, 177, 0.055) 0 1px, transparent 1px 78px),
+    linear-gradient(90deg, #3a2115, #8a5d3e 43%, #342016);
+}
+
+.cabin-experience[data-cabin-theme="studio"] .cabin-wall-lines {
+  background:
+    radial-gradient(circle at 42% 31%, rgba(255, 190, 112, 0.1), transparent 30%),
+    linear-gradient(180deg, rgba(255, 217, 160, 0.055), transparent 54%, rgba(0, 0, 0, 0.22)),
+    repeating-linear-gradient(90deg, rgba(255, 218, 160, 0.04) 0 1px, transparent 1px 78px);
+}
+
+.cabin-experience[data-cabin-theme="studio"] .cabin-room__accent {
+  -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,0.92) 0 76%, rgba(0,0,0,0.86) 88%, rgba(0,0,0,0.68));
+  mask-image: linear-gradient(180deg, rgba(0,0,0,0.92) 0 76%, rgba(0,0,0,0.86) 88%, rgba(0,0,0,0.68));
+  filter:
+    brightness(0.92)
+    saturate(0.86)
+    sepia(0.08)
+    drop-shadow(0 30px 34px rgba(0, 0, 0, 0.52))
+    drop-shadow(0 0 24px rgba(155, 91, 48, 0.12));
+}
+
+.cabin-experience.is-lit[data-cabin-theme="studio"] .cabin-room__accent {
+  filter:
+    brightness(1.02)
+    saturate(0.92)
+    sepia(0.06)
+    drop-shadow(0 30px 34px rgba(0, 0, 0, 0.46))
+    drop-shadow(0 0 28px rgba(216, 143, 76, 0.18));
+}
+
+.cabin-experience[data-cabin-theme="studio"] .cabin-room__scene::after {
+  background:
+    linear-gradient(180deg, rgba(255, 210, 150, 0.22), rgba(73, 40, 24, 0.94)),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0 1px, transparent 1px 54px);
+}
