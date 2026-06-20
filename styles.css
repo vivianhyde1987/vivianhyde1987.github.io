@@ -6788,3 +6788,144 @@ select {
 .pet-room__litter {
   filter: drop-shadow(0 22px 22px rgba(0, 0, 0, 0.38));
 }
+
+/* Cabin depth pass 2: ground the special rooms and soften owner controls. */
+.cabin-asset-control {
+  transform: translateY(-4px) scale(0.92);
+}
+
+.cabin-asset-control__actions {
+  padding-left: 2px;
+}
+
+.cabin-asset-control__button[data-cabin-control="smaller"],
+.cabin-asset-control__button[data-cabin-control="larger"] {
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255, 236, 205, 0.94);
+}
+
+.cabin-music-studio,
+.cabin-pet-room {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 72% 24%, rgba(191, 128, 64, 0.12), transparent 30%),
+    linear-gradient(180deg, rgba(255, 225, 182, 0.04) 0 52%, rgba(30, 15, 10, 0.34) 52.5% 55%, transparent 55.5%),
+    linear-gradient(90deg, #130b08, #28170f 50%, #120a07);
+}
+
+.cabin-music-studio::before,
+.cabin-pet-room::before {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  height: 42%;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(255,255,255,0.03), transparent 22% 78%, rgba(0,0,0,0.24)),
+    repeating-linear-gradient(105deg, rgba(155, 96, 50, 0.18) 0 18px, rgba(48, 27, 18, 0.36) 19px 24px),
+    linear-gradient(180deg, #3a2115, #120907);
+  clip-path: polygon(5% 0, 95% 0, 100% 100%, 0 100%);
+  transform: perspective(760px) rotateX(57deg);
+  transform-origin: center bottom;
+  box-shadow: inset 0 20px 28px rgba(255, 218, 150, 0.05), inset 0 -34px 38px rgba(0, 0, 0, 0.42);
+}
+
+.cabin-music-studio::after,
+.cabin-pet-room::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 40.5%;
+  left: 0;
+  z-index: 0;
+  height: 12px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 223, 171, 0.22), rgba(73, 40, 24, 0.9));
+  box-shadow: 0 8px 14px rgba(0, 0, 0, 0.34);
+}
+
+.music-studio__head,
+.music-instruments,
+.music-recorder,
+.cabin-recordings,
+.music-room-decor,
+.pet-room__wall-decor,
+.pet-room__window,
+.pet-room__cat-tree,
+.pet-room__bed,
+.pet-room__litter,
+.pet-room__cardboard,
+.pet-room__bowls,
+.pet-room__wand,
+.pet-room__rug,
+.pet-room__title {
+  position: relative;
+  z-index: 1;
+}
+
+.music-room-decor {
+  min-height: 170px;
+  background:
+    radial-gradient(ellipse at 50% 92%, rgba(0, 0, 0, 0.42), transparent 48%),
+    linear-gradient(180deg, rgba(255, 219, 165, 0.035), transparent);
+}
+
+.grand-piano-decor {
+  transform: perspective(720px) rotateX(5deg) rotateY(-9deg);
+  box-shadow:
+    inset 0 10px 0 rgba(255, 228, 174, 0.08),
+    0 30px 38px rgba(0, 0, 0, 0.48);
+}
+
+.grand-piano-decor::after {
+  box-shadow:
+    0 14px 18px rgba(0, 0, 0, 0.28),
+    0 34px 0 -8px rgba(52, 29, 18, 0.72);
+}
+
+.music-room-guitar-art {
+  filter: brightness(0.86) saturate(0.82) sepia(0.06) drop-shadow(0 22px 18px rgba(0, 0, 0, 0.42));
+}
+
+.pet-room__cat-tree {
+  transform: perspective(620px) rotateY(-5deg);
+}
+
+.pet-room__bed {
+  transform: perspective(520px) rotateX(8deg);
+}
+
+.pet-room__litter,
+.pet-room__cardboard {
+  transform: perspective(520px) rotateX(7deg) rotateY(4deg);
+}
+
+.pet-room__rug {
+  opacity: 0.86;
+  filter: blur(0.1px) drop-shadow(0 12px 12px rgba(0, 0, 0, 0.24));
+}
+
+.pet-room__wall-decor {
+  filter: drop-shadow(0 16px 18px rgba(0, 0, 0, 0.28));
+}
+
+@media (max-width: 720px) {
+  .cabin-music-studio::before,
+  .cabin-pet-room::before {
+    height: 36%;
+  }
+
+  .cabin-music-studio::after,
+  .cabin-pet-room::after {
+    bottom: 35%;
+  }
+
+  .music-room-decor {
+    min-height: 132px;
+  }
+}
