@@ -3887,7 +3887,9 @@ function setupCabinExperience() {
     ["prop", detailImage],
     ["plant", plantImage],
     ["accent", accentImage],
-    ["pendant", pendantImage]
+    ["pendant", pendantImage],
+    ["flowerExtraLeft", flowerExtraLeft],
+    ["flowerExtraRight", flowerExtraRight]
   ];
   const cabinAssetControls = new Map();
   let cabinRestoreButton = null;
