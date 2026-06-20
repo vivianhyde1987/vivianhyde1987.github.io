@@ -41,7 +41,9 @@ window.ROSE_BLOG_MATERIALS = {
       "assets/blog-materials/vector/props/fan-cat-lotus-frame.png",
       "assets/blog-materials/vector/props/fan-crane-pine.png",
       "assets/blog-materials/vector/props/walnut-work-cabinet-tidy.png",
-      "assets/blog-materials/vector/props/candle-white-sage-pair.png"
+      "assets/blog-materials/vector/props/candle-white-sage-pair.png",
+      "assets/blog-materials/vector/props/flower-vase-walnut-shelf-clematis.png",
+      "assets/blog-materials/vector/props/fern-relax-walnut-shelf.png"
     ]
   },
   roomMap: {
@@ -58,6 +60,7 @@ window.ROSE_BLOG_MATERIALS = {
       painting: "assets/blog-materials/vector/paintings/painting-water-lilies-walnut-frame.png",
       prop: "assets/blog-materials/vector/props/clock-green-wall.png",
       plant: "assets/blog-materials/vector/plants/plant-lotus-leaves-spread.png",
+      accentImage: "assets/blog-materials/vector/props/fern-relax-walnut-shelf.png",
       accent: "#6f8f86"
     },
     flowers: {
@@ -65,6 +68,7 @@ window.ROSE_BLOG_MATERIALS = {
       painting: "assets/blog-materials/vector/paintings/painting-flower-vase-books-walnut-frame.png",
       plantMain: "assets/blog-materials/vector/plants/plant-bird-nest-fern-wood-pot.png",
       plantDetail: "assets/blog-materials/vector/plants/plant-white-chrysanthemum-glass-vase.png",
+      accentImage: "assets/blog-materials/vector/props/flower-vase-walnut-shelf-clematis.png",
       accent: "#8b9a68"
     },
     hearth: {

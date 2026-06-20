@@ -67,7 +67,9 @@
       "fan-crane-pine.png",
       "fan-cat-lotus-frame.png",
       "walnut-work-cabinet-tidy.png",
-      "candle-white-sage-pair.png"
+      "candle-white-sage-pair.png",
+      "flower-vase-walnut-shelf-clematis.png",
+      "fern-relax-walnut-shelf.png"
     ],
     "scenes": [
       "scene-autumn-vase-gallery-corner.png"
@@ -86,12 +88,14 @@
     "water": {
       "painting": "assets/blog-materials/vector/paintings/painting-water-lilies-walnut-frame.png",
       "prop": "assets/blog-materials/vector/props/clock-green-wall.png",
-      "plant": "assets/blog-materials/vector/plants/plant-lotus-leaves-spread.png"
+      "plant": "assets/blog-materials/vector/plants/plant-lotus-leaves-spread.png",
+      "accentImage": "assets/blog-materials/vector/props/fern-relax-walnut-shelf.png"
     },
     "flowers": {
       "painting": "assets/blog-materials/vector/paintings/painting-flower-vase-books-walnut-frame.png",
       "plantMain": "assets/blog-materials/vector/plants/plant-bird-nest-fern-wood-pot.png",
-      "plantDetail": "assets/blog-materials/vector/plants/plant-white-chrysanthemum-glass-vase.png"
+      "plantDetail": "assets/blog-materials/vector/plants/plant-white-chrysanthemum-glass-vase.png",
+      "accentImage": "assets/blog-materials/vector/props/flower-vase-walnut-shelf-clematis.png"
     },
     "hearth": {
       "scene": "assets/blog-materials/vector/scenes/scene-autumn-vase-gallery-corner.png",
@@ -133,5 +137,8 @@
     "assets/blog-materials/vector/paintings/painting-ink-mountains-wide-walnut-frame.png",
     "assets/blog-materials/vector/props/fan-crane-pine.png",
     "assets/blog-materials/vector/props/fan-birds-botanical.png"
-  ]
+  ],
+  "stats": {
+    "props": 21
+  }
 }

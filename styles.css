@@ -7063,3 +7063,25 @@ select {
     0 18px 20px rgba(0, 0, 0, 0.24),
     0 0 22px rgba(164, 221, 201, 0.13);
 }
+
+/* Newly added shelf arrangements: make them sit into the cabin lighting. */
+.cabin-experience[data-cabin-theme="water"] .cabin-room__accent,
+.cabin-experience[data-cabin-theme="flowers"] .cabin-room__accent {
+  z-index: 4;
+  max-height: 66%;
+  filter:
+    brightness(0.82)
+    saturate(0.82)
+    sepia(0.08)
+    drop-shadow(0 24px 24px rgba(0, 0, 0, 0.48));
+}
+
+.cabin-experience.is-lit[data-cabin-theme="water"] .cabin-room__accent,
+.cabin-experience.is-lit[data-cabin-theme="flowers"] .cabin-room__accent {
+  filter:
+    brightness(0.96)
+    saturate(0.9)
+    sepia(0.06)
+    drop-shadow(0 24px 26px rgba(0, 0, 0, 0.42))
+    drop-shadow(0 0 18px rgba(255, 181, 89, 0.12));
+}
