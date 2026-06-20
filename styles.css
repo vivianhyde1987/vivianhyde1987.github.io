@@ -6757,6 +6757,12 @@ select {
   bottom: 18%;
 }
 
+/* Flower room: remove the fixed CSS furniture that looked like a movable object. */
+.cabin-experience[data-cabin-theme="flowers"] .cabin-table,
+.cabin-experience[data-cabin-theme="flowers"] .cabin-furniture::after {
+  display: none;
+}
+
 .cabin-experience[data-cabin-theme="hearth"] .cabin-chair {
   bottom: 12%;
   transform: perspective(620px) rotateY(10deg) rotateZ(-1deg);
