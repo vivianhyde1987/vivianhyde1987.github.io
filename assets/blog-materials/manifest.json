@@ -41,7 +41,11 @@
       "plant-aloe-white-pot.png",
       "plant-white-chrysanthemum-glass-vase.png",
       "plant-lotus-leaves-spread.png",
-      "plant-lotus-stem.png"
+      "plant-lotus-stem.png",
+      "plant-waterlily-buds-glass-vase.png",
+      "plant-white-roses-glass-vase.png",
+      "plant-eucalyptus-glass-vase.png",
+      "plant-clematis-purple-glass-vase.png"
     ],
     "lighting": [
       "lamp-fabric-warm-table.png",
@@ -93,9 +97,9 @@
     },
     "flowers": {
       "painting": "assets/blog-materials/vector/paintings/painting-flower-vase-books-walnut-frame.png",
-      "plantMain": "assets/blog-materials/vector/plants/plant-bird-nest-fern-wood-pot.png",
-      "plantDetail": "assets/blog-materials/vector/plants/plant-white-chrysanthemum-glass-vase.png",
-      "accentImage": "assets/blog-materials/vector/props/flower-vase-walnut-shelf-clematis.png"
+      "plantMain": "assets/blog-materials/vector/plants/plant-eucalyptus-glass-vase.png",
+      "plantDetail": "assets/blog-materials/vector/plants/plant-white-roses-glass-vase.png",
+      "accentImage": "assets/blog-materials/vector/plants/plant-clematis-purple-glass-vase.png"
     },
     "hearth": {
       "scene": "assets/blog-materials/vector/scenes/scene-autumn-vase-gallery-corner.png",
@@ -139,6 +143,7 @@
     "assets/blog-materials/vector/props/fan-birds-botanical.png"
   ],
   "stats": {
-    "props": 21
+    "props": 21,
+    "plants": 10
   }
 }

@@ -7248,3 +7248,43 @@ select {
     mask-image: radial-gradient(ellipse at center, #000 76%, rgba(0,0,0,0.88) 100%);
   }
 }
+
+/* Flower room plant integration: layered greenhouse mood, softened cutout edges. */
+.cabin-experience[data-cabin-theme="flowers"] .cabin-room__scene {
+  background:
+    radial-gradient(circle at 70% 24%, rgba(154, 129, 74, 0.22), transparent 34%),
+    radial-gradient(ellipse at 54% 64%, rgba(143, 118, 67, 0.12), transparent 48%),
+    linear-gradient(180deg, rgba(236, 211, 157, 0.07) 0 43%, rgba(54, 43, 26, 0.34) 44% 47%, rgba(24, 15, 10, 0.04) 48%),
+    repeating-linear-gradient(90deg, rgba(230, 211, 166, 0.026) 0 1px, transparent 1px 88px),
+    linear-gradient(90deg, #151009, #2b2112 46%, #120d08);
+}
+
+.cabin-experience[data-cabin-theme="flowers"] .cabin-room__plant,
+.cabin-experience[data-cabin-theme="flowers"] .cabin-room__prop,
+.cabin-experience[data-cabin-theme="flowers"] .cabin-room__accent {
+  -webkit-mask-image: radial-gradient(ellipse at 50% 54%, #000 70%, rgba(0,0,0,0.9) 86%, rgba(0,0,0,0.58));
+  mask-image: radial-gradient(ellipse at 50% 54%, #000 70%, rgba(0,0,0,0.9) 86%, rgba(0,0,0,0.58));
+  filter:
+    brightness(0.84)
+    saturate(0.84)
+    sepia(0.08)
+    drop-shadow(0 22px 20px rgba(0, 0, 0, 0.44))
+    drop-shadow(0 0 20px rgba(178, 143, 78, 0.08));
+}
+
+.cabin-experience.is-lit[data-cabin-theme="flowers"] .cabin-room__plant,
+.cabin-experience.is-lit[data-cabin-theme="flowers"] .cabin-room__prop,
+.cabin-experience.is-lit[data-cabin-theme="flowers"] .cabin-room__accent {
+  filter:
+    brightness(0.98)
+    saturate(0.92)
+    sepia(0.06)
+    drop-shadow(0 24px 24px rgba(0, 0, 0, 0.38))
+    drop-shadow(0 0 24px rgba(221, 166, 84, 0.16));
+}
+
+.cabin-experience[data-cabin-theme="flowers"] .cabin-furniture::before {
+  background:
+    radial-gradient(ellipse, rgba(47, 61, 34, 0.26), rgba(41, 26, 18, 0.18) 58%, transparent 74%),
+    radial-gradient(ellipse at 48% 38%, rgba(211, 161, 82, 0.08), transparent 50%);
+}

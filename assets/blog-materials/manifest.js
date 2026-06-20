@@ -25,7 +25,11 @@ window.ROSE_BLOG_MATERIALS = {
       "assets/blog-materials/vector/plants/plant-lotus-leaves-spread.png",
       "assets/blog-materials/vector/plants/plant-bird-nest-fern-wood-pot.png",
       "assets/blog-materials/vector/plants/plant-white-chrysanthemum-glass-vase.png",
-      "assets/blog-materials/vector/plants/plant-aloe-white-pot.png"
+      "assets/blog-materials/vector/plants/plant-aloe-white-pot.png",
+      "assets/blog-materials/vector/plants/plant-waterlily-buds-glass-vase.png",
+      "assets/blog-materials/vector/plants/plant-white-roses-glass-vase.png",
+      "assets/blog-materials/vector/plants/plant-eucalyptus-glass-vase.png",
+      "assets/blog-materials/vector/plants/plant-clematis-purple-glass-vase.png"
     ],
     lighting: [
       "assets/blog-materials/vector/lighting/lamp-black-mushroom.png",
@@ -66,9 +70,9 @@ window.ROSE_BLOG_MATERIALS = {
     flowers: {
       title: "??",
       painting: "assets/blog-materials/vector/paintings/painting-flower-vase-books-walnut-frame.png",
-      plantMain: "assets/blog-materials/vector/plants/plant-bird-nest-fern-wood-pot.png",
-      plantDetail: "assets/blog-materials/vector/plants/plant-white-chrysanthemum-glass-vase.png",
-      accentImage: "assets/blog-materials/vector/props/flower-vase-walnut-shelf-clematis.png",
+      plantMain: "assets/blog-materials/vector/plants/plant-eucalyptus-glass-vase.png",
+      plantDetail: "assets/blog-materials/vector/plants/plant-white-roses-glass-vase.png",
+      accentImage: "assets/blog-materials/vector/plants/plant-clematis-purple-glass-vase.png",
       accent: "#8b9a68"
     },
     hearth: {
