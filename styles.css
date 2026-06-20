@@ -7692,7 +7692,7 @@ select {
 
   .cabin-map--simple {
     position: static;
-    grid-template-columns: repeat(5, minmax(54px, 1fr));
+    grid-template-columns: repeat(6, minmax(54px, 1fr));
     overflow-x: auto;
     padding-bottom: 2px;
   }
