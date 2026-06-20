@@ -7395,6 +7395,78 @@ select {
   display: none;
 }
 
+/* Studio visual lock: wall color, grain and lighting are pinned to the provided reference. */
+.cabin-experience[data-cabin-theme="studio"].is-studio-locked .cabin-room__scene {
+  background:
+    linear-gradient(90deg, rgba(34, 18, 8, 0.34), transparent 18% 82%, rgba(43, 22, 10, 0.2)),
+    url("assets/blog-materials/reference/studio-wall-reference-texture.jpg") center / cover no-repeat;
+  box-shadow:
+    inset 38px 0 74px rgba(51, 26, 10, 0.38),
+    inset -26px 0 58px rgba(75, 38, 16, 0.18),
+    inset 0 -86px 96px rgba(72, 38, 17, 0.28),
+    0 26px 54px rgba(0, 0, 0, 0.2);
+}
+
+.cabin-experience[data-cabin-theme="studio"].is-studio-locked .cabin-wall-lines {
+  background:
+    url("assets/blog-materials/reference/studio-wall-shadow-reference.jpg") left center / 46% 72% no-repeat,
+    radial-gradient(circle at 66% 39%, rgba(236, 151, 70, 0.24), transparent 24%),
+    linear-gradient(90deg, rgba(34, 18, 8, 0.24), transparent 42% 86%, rgba(91, 49, 20, 0.08));
+  opacity: 1;
+}
+
+.cabin-experience[data-cabin-theme="studio"].is-studio-locked .cabin-wall-lines::after {
+  background:
+    radial-gradient(circle at 67% 46%, rgba(255, 170, 78, 0.16), transparent 22%),
+    linear-gradient(180deg, transparent 0 68%, rgba(83, 43, 18, 0.18));
+  mix-blend-mode: multiply;
+  opacity: 0.72;
+}
+
+.cabin-experience[data-cabin-theme="studio"].is-studio-locked .cabin-room__scene::before {
+  background:
+    linear-gradient(90deg, rgba(97, 50, 20, 0.26), rgba(143, 79, 34, 0.18) 46%, rgba(80, 39, 15, 0.22)),
+    url("assets/blog-materials/reference/studio-wall-reference-texture.jpg") center bottom / cover no-repeat;
+  box-shadow:
+    inset 0 16px 30px rgba(122, 66, 28, 0.18),
+    0 -20px 42px rgba(79, 39, 15, 0.22);
+}
+
+.cabin-experience[data-cabin-theme="studio"].is-studio-locked .cabin-room__scene::after {
+  background: linear-gradient(180deg, rgba(88, 44, 18, 0.34), rgba(107, 58, 25, 0.48));
+  box-shadow: 0 8px 18px rgba(66, 33, 13, 0.22);
+}
+
+.cabin-experience[data-cabin-theme="studio"].is-studio-locked .cabin-furniture,
+.cabin-experience[data-cabin-theme="studio"].is-studio-locked .cabin-room__plant,
+.cabin-experience[data-cabin-theme="studio"].is-studio-locked .cabin-room__pendant,
+.cabin-experience[data-cabin-theme="studio"].is-studio-locked .cabin-flower-extra,
+.cabin-experience[data-cabin-theme="studio"].is-studio-locked .cabin-plant-room-item,
+.cabin-experience[data-cabin-theme="studio"].is-studio-locked .cabin-water-vase,
+.cabin-experience[data-cabin-theme="studio"].is-studio-locked .cabin-candle-flame {
+  display: none !important;
+}
+
+.cabin-experience[data-cabin-theme="studio"].is-studio-locked .cabin-room__painting,
+.cabin-experience[data-cabin-theme="studio"].is-studio-locked .cabin-room__prop,
+.cabin-experience[data-cabin-theme="studio"].is-studio-locked .cabin-room__accent {
+  -webkit-mask-image: none;
+  mask-image: none;
+  filter:
+    brightness(0.94)
+    saturate(0.92)
+    sepia(0.08)
+    drop-shadow(0 24px 24px rgba(64, 31, 12, 0.38))
+    drop-shadow(0 0 18px rgba(236, 151, 70, 0.08));
+}
+
+.cabin-experience.is-lit[data-cabin-theme="studio"].is-studio-locked .cabin-room__scene,
+.cabin-experience.is-lit[data-cabin-theme="studio"].is-studio-locked .cabin-wall-lines,
+.cabin-experience.is-lit[data-cabin-theme="studio"].is-studio-locked .cabin-room__scene::before,
+.cabin-experience.is-lit[data-cabin-theme="studio"].is-studio-locked .cabin-room__scene::after {
+  /* Keep the reference hue locked when the light is toggled. */
+}
+
 .cabin-plant-room-item {
   position: absolute;
   z-index: 3;

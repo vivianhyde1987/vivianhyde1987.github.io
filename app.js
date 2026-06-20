@@ -3935,7 +3935,7 @@ function setupCabinExperience() {
   const cabinAssetControls = new Map();
   let cabinRestoreButton = null;
   const rooms = {
-    studio: { number: "ROOM 01", title: "夜色画室", note: "灯亮以后，街巷里的星星才慢慢出现。", image: materialMap.studio.painting, alt: "夜色街巷装框画", aspect: "portrait", detail: materialMap.studio.prop, detailAlt: "桌上的暖光台灯", prop: "lamp", pendant: false, assets: materialMap.studio, layout: { theme: "studio", paintingSize: "25%", paintingHeight: "49%", paintingX: "7%", paintingY: "8%", propSize: "13%", propX: "83%", propY: "26%", plantSize: "0%", plantX: "0%", plantY: "0%", accentSize: "58%", accentX: "31%", accentY: "0%", pendantSize: "28%", moodColor: "#9b6a3f", floorTone: "#2d190f" } },
+    studio: { number: "ROOM 01", title: "夜色画室", note: "灯亮以后，街巷里的星星才慢慢出现。", image: materialMap.studio.painting, alt: "夜色街巷装框画", aspect: "portrait", detail: materialMap.studio.prop, detailAlt: "桌上的暖光台灯", prop: "lamp", pendant: false, locked: true, assets: materialMap.studio, layout: { theme: "studio", paintingSize: "25%", paintingHeight: "49%", paintingX: "7%", paintingY: "8%", propSize: "13%", propX: "83%", propY: "26%", plantSize: "0%", plantX: "0%", plantY: "0%", accentSize: "58%", accentX: "31%", accentY: "0%", pendantSize: "28%", moodColor: "#9b6a3f", floorTone: "#2d190f" } },
     water: { number: "ROOM 02", title: "水边房间", note: "胡桃木墙上，水面把光留在了睡莲之间。", image: materialMap.water.painting, alt: "睡莲水面装框画", aspect: "landscape", detail: materialMap.water.prop, detailAlt: "绿色墙钟", prop: "clock", pendant: true, assets: materialMap.water, layout: { theme: "water", paintingSize: "51%", paintingHeight: "52%", paintingX: "7%", paintingY: "10%", propSize: "12%", propX: "78%", propY: "52%", plantSize: "19%", plantX: "59%", plantY: "12%", accentSize: "31%", accentX: "37%", accentY: "1%", pendantSize: "18%", moodColor: "#6f8f86", floorTone: "#20221d" } },
     flowers: { number: "ROOM 03", title: "花与书房", note: "花、旧书和绿色墙面，在夜里有自己的呼吸。", image: materialMap.flowers.painting, alt: "花与书静物装框画", aspect: "landscape", detail: materialMap.flowers.plantDetail, detailAlt: "桌上的白玫瑰玻璃瓶", prop: "flowers", pendant: true, assets: materialMap.flowers, layout: { theme: "flowers", paintingSize: "43%", paintingHeight: "49%", paintingX: "6%", paintingY: "10%", propSize: "15%", propX: "77%", propY: "11%", plantSize: "18%", plantX: "58%", plantY: "8%", accentSize: "31%", accentX: "36%", accentY: "0%", pendantSize: "17%", moodColor: "#8b9a68", floorTone: "#272016" } },
     hearth: { number: "ROOM 04", title: "炉边角落", note: "灯和薄雾守着这个角落，像一间一直有人等候的小屋。", image: materialMap.hearth.scene, alt: "暖色灯光与加湿器角落", aspect: "landscape", detail: materialMap.hearth.lamp, detailAlt: "桌上的暖光灯", prop: "lamp", pendant: false, assets: materialMap.hearth, layout: { theme: "hearth", paintingSize: "56%", paintingHeight: "62%", paintingX: "5%", paintingY: "7%", propSize: "15%", propX: "76%", propY: "10%", plantSize: "0%", plantX: "0%", plantY: "0%", accentSize: "15%", accentX: "58%", accentY: "10%", pendantSize: "0%", moodColor: "#b06f3a", floorTone: "#32190d" } },
@@ -3996,6 +3996,7 @@ function setupCabinExperience() {
   const applyRoomLayout = (room) => {
     const layout = room.layout || {};
     experience.dataset.cabinTheme = layout.theme || "studio";
+    experience.classList.toggle("is-studio-locked", Boolean(room.locked));
     const variables = {
       "--painting-w": layout.paintingSize,
       "--painting-h": layout.paintingHeight,
@@ -4026,6 +4027,7 @@ function setupCabinExperience() {
     localStorage.setItem(cabinAssetPositionKey, JSON.stringify(positions));
   };
   const canEditCabinAssets = () => profile?.role === "owner";
+  const isCabinRoomLocked = (roomId) => Boolean(rooms[roomId]?.locked);
   const hasHiddenCabinAssets = (roomId) => Object.values(readCabinAssetPositions()[roomId] || {}).some((asset) => asset?.hidden);
   const clearHiddenCabinAssets = (roomId) => {
     const positions = readCabinAssetPositions();
@@ -4039,7 +4041,7 @@ function setupCabinExperience() {
     cabinAssetLayers.forEach(([layer, element]) => {
       const controls = cabinAssetControls.get(layer);
       if (!controls) return;
-      const visible = canEditCabinAssets() && !element.hidden && !experience.classList.contains("is-music-room") && !experience.classList.contains("is-pet-room");
+      const visible = canEditCabinAssets() && !isCabinRoomLocked(roomId) && !element.hidden && !experience.classList.contains("is-music-room") && !experience.classList.contains("is-pet-room");
       controls.hidden = !visible;
       if (!visible) return;
       const rect = element.getBoundingClientRect();
@@ -4070,7 +4072,7 @@ function setupCabinExperience() {
     }
     if (cabinRestoreButton) {
       const hasCustomLayout = Boolean(readCabinAssetPositions()[roomId]);
-      cabinRestoreButton.hidden = !(canEditCabinAssets() && hasCustomLayout && !experience.classList.contains("is-music-room") && !experience.classList.contains("is-pet-room"));
+      cabinRestoreButton.hidden = !(canEditCabinAssets() && !isCabinRoomLocked(roomId) && hasCustomLayout && !experience.classList.contains("is-music-room") && !experience.classList.contains("is-pet-room"));
     }
   };
   const resetCabinRoomLayout = (roomId) => {
@@ -4082,6 +4084,15 @@ function setupCabinExperience() {
     const position = readCabinAssetPositions()[roomId]?.[layer];
     element.dataset.cabinLayer = layer;
     element.dataset.cabinRoomLayer = `${roomId}:${layer}`;
+    if (isCabinRoomLocked(roomId)) {
+      element.classList.remove("is-cabin-flipped");
+      element.style.setProperty("--cabin-asset-scale", "1");
+      element.style.removeProperty("top");
+      element.style.removeProperty("left");
+      element.style.removeProperty("right");
+      element.style.removeProperty("bottom");
+      return;
+    }
     element.classList.toggle("is-cabin-flipped", Boolean(position?.flipped));
     element.style.setProperty("--cabin-asset-scale", Number.isFinite(position?.scale) ? String(position.scale) : "1");
     const isNewStudioCabinet = roomId === "studio" && layer === "accent" && (element.currentSrc || element.src || "").includes("walnut-work-cabinet-tidy");
@@ -4173,6 +4184,7 @@ function setupCabinExperience() {
       if (event.button !== 0) return;
       const roomId = experience.dataset.cabinRoom || "studio";
       if (!canEditCabinAssets()) return;
+      if (isCabinRoomLocked(roomId)) return;
       if (element.hidden || experience.classList.contains("is-music-room") || experience.classList.contains("is-pet-room")) return;
       event.preventDefault();
       element.setPointerCapture?.(event.pointerId);
