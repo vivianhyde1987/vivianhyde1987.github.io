@@ -3856,6 +3856,11 @@ function setupCabinExperience() {
   const treasureMessage = $("#cabinTreasureMessage");
   const cabinRoom = experience.querySelector(".cabin-room");
   const scene = experience.querySelector(".cabin-room__scene");
+  const candleFlame = document.createElement("span");
+  candleFlame.className = "cabin-candle-flame";
+  candleFlame.setAttribute("aria-hidden", "true");
+  candleFlame.hidden = true;
+  scene.append(candleFlame);
   const materialMap = getBlogMaterials().roomMap || fallbackBlogMaterials.roomMap;
   const cabinAssetPositionKey = "cabin-asset-positions-v2-bar";
   const cabinAssetLayers = [
@@ -3871,7 +3876,7 @@ function setupCabinExperience() {
     studio: { number: "ROOM 01", title: "夜色画室", note: "灯亮以后，街巷里的星星才慢慢出现。", image: materialMap.studio.painting, alt: "夜色街巷装框画", aspect: "portrait", detail: materialMap.studio.prop, detailAlt: "桌上的暖光台灯", prop: "lamp", pendant: false, assets: materialMap.studio, layout: { theme: "studio", paintingSize: "25%", paintingHeight: "49%", paintingX: "7%", paintingY: "8%", propSize: "13%", propX: "83%", propY: "26%", plantSize: "0%", plantX: "0%", plantY: "0%", accentSize: "58%", accentX: "31%", accentY: "0%", pendantSize: "28%", moodColor: "#9b6a3f", floorTone: "#2d190f" } },
     water: { number: "ROOM 02", title: "水边房间", note: "胡桃木墙上，水面把光留在了睡莲之间。", image: materialMap.water.painting, alt: "睡莲水面装框画", aspect: "landscape", detail: materialMap.water.prop, detailAlt: "绿色墙钟", prop: "clock", pendant: true, assets: materialMap.water, layout: { theme: "water", paintingSize: "51%", paintingHeight: "52%", paintingX: "7%", paintingY: "10%", propSize: "12%", propX: "78%", propY: "52%", plantSize: "19%", plantX: "59%", plantY: "12%", pendantSize: "18%", moodColor: "#6f8f86", floorTone: "#20221d" } },
     flowers: { number: "ROOM 03", title: "花与书房", note: "花、旧书和绿色墙面，在夜里有自己的呼吸。", image: materialMap.flowers.painting, alt: "花与书静物装框画", aspect: "landscape", detail: materialMap.flowers.plantDetail, detailAlt: "桌上的淡粉菊花瓶", prop: "flowers", pendant: true, assets: materialMap.flowers, layout: { theme: "flowers", paintingSize: "46%", paintingHeight: "51%", paintingX: "6%", paintingY: "9%", propSize: "16%", propX: "78%", propY: "10%", plantSize: "19%", plantX: "58%", plantY: "10%", pendantSize: "17%", moodColor: "#8b9a68", floorTone: "#272016" } },
-    hearth: { number: "ROOM 04", title: "炉边角落", note: "灯和薄雾守着这个角落，像一间一直有人等候的小屋。", image: materialMap.hearth.scene, alt: "暖色灯光与加湿器角落", aspect: "landscape", detail: materialMap.hearth.lamp, detailAlt: "桌上的暖光灯", prop: "lamp", pendant: false, assets: materialMap.hearth, layout: { theme: "hearth", paintingSize: "56%", paintingHeight: "62%", paintingX: "5%", paintingY: "7%", propSize: "15%", propX: "76%", propY: "10%", plantSize: "0%", plantX: "0%", plantY: "0%", accentSize: "24%", accentX: "55%", accentY: "8%", pendantSize: "0%", moodColor: "#b06f3a", floorTone: "#32190d" } },
+    hearth: { number: "ROOM 04", title: "炉边角落", note: "灯和薄雾守着这个角落，像一间一直有人等候的小屋。", image: materialMap.hearth.scene, alt: "暖色灯光与加湿器角落", aspect: "landscape", detail: materialMap.hearth.lamp, detailAlt: "桌上的暖光灯", prop: "lamp", pendant: false, assets: materialMap.hearth, layout: { theme: "hearth", paintingSize: "56%", paintingHeight: "62%", paintingX: "5%", paintingY: "7%", propSize: "15%", propX: "76%", propY: "10%", plantSize: "0%", plantX: "0%", plantY: "0%", accentSize: "15%", accentX: "58%", accentY: "10%", pendantSize: "0%", moodColor: "#b06f3a", floorTone: "#32190d" } },
     child: { number: "ROOM 05", title: "儿童画室", note: "胡桃木矮柜和柔软地毯，等着新的颜色住进来。", image: materialMap.child.painting, alt: "儿童房里的竹影装框画", aspect: "portrait", detail: materialMap.child.prop, detailAlt: "绿色墙钟", prop: "clock", pendant: true, assets: materialMap.child, layout: { theme: "child", paintingSize: "30%", paintingHeight: "66%", paintingX: "8%", paintingY: "7%", propSize: "9%", propX: "87%", propY: "17%", plantSize: "13%", plantX: "72%", plantY: "12%", accentSize: "29%", accentX: "42%", accentY: "10%", pendantSize: "16%", moodColor: "#b99764", floorTone: "#312116" } }
   };
   let lightOn = false;
@@ -3979,6 +3984,16 @@ function setupCabinExperience() {
       controls.style.top = `${Math.max(8, rect.top - sceneRect.top + 8)}px`;
       controls.dataset.cabinRoomLayer = `${roomId}:${layer}`;
     });
+    if (candleFlame) {
+      const showFlame = roomId === "hearth" && accentImage && !accentImage.hidden && !experience.classList.contains("is-music-room") && !experience.classList.contains("is-pet-room");
+      candleFlame.hidden = !showFlame;
+      if (showFlame) {
+        const rect = accentImage.getBoundingClientRect();
+        candleFlame.style.left = `${rect.left - sceneRect.left + rect.width * 0.48}px`;
+        candleFlame.style.top = `${rect.top - sceneRect.top + rect.height * 0.2}px`;
+        candleFlame.style.setProperty("--flame-size", `${Math.max(12, Math.min(26, rect.width * 0.11))}px`);
+      }
+    }
     if (cabinRestoreButton) {
       const hasCustomLayout = Boolean(readCabinAssetPositions()[roomId]);
       cabinRestoreButton.hidden = !(canEditCabinAssets() && hasCustomLayout && !experience.classList.contains("is-music-room") && !experience.classList.contains("is-pet-room"));
@@ -3994,6 +4009,7 @@ function setupCabinExperience() {
     element.dataset.cabinLayer = layer;
     element.dataset.cabinRoomLayer = `${roomId}:${layer}`;
     element.classList.toggle("is-cabin-flipped", Boolean(position?.flipped));
+    element.style.setProperty("--cabin-asset-scale", Number.isFinite(position?.scale) ? String(position.scale) : "1");
     const isNewStudioCabinet = roomId === "studio" && layer === "accent" && (element.currentSrc || element.src || "").includes("walnut-work-cabinet-tidy");
     if (position?.hidden && !isNewStudioCabinet) {
       element.hidden = true;
@@ -4021,6 +4037,8 @@ function setupCabinExperience() {
       controls.innerHTML = `
         <button type="button" class="cabin-asset-control__trigger" data-cabin-control="menu" title="调整" aria-label="调整">···</button>
         <span class="cabin-asset-control__actions">
+          <button type="button" class="cabin-asset-control__button" data-cabin-control="smaller" title="缩小" aria-label="缩小">−</button>
+          <button type="button" class="cabin-asset-control__button" data-cabin-control="larger" title="放大" aria-label="放大">＋</button>
           <button type="button" class="cabin-asset-control__button" data-cabin-control="flip" title="转变方向" aria-label="转变方向">↔</button>
           <button type="button" class="cabin-asset-control__button" data-cabin-control="hide" title="隐藏这个物件" aria-label="隐藏这个物件">×</button>
         </span>
@@ -4037,6 +4055,15 @@ function setupCabinExperience() {
         const current = readCabinAssetPositions()[roomId]?.[layer] || {};
         if (button.dataset.cabinControl === "flip") {
           writeCabinAssetPosition(roomId, layer, { flipped: !current.flipped });
+          applyCabinAssetPosition(roomId, layer, element);
+          positionCabinAssetControls();
+          return;
+        }
+        if (button.dataset.cabinControl === "smaller" || button.dataset.cabinControl === "larger") {
+          const currentScale = Number.isFinite(current.scale) ? current.scale : 1;
+          const step = button.dataset.cabinControl === "larger" ? 0.1 : -0.1;
+          const nextScale = Math.max(0.45, Math.min(1.85, Number((currentScale + step).toFixed(2))));
+          writeCabinAssetPosition(roomId, layer, { scale: nextScale });
           applyCabinAssetPosition(roomId, layer, element);
           positionCabinAssetControls();
           return;
