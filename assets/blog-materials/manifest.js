@@ -39,7 +39,8 @@ window.ROSE_BLOG_MATERIALS = {
       "assets/blog-materials/vector/props/rattle-nut-shell-handmade.png",
       "assets/blog-materials/vector/props/fan-cat-floral-frame.png",
       "assets/blog-materials/vector/props/fan-cat-lotus-frame.png",
-      "assets/blog-materials/vector/props/fan-crane-pine.png"
+      "assets/blog-materials/vector/props/fan-crane-pine.png",
+      "assets/blog-materials/vector/props/walnut-work-cabinet-tidy.png"
     ]
   },
   roomMap: {

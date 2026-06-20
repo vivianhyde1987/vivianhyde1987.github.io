@@ -7,7 +7,7 @@
     "cats": 5,
     "plants": 6,
     "lighting": 3,
-    "props": 17,
+    "props": 18,
     "scenes": 1,
     "toys": 1
   },
@@ -65,16 +65,22 @@
       "fan-scholar-ink.png",
       "fan-cat-floral-frame.png",
       "fan-crane-pine.png",
-      "fan-cat-lotus-frame.png"
+      "fan-cat-lotus-frame.png",
+      "walnut-work-cabinet-tidy.png"
     ],
-    "scenes": ["scene-autumn-vase-gallery-corner.png"],
-    "toys": ["toy-brown-rainbow-companion.png"]
+    "scenes": [
+      "scene-autumn-vase-gallery-corner.png"
+    ],
+    "toys": [
+      "toy-brown-rainbow-companion.png"
+    ]
   },
   "roomMap": {
     "studio": {
       "painting": "assets/blog-materials/vector/paintings/painting-night-street-walnut-frame.png",
       "prop": "assets/blog-materials/vector/lighting/lamp-black-mushroom.png",
-      "plant": "assets/blog-materials/vector/plants/plant-monstera-glass-vase.png"
+      "plant": "assets/blog-materials/vector/plants/plant-monstera-glass-vase.png",
+      "accentImage": "assets/blog-materials/vector/props/walnut-work-cabinet-tidy.png"
     },
     "water": {
       "painting": "assets/blog-materials/vector/paintings/painting-water-lilies-walnut-frame.png",
