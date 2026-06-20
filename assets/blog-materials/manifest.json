@@ -7,7 +7,7 @@
     "cats": 5,
     "plants": 6,
     "lighting": 3,
-    "props": 18,
+    "props": 19,
     "scenes": 1,
     "toys": 1
   },
@@ -66,7 +66,8 @@
       "fan-cat-floral-frame.png",
       "fan-crane-pine.png",
       "fan-cat-lotus-frame.png",
-      "walnut-work-cabinet-tidy.png"
+      "walnut-work-cabinet-tidy.png",
+      "candle-white-sage-pair.png"
     ],
     "scenes": [
       "scene-autumn-vase-gallery-corner.png"
@@ -94,7 +95,8 @@
     },
     "hearth": {
       "scene": "assets/blog-materials/vector/scenes/scene-autumn-vase-gallery-corner.png",
-      "lamp": "assets/blog-materials/vector/lighting/lamp-fabric-warm-table.png"
+      "lamp": "assets/blog-materials/vector/lighting/lamp-fabric-warm-table.png",
+      "accentImage": "assets/blog-materials/vector/props/candle-white-sage-pair.png"
     },
     "child": {
       "painting": "assets/blog-materials/vector/paintings/painting-bamboo-scroll-walnut-frame.png",

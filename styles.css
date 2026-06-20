@@ -4944,6 +4944,28 @@ body.has-bookmark-open .mimi-pet {
     repeating-linear-gradient(90deg, rgba(246, 185, 114, 0.11) 0 8px, transparent 9px 19px);
 }
 
+.cabin-experience[data-cabin-theme="hearth"] .cabin-room__accent {
+  z-index: 5;
+  max-height: 30%;
+  opacity: 0.9;
+  filter:
+    brightness(0.9)
+    saturate(0.9)
+    sepia(0.08)
+    drop-shadow(0 0 12px rgba(255, 183, 84, 0.34))
+    drop-shadow(0 14px 18px rgba(0, 0, 0, 0.44));
+}
+
+.cabin-experience.is-lit[data-cabin-theme="hearth"] .cabin-room__accent {
+  opacity: 1;
+  filter:
+    brightness(1.04)
+    saturate(1)
+    sepia(0.05)
+    drop-shadow(0 0 18px rgba(255, 188, 80, 0.56))
+    drop-shadow(0 14px 20px rgba(0, 0, 0, 0.4));
+}
+
 .cabin-experience[data-cabin-theme="child"] .cabin-chair {
   left: 8%;
   bottom: 8%;

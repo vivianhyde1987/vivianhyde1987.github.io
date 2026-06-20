@@ -40,7 +40,8 @@ window.ROSE_BLOG_MATERIALS = {
       "assets/blog-materials/vector/props/fan-cat-floral-frame.png",
       "assets/blog-materials/vector/props/fan-cat-lotus-frame.png",
       "assets/blog-materials/vector/props/fan-crane-pine.png",
-      "assets/blog-materials/vector/props/walnut-work-cabinet-tidy.png"
+      "assets/blog-materials/vector/props/walnut-work-cabinet-tidy.png",
+      "assets/blog-materials/vector/props/candle-white-sage-pair.png"
     ]
   },
   roomMap: {
@@ -71,6 +72,7 @@ window.ROSE_BLOG_MATERIALS = {
       scene: "assets/blog-materials/vector/scenes/scene-autumn-vase-gallery-corner.png",
       lamp: "assets/blog-materials/vector/lighting/lamp-fabric-warm-table.png",
       prop: "assets/blog-materials/vector/props/rattle-nut-shell-handmade.png",
+      accentImage: "assets/blog-materials/vector/props/candle-white-sage-pair.png",
       accent: "#b06f3a"
     },
     child: {
