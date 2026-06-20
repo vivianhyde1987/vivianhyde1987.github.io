@@ -3886,7 +3886,8 @@ function setupCabinExperience() {
     element.dataset.cabinLayer = layer;
     element.dataset.cabinRoomLayer = `${roomId}:${layer}`;
     element.classList.toggle("is-cabin-flipped", Boolean(position?.flipped));
-    if (position?.hidden) {
+    const isNewStudioCabinet = roomId === "studio" && layer === "accent" && (element.currentSrc || element.src || "").includes("walnut-work-cabinet-tidy");
+    if (position?.hidden && !isNewStudioCabinet) {
       element.hidden = true;
       return;
     }

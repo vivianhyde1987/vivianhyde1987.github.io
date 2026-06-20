@@ -49,6 +49,7 @@ window.ROSE_BLOG_MATERIALS = {
       painting: "assets/blog-materials/vector/paintings/painting-night-street-walnut-frame.png",
       prop: "assets/blog-materials/vector/lighting/lamp-black-mushroom.png",
       plant: "assets/blog-materials/vector/plants/plant-monstera-glass-vase.png",
+      accentImage: "assets/blog-materials/vector/props/walnut-work-cabinet-tidy.png",
       accent: "#9b6a3f"
     },
     water: {
