@@ -4428,6 +4428,85 @@ function setupCabinExperience() {
   applyCabinRoomAssets("studio", rooms.studio);
 }
 
+function setupCabinExperienceLightweight() {
+  const experience = document.querySelector(".cabin-experience");
+  const scene = experience?.querySelector(".cabin-room__scene");
+  const background = document.querySelector("#cabinRoomBackground");
+  if (!experience || !scene || !background) return;
+
+  const rooms = {
+    room1: { id: "room1", title: "画室", src: "assets/blog-materials/rooms/room1-studio.webp" },
+    room2: { id: "room2", title: "水边", src: "assets/blog-materials/rooms/room2-water.webp" },
+    room3: { id: "room3", title: "花房", src: "assets/blog-materials/rooms/room3-flowers.webp" },
+    room4: { id: "room4", title: "炉边", src: "assets/blog-materials/rooms/room4-hearth.webp" }
+  };
+  const roomIds = Object.keys(rooms);
+  const cache = {};
+  window.cabinRoomCache = cache;
+
+  const preloadRoom = (id) => {
+    const room = rooms[id];
+    if (!room || cache[id]) return cache[id];
+    const img = new Image();
+    img.loading = "lazy";
+    img.decoding = "async";
+    img.src = room.src;
+    cache[id] = img;
+    return img;
+  };
+
+  const setBackground = (room) => {
+    background.src = room.src;
+    background.alt = room.title;
+    experience.dataset.cabinRoom = room.id;
+    experience.dataset.cabinTheme = "amber";
+    document.dispatchEvent(new CustomEvent("cabin-room-change", { detail: { roomId: room.id } }));
+  };
+
+  const fadeOut = () => {
+    scene.classList.add("is-fading-out");
+    return new Promise((resolve) => window.setTimeout(resolve, 200));
+  };
+
+  const fadeIn = () => {
+    scene.classList.remove("is-fading-out");
+    scene.classList.add("is-fading-in");
+    window.setTimeout(() => scene.classList.remove("is-fading-in"), 300);
+  };
+
+  const switchRoom = async (id) => {
+    const room = rooms[id] || rooms.room1;
+    const currentIndex = roomIds.indexOf(room.id);
+    const nextId = roomIds[(currentIndex + 1) % roomIds.length];
+    preloadRoom(room.id);
+    preloadRoom(nextId);
+    await fadeOut();
+    setBackground(room);
+    fadeIn();
+    document.querySelectorAll(".cabin-map [data-room]").forEach((button) => {
+      button.classList.toggle("active", button.dataset.room === room.id);
+    });
+    const mimi = document.querySelector(".mimi-pet");
+    const mimiPanel = document.querySelector(".mimi-pet__panel");
+    if (mimi) {
+      scene.append(mimi);
+      mimi.classList.add("is-in-pet-room");
+      mimi.dispatchEvent(new CustomEvent("mimi-enter-room", { detail: { roomId: room.id, container: scene } }));
+      if (mimiPanel) mimiPanel.hidden = true;
+    }
+  };
+
+  window.switchRoom = switchRoom;
+  preloadRoom("room1");
+  preloadRoom("room2");
+  document.querySelectorAll(".cabin-map [data-room]").forEach((button) => {
+    button.addEventListener("click", () => switchRoom(button.dataset.room));
+  });
+  switchRoom("room1");
+}
+
+setupCabinExperience = setupCabinExperienceLightweight;
+
 function renderCabinRecordings() {
   const list = $("#cabinRecordingList");
   if (!list) return;
@@ -4937,7 +5016,6 @@ function initCabinOnce() {
   if (deferredModules.cabin) return;
   deferredModules.cabin = true;
   setupCabinExperience();
-  renderCabinGallery();
 }
 
 function initMimiOnce() {
@@ -4950,8 +5028,6 @@ function initMimiOnce() {
 function initCabinMusicOnce() {
   if (deferredModules.cabinMusic) return;
   deferredModules.cabinMusic = true;
-  initCabinOnce();
-  setupCabinMusicRoom();
 }
 
 function initAmbientOnce() {

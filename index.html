@@ -32,7 +32,7 @@
       "description": "个人空间作者，记录声音手记、水彩画作与猫咪日常。"
     }
     </script>
-    <link rel="stylesheet" href="styles.css?v=studio-visual-lock-1" />
+    <link rel="stylesheet" href="styles.css?v=cabin-lightweight-four-rooms-1" />
     <link rel="stylesheet" href="materials.css?v=cabin-mimi-assets-fix-1" />
   </head>
   <body>
@@ -349,104 +349,23 @@
             <div id="podcastList" class="podcast-list" aria-live="polite"></div>
           </section>
 
-          <section class="cabin-panel panel" aria-label="小木屋" id="cabinPanel">
+          <section class="cabin-panel panel" aria-label="&#23567;&#26408;&#23627;" id="cabinPanel">
             <div class="panel__head">
-              <h2>小木屋</h2>
-              <span>沿着脚印去开灯 <kbd class="tip-keys" aria-hidden="true">← → L</kbd></span>
+              <h2>&#23567;&#26408;&#23627;</h2>
             </div>
-            <div class="cabin-experience" data-cabin-room="studio">
-              <nav class="cabin-map" aria-label="小木屋地图">
-                <button class="active" type="button" data-room="studio"><span>画室</span><small>01</small></button>
-                <button type="button" data-room="water"><span>水边</span><small>02</small></button>
-                <button type="button" data-room="flowers"><span>花房</span><small>03</small></button>
-                <button type="button" data-room="hearth"><span>炉边</span><small>04</small></button>
-                <button type="button" data-room="child"><span>儿童房</span><small>05</small></button>
-                <button type="button" data-room="plants"><span>植物房</span><small>06</small></button>
-                <div class="cabin-footprints" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+            <div class="cabin-experience" data-cabin-room="room1">
+              <nav class="cabin-map cabin-map--simple" aria-label="&#23567;&#26408;&#23627;&#25151;&#38388;&#20999;&#25442;">
+                <button class="active" type="button" data-room="room1"><span>&#30011;&#23460;</span><small>01</small></button>
+                <button type="button" data-room="room2"><span>&#27700;&#36793;</span><small>02</small></button>
+                <button type="button" data-room="room3"><span>&#33457;&#25151;</span><small>03</small></button>
+                <button type="button" data-room="room4"><span>&#28809;&#36793;</span><small>04</small></button>
               </nav>
               <div class="cabin-room">
-                <div class="cabin-room__scene">
-                  <div class="cabin-wall-lines" aria-hidden="true"></div>
-                  <img id="cabinRoomImage" class="cabin-room__painting" data-aspect="portrait" src="assets/blog-materials/vector/paintings/painting-night-street-walnut-frame.png?v=vector-final-1" alt="夜色画室装框画" loading="lazy" decoding="async" />
-                  <img id="cabinRoomDetail" class="cabin-room__prop" data-prop="lamp" src="assets/blog-materials/vector/lighting/lamp-black-mushroom.png?v=vector-final-1" alt="画室里的暖光台灯" loading="lazy" decoding="async" />
-                  <img id="cabinRoomPlant" class="cabin-room__plant" alt="房间里的植物" loading="lazy" decoding="async" hidden />
-                  <img id="cabinRoomAccent" class="cabin-room__accent" alt="房间里的装饰" loading="lazy" decoding="async" hidden />
-                  <img id="cabinPendant" class="cabin-room__pendant" src="assets/blog-materials/vector/lighting/lamp-round-pendant.png?v=vector-final-1" alt="胡桃木暖光吊灯" loading="lazy" decoding="async" hidden />
-                  <div class="cabin-room__darkness"></div>
-                  <div class="cabin-room__lamp-glow"></div>
-                  <div class="cabin-furniture" aria-hidden="true"><span class="cabin-chair"></span><span class="cabin-table"></span></div>
-                  <button id="cabinTreasureClue" class="cabin-treasure-clue" type="button" hidden aria-label="发现今日线索">?</button>
-                </div>
-                <div class="cabin-room__controls">
-                  <div><small id="cabinRoomNumber">ROOM 01</small><h3 id="cabinRoomTitle">夜色画室</h3><p id="cabinRoomNote">灯亮以后，街巷里的星星才慢慢出现。</p></div>
-                  <button id="cabinLightToggle" class="cabin-light-toggle" type="button" aria-pressed="false"><span>灯</span><strong>开灯</strong></button>
+                <div class="cabin-room__scene cabin-room__scene--lightweight">
+                  <img id="cabinRoomBackground" class="cabin-room__background" src="assets/blog-materials/rooms/room1-studio.webp" alt="&#30011;&#23460;" loading="lazy" decoding="async" />
                 </div>
               </div>
             </div>
-            <section id="cabinMusicStudio" class="cabin-music-studio" hidden aria-label="可演奏乐器房">
-              <div class="music-studio__head"><div><small>ROOM 06</small><h3>夜色乐器房</h3></div><span>钢琴 · 颂钵 · 吉他</span></div>
-              <div class="music-room-decor" aria-hidden="true"><div class="grand-piano-decor"><span></span><i></i></div><img id="musicRoomGuitarArt" class="music-room-guitar-art" alt="吉他装饰" loading="lazy" decoding="async" hidden /><div class="mimi-piano-perch" id="mimiPianoPerch">眯眯坐在琴盖上听了一会儿。</div></div>
-              <div class="music-instruments">
-                <section class="instrument instrument--piano"><h4>钢琴</h4><div class="piano-keys" aria-label="钢琴键盘">
-                  <button type="button" data-note="261.63"><span>C</span></button><button class="black" type="button" data-note="277.18"><span>C♯</span></button><button type="button" data-note="293.66"><span>D</span></button><button class="black" type="button" data-note="311.13"><span>D♯</span></button><button type="button" data-note="329.63"><span>E</span></button><button type="button" data-note="349.23"><span>F</span></button><button class="black" type="button" data-note="369.99"><span>F♯</span></button><button type="button" data-note="392"><span>G</span></button><button class="black" type="button" data-note="415.3"><span>G♯</span></button><button type="button" data-note="440"><span>A</span></button><button class="black" type="button" data-note="466.16"><span>A♯</span></button><button type="button" data-note="493.88"><span>B</span></button><button type="button" data-note="523.25"><span>C5</span><small>高音 Do</small></button>
-                </div></section>
-                <section class="perfect-pitch-game" id="perfectPitchGame" aria-label="绝对音感挑战">
-                  <div class="perfect-pitch-game__head">
-                    <div><small>PIANO GAME</small><h4>绝对音感挑战</h4></div>
-                    <select id="pitchDifficulty" aria-label="选择难度">
-                      <option value="easy">简单 C-G</option>
-                      <option value="normal" selected>普通 C-B</option>
-                      <option value="hard">困难 全键</option>
-                    </select>
-                  </div>
-                  <div class="perfect-pitch-game__stats">
-                    <span id="pitchRound">0/10</span>
-                    <span id="pitchScore">得分 0</span>
-                    <span id="pitchStreak">连对 0</span>
-                  </div>
-                  <p id="pitchFeedback" class="perfect-pitch-game__feedback">点击开始，听一个音，再在钢琴键上回答。</p>
-                  <div class="perfect-pitch-game__actions">
-                    <button id="pitchStart" type="button">开始挑战</button>
-                    <button id="pitchReplay" type="button" disabled>再听一次</button>
-                  </div>
-                </section>
-                <section class="instrument instrument--bowls"><h4>颂钵</h4><div class="singing-bowls"><button type="button" data-bowl="174">低音钵</button><button type="button" data-bowl="285">中音钵</button><button type="button" data-bowl="396">高音钵</button></div></section>
-                <section class="instrument instrument--guitar"><h4>吉他</h4><div class="guitar-strings" aria-label="吉他琴弦"><button type="button" data-string="82.41">E</button><button type="button" data-string="110">A</button><button type="button" data-string="146.83">D</button><button type="button" data-string="196">G</button><button type="button" data-string="246.94">B</button><button type="button" data-string="329.63">e</button></div></section>
-              </div>
-              <div class="music-recorder">
-                <input id="cabinRecordingTitle" maxlength="60" placeholder="给这段即兴起一个名字" />
-                <button id="cabinRecordStart" type="button">● 开始录音</button><button id="cabinRecordStop" type="button" disabled>■ 完成</button><span id="cabinRecordTime">00:00</span>
-                <audio id="cabinRecordPreview" controls hidden></audio><button id="cabinRecordSave" type="button" disabled>保存作品</button>
-              </div>
-              <div class="cabin-recordings"><div class="cabin-recordings__head"><strong>留在房间里的作品</strong><span>访客即兴录音</span></div><div id="cabinRecordingList"></div></div>
-            </section>
-            <section id="cabinPetRoom" class="cabin-pet-room" hidden aria-label="眯眯的宠物房">
-              <div class="pet-room__wall-decor" aria-hidden="true"><span class="pet-room__shelf"></span><span class="pet-room__mini-frame pet-room__mini-frame--one"></span><span class="pet-room__mini-frame pet-room__mini-frame--two"></span><span class="pet-room__star-lights"></span></div>
-              <div class="pet-room__window"><span class="pet-room__moon"></span><i></i><i></i><i></i></div>
-              <div class="pet-room__cat-tree" aria-label="猫爬架"><span class="tree-post tree-post--one"></span><span class="tree-post tree-post--two"></span><span class="tree-platform tree-platform--one"></span><span class="tree-platform tree-platform--two"></span><span class="tree-cave"></span></div>
-              <div class="pet-room__bed" aria-label="猫窝"><span>猫窝</span></div>
-              <div class="pet-room__litter" aria-label="猫砂盆"><span>猫砂盆</span></div>
-              <div class="pet-room__cardboard" aria-label="瓦楞纸和猫抓板"><span>瓦楞纸</span><i></i></div>
-              <div class="pet-room__bowls" aria-label="猫粮盆和水盆"><span>粮</span><span>水</span></div>
-              <button class="pet-room__wand" type="button" aria-label="拿起逗猫棒"><i></i><span></span></button>
-              <div class="pet-room__rug"></div>
-              <div class="pet-room__title"><small>ROOM 07</small><h3>眯眯的房间</h3><p>窗台有月光，角落里留着她熟悉的窝。</p></div>
-            </section>
-            <section class="cabin-gallery" aria-label="家庭画廊">
-              <div class="cabin-gallery__head"><div><small>FAMILY GALLERY</small><h3>屋里的画</h3></div><span>按风格慢慢看</span></div>
-              <div id="cabinGalleryFilters" class="cabin-gallery__filters">
-                <button class="active" type="button" data-art-filter="oil">我的油画</button>
-                <button type="button" data-art-filter="ink">我的水墨</button>
-                <button type="button" data-art-filter="child">儿子的画</button>
-              </div>
-              <form id="cabinArtworkForm" class="cabin-artwork-form" hidden>
-                <select id="cabinArtworkCategory" aria-label="作品分类"><option value="oil">我的油画</option><option value="ink">我的水墨</option><option value="child">儿子的画</option></select>
-                <input id="cabinArtworkTitle" maxlength="60" placeholder="作品名字" required />
-                <input id="cabinArtworkImage" type="file" accept="image/*" required />
-                <button type="submit">加入画廊</button>
-              </form>
-              <div id="cabinGalleryGrid" class="cabin-gallery__grid"></div>
-            </section>
           </section>
 
           <section class="composer panel">
@@ -580,7 +499,7 @@
       <p id="cabinTreasureMessage"></p>
     </dialog>
 
-    <script src="assets/blog-materials/manifest.js?v=studio-visual-lock-1"></script>
-    <script src="app.js?v=studio-visual-lock-1"></script>
+    <script src="assets/blog-materials/manifest.js?v=cabin-lightweight-four-rooms-1"></script>
+    <script src="app.js?v=cabin-lightweight-four-rooms-1"></script>
   </body>
 </html>

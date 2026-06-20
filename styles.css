@@ -7528,6 +7528,100 @@ select {
   }
 }
 
+/* Lightweight four-room cabin: one background image, four buttons, Mimi only. */
+.cabin-experience {
+  --cabin-amber: #d18a43;
+}
+
+.cabin-map--simple {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.cabin-map--simple button {
+  min-height: 44px;
+}
+
+.cabin-room__scene--lightweight {
+  position: relative;
+  min-height: clamp(360px, 58vw, 720px);
+  overflow: hidden;
+  border-radius: 8px;
+  background: #1b1009;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 205, 143, 0.08),
+    0 24px 48px rgba(0, 0, 0, 0.28);
+}
+
+.cabin-room__background {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter:
+    sepia(0.08)
+    saturate(0.96)
+    brightness(0.98)
+    drop-shadow(0 0 0 rgba(0,0,0,0));
+  opacity: 1;
+  transition: opacity 300ms ease;
+}
+
+.cabin-room__scene--lightweight.is-fading-out .cabin-room__background {
+  opacity: 0;
+  transition-duration: 200ms;
+}
+
+.cabin-room__scene--lightweight.is-fading-in .cabin-room__background {
+  opacity: 1;
+  transition-duration: 300ms;
+}
+
+.cabin-room__scene--lightweight .cabin-wall-lines,
+.cabin-room__scene--lightweight .cabin-room__painting,
+.cabin-room__scene--lightweight .cabin-room__prop,
+.cabin-room__scene--lightweight .cabin-room__plant,
+.cabin-room__scene--lightweight .cabin-room__accent,
+.cabin-room__scene--lightweight .cabin-room__pendant,
+.cabin-room__scene--lightweight .cabin-room__darkness,
+.cabin-room__scene--lightweight .cabin-room__lamp-glow,
+.cabin-room__scene--lightweight .cabin-furniture,
+.cabin-room__scene--lightweight .cabin-candle-flame,
+.cabin-room__scene--lightweight .cabin-water-vase,
+.cabin-room__scene--lightweight .cabin-flower-extra,
+.cabin-room__scene--lightweight .cabin-plant-room-item,
+.cabin-room__scene--lightweight .cabin-asset-control,
+.cabin-room__scene--lightweight .cabin-asset-restore,
+.cabin-treasure-clue,
+.cabin-gallery,
+.cabin-music-studio,
+.cabin-pet-room {
+  display: none !important;
+}
+
+.cabin-room__scene--lightweight::before,
+.cabin-room__scene--lightweight::after {
+  display: none !important;
+}
+
+.cabin-room__scene--lightweight .mimi-pet {
+  z-index: 3;
+}
+
+@media (max-width: 720px) {
+  .cabin-map--simple {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cabin-room__scene--lightweight {
+    min-height: 390px;
+  }
+}
+
 /* More layered plant bottles in the flower room. */
 .cabin-flower-extra {
   position: absolute;
