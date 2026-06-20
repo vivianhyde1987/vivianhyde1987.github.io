@@ -3866,6 +3866,20 @@ function setupCabinExperience() {
   waterVase.setAttribute("aria-hidden", "true");
   waterVase.hidden = true;
   scene.append(waterVase);
+  const flowerExtraLeft = document.createElement("img");
+  flowerExtraLeft.className = "cabin-flower-extra cabin-flower-extra--left";
+  flowerExtraLeft.alt = "花房里的睡莲花苞";
+  flowerExtraLeft.loading = "lazy";
+  flowerExtraLeft.decoding = "async";
+  flowerExtraLeft.hidden = true;
+  scene.append(flowerExtraLeft);
+  const flowerExtraRight = document.createElement("img");
+  flowerExtraRight.className = "cabin-flower-extra cabin-flower-extra--right";
+  flowerExtraRight.alt = "花房里的桌面植物";
+  flowerExtraRight.loading = "lazy";
+  flowerExtraRight.decoding = "async";
+  flowerExtraRight.hidden = true;
+  scene.append(flowerExtraRight);
   const materialMap = getBlogMaterials().roomMap || fallbackBlogMaterials.roomMap;
   const cabinAssetPositionKey = "cabin-asset-positions-v2-bar";
   const cabinAssetLayers = [
@@ -4174,6 +4188,15 @@ function setupCabinExperience() {
     plantImage.hidden = !plantSource;
     accentImage.hidden = !accentSource;
     pendantImage.hidden = !room.pendant;
+    if (flowerExtraLeft && flowerExtraRight) {
+      const showFlowerExtras = roomId === "flowers";
+      flowerExtraLeft.hidden = !showFlowerExtras;
+      flowerExtraRight.hidden = !showFlowerExtras;
+      if (showFlowerExtras) {
+        setImageSafe(flowerExtraLeft, "assets/blog-materials/vector/plants/plant-waterlily-buds-glass-vase.png", "花房里的睡莲花苞");
+        setImageSafe(flowerExtraRight, "assets/blog-materials/vector/props/flower-vase-walnut-shelf-clematis.png", "花房里的桌面植物");
+      }
+    }
     if (detailSource) setImageSafe(detailImage, detailSource, `${assets.title || room.title} detail`, fallbackDetail);
     if (plantSource) setImageSafe(plantImage, plantSource, `${assets.title || room.title} plant`, fallbackAssets.plant || fallbackAssets.plantMain || "");
     if (accentSource) setImageSafe(accentImage, accentSource, `${assets.title || room.title} scene`, fallbackAssets.toy || "");

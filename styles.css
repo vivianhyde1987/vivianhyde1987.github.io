@@ -7343,3 +7343,65 @@ select {
     drop-shadow(0 24px 24px rgba(72, 43, 25, 0.34))
     drop-shadow(0 0 20px rgba(215, 185, 132, 0.22));
 }
+
+/* More layered plant bottles in the flower room. */
+.cabin-flower-extra {
+  position: absolute;
+  z-index: 3;
+  object-fit: contain;
+  pointer-events: none;
+  opacity: 0;
+  -webkit-mask-image: radial-gradient(ellipse at 50% 55%, #000 68%, rgba(0,0,0,0.88) 84%, rgba(0,0,0,0.56));
+  mask-image: radial-gradient(ellipse at 50% 55%, #000 68%, rgba(0,0,0,0.88) 84%, rgba(0,0,0,0.56));
+  filter:
+    brightness(0.82)
+    saturate(0.82)
+    sepia(0.08)
+    drop-shadow(0 22px 20px rgba(0, 0, 0, 0.42))
+    drop-shadow(0 0 18px rgba(194, 152, 82, 0.1));
+  transition: opacity 420ms ease, filter 420ms ease;
+}
+
+.cabin-experience[data-cabin-theme="flowers"] .cabin-flower-extra:not([hidden]) {
+  opacity: 0.78;
+}
+
+.cabin-flower-extra--left {
+  left: 18%;
+  bottom: 0%;
+  width: 18%;
+  max-height: 68%;
+  z-index: 2;
+}
+
+.cabin-flower-extra--right {
+  right: 3%;
+  bottom: 3%;
+  width: 25%;
+  max-height: 70%;
+  z-index: 2;
+  opacity: 0.72;
+}
+
+.cabin-experience.is-lit[data-cabin-theme="flowers"] .cabin-flower-extra:not([hidden]) {
+  opacity: 0.9;
+  filter:
+    brightness(0.98)
+    saturate(0.9)
+    sepia(0.06)
+    drop-shadow(0 24px 24px rgba(72, 43, 25, 0.34))
+    drop-shadow(0 0 22px rgba(215, 185, 132, 0.2));
+}
+
+@media (max-width: 720px) {
+  .cabin-flower-extra--left {
+    left: 10%;
+    width: 19%;
+  }
+
+  .cabin-flower-extra--right {
+    right: -5%;
+    width: 28%;
+    opacity: 0.62;
+  }
+}
