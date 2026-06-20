@@ -7612,6 +7612,53 @@ select {
   z-index: 3;
 }
 
+.mimi-pet.is-ai-v2 {
+  transition: none;
+  will-change: transform;
+}
+
+.mimi-pet.is-ai-v2 .mimi-pet__cat {
+  cursor: pointer;
+  transform-origin: 50% 100%;
+}
+
+.mimi-pet.is-ai-v2 .mimi-pet__shadow {
+  opacity: 0.92;
+  transform: translateY(5px) scaleX(1.14);
+}
+
+.mimi-pet.is-ai-v2[data-state="idle"] .mimi-pet__cat,
+.mimi-pet.is-ai-v2[data-state="sit"] .mimi-pet__cat {
+  animation: mimi-ai-breathe 4.4s ease-in-out infinite;
+}
+
+.mimi-pet.is-ai-v2[data-state="walk"] .mimi-pet__cat {
+  animation: mimi-ai-walk-bounce 520ms ease-in-out infinite;
+}
+
+.mimi-pet.is-ai-v2[data-state="sleep"] .mimi-pet__cat {
+  animation: mimi-ai-sleep 5.8s ease-in-out infinite;
+}
+
+.mimi-pet.is-ai-v2[data-state="interact"] .mimi-pet__cat {
+  animation: mimi-purr-body 720ms ease-in-out infinite alternate;
+}
+
+@keyframes mimi-ai-breathe {
+  0%, 100% { transform: scale(0.99); }
+  50% { transform: scale(1.02) translateY(-1px); }
+}
+
+@keyframes mimi-ai-walk-bounce {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  45% { transform: translateY(-3px) scaleY(0.985); }
+}
+
+@keyframes mimi-ai-sleep {
+  0%, 100% { transform: scale(0.985) translateY(1px); filter: saturate(0.92) brightness(0.94); }
+  50% { transform: scale(1.01) translateY(0); filter: saturate(0.96) brightness(0.98); }
+}
+
 @media (max-width: 720px) {
   .cabin-map--simple {
     grid-template-columns: repeat(2, minmax(0, 1fr));

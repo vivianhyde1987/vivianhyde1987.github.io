@@ -4507,6 +4507,317 @@ function setupCabinExperienceLightweight() {
 
 setupCabinExperience = setupCabinExperienceLightweight;
 
+function setupMimiPetV2() {
+  const pet = document.querySelector(".mimi-pet");
+  const scene = document.querySelector(".cabin-experience .cabin-room__scene");
+  if (!pet || !scene || pet.dataset.aiV2Ready === "true") return;
+  pet.dataset.aiV2Ready = "true";
+
+  const catButton = pet.querySelector(".mimi-pet__cat");
+  const catImage = catButton?.querySelector("img");
+  const bubble = pet.querySelector(".mimi-pet__bubble");
+  const panel = pet.querySelector(".mimi-pet__panel");
+  if (panel) panel.hidden = true;
+  if (!catButton || !catImage) return;
+
+  const materialPet = getBlogMaterials().roomMap?.pet || {};
+  const mainCat = materialPet.mainCat || materialPet.idle || "mimi-sit-transparent.png";
+  const getMimiAsset = (action = "idle") => {
+    const map = {
+      idle: materialPet.idle || mainCat,
+      sit: materialPet.relaxed || materialPet.idle || mainCat,
+      sleep: materialPet.relaxed || materialPet.purr || mainCat,
+      interact: materialPet.purr || materialPet.relaxed || mainCat,
+      walk: materialPet.walkingSide || materialPet.walking || mainCat
+    };
+    return map[action] || mainCat;
+  };
+  window.getMimiAsset = getMimiAsset;
+
+  [getMimiAsset("idle"), getMimiAsset("sit"), getMimiAsset("sleep"), getMimiAsset("interact"), getMimiAsset("walk")]
+    .filter(Boolean)
+    .forEach((src) => {
+      const img = new Image();
+      img.loading = "lazy";
+      img.decoding = "async";
+      img.src = getBlogMaterialPath(src);
+    });
+
+  const rooms = ["room1", "room2", "room3", "room4"];
+  const floorPlanes = {
+    room1: { top: 0.58, bottom: 0.86, left: 0.06, right: 0.82, spots: [[0.15, 0.82], [0.48, 0.78], [0.72, 0.66]] },
+    room2: { top: 0.60, bottom: 0.88, left: 0.08, right: 0.84, spots: [[0.18, 0.82], [0.52, 0.76], [0.78, 0.68]] },
+    room3: { top: 0.58, bottom: 0.87, left: 0.07, right: 0.82, spots: [[0.2, 0.82], [0.56, 0.75], [0.74, 0.67]] },
+    room4: { top: 0.60, bottom: 0.88, left: 0.07, right: 0.80, spots: [[0.16, 0.83], [0.45, 0.78], [0.70, 0.70]] }
+  };
+
+  const state = {
+    state: "idle",
+    room: "room1",
+    position: { x: 48, y: 240 },
+    target: { x: 48, y: 240 },
+    lastActionTime: performance.now(),
+    active: true,
+    rafId: 0,
+    actionTimer: 0,
+    roomTimer: 0,
+    bubbleTimer: 0,
+    purrBufferPromise: null
+  };
+
+  const purrAudioPath = getBlogMaterials().audio?.mimiPurr || "assets/blog-materials/audio/mimi-purr-soft-source.mp3";
+
+  const randomBetween = (min, max) => min + Math.random() * (max - min);
+  const getBounds = (roomId = state.room) => {
+    const rect = scene.getBoundingClientRect();
+    const width = scene.clientWidth || rect.width || 360;
+    const height = scene.clientHeight || rect.height || 420;
+    const petWidth = Math.max(82, pet.offsetWidth || 120);
+    const petHeight = Math.max(96, pet.offsetHeight || 135);
+    const plane = floorPlanes[roomId] || floorPlanes.room1;
+    const minX = Math.round(width * plane.left);
+    const maxX = Math.max(minX, Math.round(width * plane.right) - petWidth);
+    const minY = Math.round(height * plane.top);
+    const maxY = Math.max(minY, Math.round(height * plane.bottom) - petHeight);
+    return { minX, maxX, minY, maxY, plane, width, height };
+  };
+  const clampPoint = (point, roomId = state.room) => {
+    const bounds = getBounds(roomId);
+    return {
+      x: Math.max(bounds.minX, Math.min(bounds.maxX, Number(point.x) || bounds.minX)),
+      y: Math.max(bounds.minY, Math.min(bounds.maxY, Number(point.y) || bounds.maxY))
+    };
+  };
+  const randomSpot = (roomId = state.room) => {
+    const bounds = getBounds(roomId);
+    const spots = bounds.plane.spots || [];
+    if (spots.length && Math.random() < 0.72) {
+      const [xRatio, yRatio] = spots[Math.floor(Math.random() * spots.length)];
+      return clampPoint({ x: bounds.width * xRatio, y: bounds.height * yRatio }, roomId);
+    }
+    return {
+      x: randomBetween(bounds.minX, bounds.maxX),
+      y: randomBetween(bounds.minY, bounds.maxY)
+    };
+  };
+  const applyPosition = () => {
+    pet.style.setProperty("--mimi-x", `${state.position.x}px`);
+    pet.style.setProperty("--mimi-y", `${state.position.y}px`);
+  };
+  const setVisualState = (nextState) => {
+    state.state = nextState;
+    pet.dataset.state = nextState;
+    pet.dataset.pose = nextState === "walk" ? "walk" : "sit";
+    pet.classList.toggle("is-walking", nextState === "walk");
+    pet.classList.toggle("is-purring", nextState === "interact");
+    pet.classList.toggle("is-sleeping", nextState === "sleep");
+    pet.classList.toggle("is-idle-breathing", nextState === "idle" || nextState === "sit");
+    const asset = nextState === "walk" ? getMimiAsset("walk") : getMimiAsset(nextState);
+    setImageSafe(catImage, asset, "眯眯", mainCat);
+  };
+  const speak = (text, duration = 2400) => {
+    if (!bubble) return;
+    bubble.textContent = text;
+    bubble.classList.add("is-visible");
+    window.clearTimeout(state.bubbleTimer);
+    state.bubbleTimer = window.setTimeout(() => bubble.classList.remove("is-visible"), duration);
+  };
+  const clearTimers = () => {
+    window.clearTimeout(state.actionTimer);
+    window.clearTimeout(state.roomTimer);
+    window.clearTimeout(state.bubbleTimer);
+  };
+  const playPurr = async () => {
+    CabinAudioManager.stop("mimi-purr");
+    try {
+      const context = CabinAudioManager.getContext();
+      state.purrBufferPromise ||= fetch(purrAudioPath)
+        .then((response) => {
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          return response.arrayBuffer();
+        })
+        .then((buffer) => context.decodeAudioData(buffer));
+      const buffer = await state.purrBufferPromise;
+      CabinAudioManager.play("mimi-purr", (audioContext) => {
+        const source = audioContext.createBufferSource();
+        const highpass = audioContext.createBiquadFilter();
+        const lowpass = audioContext.createBiquadFilter();
+        const gain = audioContext.createGain();
+        const duration = Math.min(2.8, Math.max(2.2, buffer.duration - 0.2));
+        const start = audioContext.currentTime;
+        source.buffer = buffer;
+        highpass.type = "highpass";
+        highpass.frequency.value = 58;
+        lowpass.type = "lowpass";
+        lowpass.frequency.value = 1600;
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.linearRampToValueAtTime(0.09, start + 0.12);
+        gain.gain.setValueAtTime(0.09, start + duration - 0.35);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+        source.connect(highpass).connect(lowpass).connect(gain).connect(audioContext.destination);
+        source.start(start, 0, duration);
+        source.stop(start + duration + 0.05);
+        window.setTimeout(() => CabinAudioManager.stop("mimi-purr"), duration * 1000 + 120);
+        return { stop: () => { try { source.stop(); } catch {} } };
+      });
+    } catch (error) {
+      console.warn("[MimiAI:v2:purr]", error);
+      CabinAudioManager.play("mimi-purr", (audioContext) => {
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        const start = audioContext.currentTime;
+        osc.type = "sawtooth";
+        osc.frequency.value = 31;
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.linearRampToValueAtTime(0.018, start + 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + 2.5);
+        osc.connect(gain).connect(audioContext.destination);
+        osc.start(start);
+        osc.stop(start + 2.55);
+        CabinAudioManager.registerActiveOscillator(osc);
+        return { stop: () => { try { osc.stop(); } catch {} } };
+      });
+    }
+  };
+
+  const BehaviorManager = {
+    update() {
+      if (!state.active || document.hidden || !pet.classList.contains("is-in-pet-room")) {
+        state.rafId = 0;
+        return;
+      }
+      if (state.state === "walk") {
+        const dx = state.target.x - state.position.x;
+        const dy = state.target.y - state.position.y;
+        pet.style.setProperty("--mimi-face", dx >= 0 ? "-1" : "1");
+        state.position.x += dx * 0.055;
+        state.position.y += dy * 0.055;
+        if (Math.abs(dx) < 1.2 && Math.abs(dy) < 1.2) {
+          state.position = { ...state.target };
+          applyPosition();
+          BehaviorManager.switchState(Math.random() < 0.42 ? "sit" : "idle");
+          BehaviorManager.scheduleNextAction(randomBetween(1800, 4200));
+          return;
+        }
+        applyPosition();
+      }
+      state.rafId = requestAnimationFrame(() => BehaviorManager.update());
+    },
+    switchState(nextState) {
+      setVisualState(nextState);
+      state.lastActionTime = performance.now();
+    },
+    moveTo(point) {
+      const target = clampPoint(point);
+      state.target = target;
+      BehaviorManager.switchState("walk");
+    },
+    chooseBehavior() {
+      if (!state.active || document.hidden) return;
+      const roll = Math.random();
+      if (roll < 0.48) BehaviorManager.moveTo(randomSpot());
+      else if (roll < 0.70) BehaviorManager.switchState("sit");
+      else if (roll < 0.93) BehaviorManager.switchState("idle");
+      else BehaviorManager.switchState("sleep");
+      BehaviorManager.scheduleNextAction();
+    },
+    scheduleNextAction(delay = randomBetween(10000, 25000)) {
+      window.clearTimeout(state.actionTimer);
+      state.actionTimer = window.setTimeout(() => BehaviorManager.chooseBehavior(), delay);
+    },
+    scheduleRoomSwitch(delay = randomBetween(30000, 60000)) {
+      window.clearTimeout(state.roomTimer);
+      state.roomTimer = window.setTimeout(() => {
+        if (!document.hidden && state.active && Math.random() < 0.38) {
+          const others = rooms.filter((room) => room !== state.room);
+          BehaviorManager.switchRoom(others[Math.floor(Math.random() * others.length)]);
+        }
+        BehaviorManager.scheduleRoomSwitch();
+      }, delay);
+    },
+    interact() {
+      window.clearTimeout(state.actionTimer);
+      CabinAudioManager.stop("mimi-steps");
+      BehaviorManager.switchState("interact");
+      playPurr();
+      speak("她轻轻呼噜了几秒。", 2600);
+      window.setTimeout(() => {
+        BehaviorManager.switchState("sit");
+        BehaviorManager.scheduleNextAction(randomBetween(12000, 22000));
+      }, 3000);
+    },
+    switchRoom(roomId) {
+      if (!rooms.includes(roomId)) return;
+      if (window.switchRoom && document.querySelector(`.cabin-map [data-room="${roomId}"]`)) {
+        window.switchRoom(roomId);
+        return;
+      }
+      BehaviorManager.enterRoom(roomId);
+    },
+    enterRoom(roomId) {
+      state.room = rooms.includes(roomId) ? roomId : "room1";
+      const current = clampPoint(state.position, state.room);
+      state.position = current;
+      state.target = current;
+      applyPosition();
+      BehaviorManager.switchState(Math.random() < 0.65 ? "idle" : "sit");
+    },
+    pause() {
+      state.active = false;
+      clearTimers();
+      if (state.rafId) cancelAnimationFrame(state.rafId);
+      state.rafId = 0;
+      CabinAudioManager.stop("mimi-purr");
+      CabinAudioManager.stop("mimi-steps");
+    },
+    resume() {
+      if (state.active) return;
+      state.active = true;
+      if (!state.rafId) state.rafId = requestAnimationFrame(() => BehaviorManager.update());
+      BehaviorManager.scheduleNextAction(randomBetween(2000, 5000));
+      BehaviorManager.scheduleRoomSwitch();
+    },
+    start() {
+      scene.append(pet);
+      pet.classList.add("is-in-pet-room", "is-ai-v2");
+      pet.style.setProperty("--mimi-face", "1");
+      const start = randomSpot("room1");
+      state.position = start;
+      state.target = start;
+      applyPosition();
+      BehaviorManager.enterRoom("room1");
+      cancelAnimationFrame(state.rafId);
+      state.rafId = requestAnimationFrame(() => BehaviorManager.update());
+      BehaviorManager.scheduleNextAction(randomBetween(4000, 9000));
+      BehaviorManager.scheduleRoomSwitch();
+    }
+  };
+
+  window.MimiBehaviorManager = BehaviorManager;
+  catButton.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    BehaviorManager.interact();
+  });
+  pet.addEventListener("mimi-enter-room", (event) => {
+    scene.append(pet);
+    pet.classList.add("is-in-pet-room", "is-ai-v2");
+    BehaviorManager.enterRoom(event.detail?.roomId || "room1");
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) BehaviorManager.pause();
+    else BehaviorManager.resume();
+  });
+  window.addEventListener("resize", () => {
+    state.position = clampPoint(state.position);
+    state.target = clampPoint(state.target);
+    applyPosition();
+  });
+  BehaviorManager.start();
+}
+
+setupMimiPet = setupMimiPetV2;
+
 function renderCabinRecordings() {
   const list = $("#cabinRecordingList");
   if (!list) return;
