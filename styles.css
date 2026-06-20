@@ -7006,3 +7006,60 @@ select {
     max-width: 34ch;
   }
 }
+
+/* Water room: transparent square vase for the water lily. */
+.cabin-water-vase {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  border: 1px solid rgba(210, 236, 224, 0.38);
+  border-radius: 8px 8px 10px 10px;
+  background:
+    linear-gradient(90deg, rgba(255,255,255,0.18), transparent 18% 72%, rgba(255,255,255,0.13)),
+    linear-gradient(180deg, rgba(218, 245, 231, 0.16), rgba(104, 157, 150, 0.08) 46%, rgba(74, 126, 121, 0.18) 47% 78%, rgba(255,255,255,0.08));
+  box-shadow:
+    inset 0 0 18px rgba(225, 255, 242, 0.12),
+    inset 0 -12px 18px rgba(65, 101, 98, 0.18),
+    0 18px 20px rgba(0, 0, 0, 0.28);
+  transform: translate(-50%, -50%) perspective(420px) rotateX(3deg);
+  backdrop-filter: blur(1.5px) saturate(0.95);
+  opacity: 0;
+  transition: opacity 260ms ease, filter 260ms ease;
+}
+
+.cabin-experience[data-cabin-theme="water"] .cabin-water-vase:not([hidden]) {
+  opacity: 0.82;
+}
+
+.cabin-water-vase::before {
+  content: "";
+  position: absolute;
+  right: 7%;
+  left: 7%;
+  top: 47%;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(220, 249, 237, 0.54), transparent);
+  box-shadow: 0 5px 12px rgba(117, 178, 170, 0.18);
+}
+
+.cabin-water-vase::after {
+  content: "";
+  position: absolute;
+  top: 8%;
+  bottom: 16%;
+  left: 16%;
+  width: 10%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.35), transparent);
+  opacity: 0.72;
+}
+
+.cabin-experience.is-lit[data-cabin-theme="water"] .cabin-water-vase {
+  filter: brightness(1.12);
+  box-shadow:
+    inset 0 0 20px rgba(225, 255, 242, 0.18),
+    inset 0 -12px 18px rgba(65, 101, 98, 0.14),
+    0 18px 20px rgba(0, 0, 0, 0.24),
+    0 0 22px rgba(164, 221, 201, 0.13);
+}

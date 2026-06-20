@@ -3861,6 +3861,11 @@ function setupCabinExperience() {
   candleFlame.setAttribute("aria-hidden", "true");
   candleFlame.hidden = true;
   scene.append(candleFlame);
+  const waterVase = document.createElement("span");
+  waterVase.className = "cabin-water-vase";
+  waterVase.setAttribute("aria-hidden", "true");
+  waterVase.hidden = true;
+  scene.append(waterVase);
   const materialMap = getBlogMaterials().roomMap || fallbackBlogMaterials.roomMap;
   const cabinAssetPositionKey = "cabin-asset-positions-v2-bar";
   const cabinAssetLayers = [
@@ -3992,6 +3997,17 @@ function setupCabinExperience() {
         candleFlame.style.left = `${rect.left - sceneRect.left + rect.width * 0.48}px`;
         candleFlame.style.top = `${rect.top - sceneRect.top + rect.height * 0.2}px`;
         candleFlame.style.setProperty("--flame-size", `${Math.max(12, Math.min(26, rect.width * 0.11))}px`);
+      }
+    }
+    if (waterVase) {
+      const showVase = roomId === "water" && plantImage && !plantImage.hidden && !experience.classList.contains("is-music-room") && !experience.classList.contains("is-pet-room");
+      waterVase.hidden = !showVase;
+      if (showVase) {
+        const rect = plantImage.getBoundingClientRect();
+        waterVase.style.left = `${rect.left - sceneRect.left + rect.width * 0.5}px`;
+        waterVase.style.top = `${rect.top - sceneRect.top + rect.height * 0.72}px`;
+        waterVase.style.width = `${Math.max(44, rect.width * 0.68)}px`;
+        waterVase.style.height = `${Math.max(42, rect.height * 0.5)}px`;
       }
     }
     if (cabinRestoreButton) {
