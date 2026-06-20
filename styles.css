@@ -6929,3 +6929,80 @@ select {
     min-height: 132px;
   }
 }
+
+/* Cabin depth pass 3: warmer light behavior and calmer room controls. */
+.cabin-experience.is-lit .cabin-room__scene {
+  background:
+    radial-gradient(circle at 76% 28%, color-mix(in srgb, var(--room-accent) 34%, transparent), transparent 34%),
+    radial-gradient(circle at 52% 58%, rgba(255, 184, 92, 0.08), transparent 42%),
+    linear-gradient(180deg, rgba(252, 218, 165, 0.075) 0 44%, rgba(34, 18, 12, 0.22) 44.5% 46%, transparent 46.5%),
+    linear-gradient(90deg, #150c08, #301b10 45%, #130a07);
+}
+
+.cabin-experience.is-lit .cabin-room__scene::before {
+  filter: brightness(1.12) saturate(1.04);
+  box-shadow:
+    inset 0 24px 36px rgba(255, 211, 143, 0.1),
+    inset 0 -34px 42px rgba(0, 0, 0, 0.34),
+    0 -18px 44px rgba(255, 166, 76, 0.08);
+}
+
+.cabin-experience.is-lit .cabin-table,
+.cabin-experience.is-lit .cabin-chair,
+.cabin-experience.is-lit .cabin-furniture::after {
+  filter: brightness(1.08) saturate(1.02);
+}
+
+.cabin-experience.is-lit .cabin-room__painting,
+.cabin-experience.is-lit .cabin-room__prop,
+.cabin-experience.is-lit .cabin-room__plant,
+.cabin-experience.is-lit .cabin-room__accent {
+  filter: brightness(1.02) saturate(0.9) sepia(0.06) drop-shadow(0 20px 22px rgba(0, 0, 0, 0.42));
+}
+
+.cabin-room__lamp-glow {
+  mix-blend-mode: screen;
+  background:
+    radial-gradient(circle at 76% 33%, rgba(255, 197, 106, 0.42), transparent 24%),
+    radial-gradient(circle at 55% 62%, rgba(255, 159, 84, 0.12), transparent 46%);
+}
+
+.cabin-room__controls {
+  backdrop-filter: blur(14px) saturate(0.95);
+  background: linear-gradient(135deg, rgba(32, 20, 15, 0.82), rgba(69, 43, 27, 0.58));
+  box-shadow: 0 -18px 36px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 225, 177, 0.08);
+}
+
+.cabin-light-toggle {
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 236, 194, 0.16);
+}
+
+.cabin-light-toggle[aria-pressed="true"] {
+  box-shadow: 0 0 28px rgba(255, 174, 82, 0.26), inset 0 1px 0 rgba(255, 245, 214, 0.24);
+}
+
+.cabin-gallery {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(255, 205, 142, 0.06), transparent 28%),
+    linear-gradient(180deg, rgba(41, 25, 17, 0.78), rgba(24, 14, 10, 0.88));
+  box-shadow: inset 0 1px 0 rgba(255, 228, 184, 0.07), 0 20px 42px rgba(0, 0, 0, 0.18);
+}
+
+.cabin-artwork {
+  box-shadow: 0 18px 26px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 232, 192, 0.06);
+}
+
+@media (max-width: 720px) {
+  .cabin-room__controls {
+    gap: 10px;
+    align-items: end;
+  }
+
+  .cabin-room__controls h3 {
+    font-size: 1rem;
+  }
+
+  .cabin-room__controls p {
+    max-width: 34ch;
+  }
+}
