@@ -4438,7 +4438,8 @@ function setupCabinExperienceLightweight() {
     room1: { id: "room1", title: "画室", src: "assets/blog-materials/rooms/room1-studio.webp" },
     room2: { id: "room2", title: "水边", src: "assets/blog-materials/rooms/room2-water.webp" },
     room3: { id: "room3", title: "花房", src: "assets/blog-materials/rooms/room3-flowers.webp" },
-    room4: { id: "room4", title: "炉边", src: "assets/blog-materials/rooms/room4-hearth.webp" }
+    room4: { id: "room4", title: "炉边", src: "assets/blog-materials/rooms/room4-hearth.webp" },
+    room5: { id: "room5", title: "\u4e66\u5c4b", src: "assets/blog-materials/rooms/room5-library.webp" }
   };
   const roomIds = Object.keys(rooms);
   const cache = {};
@@ -4543,12 +4544,13 @@ function setupMimiPetV2() {
       img.src = getBlogMaterialPath(src);
     });
 
-  const rooms = ["room1", "room2", "room3", "room4"];
+  const rooms = ["room1", "room2", "room3", "room4", "room5"];
   const floorPlanes = {
     room1: { top: 0.58, bottom: 0.86, left: 0.06, right: 0.82, spots: [[0.15, 0.82], [0.48, 0.78], [0.72, 0.66]] },
     room2: { top: 0.60, bottom: 0.88, left: 0.08, right: 0.84, spots: [[0.18, 0.82], [0.52, 0.76], [0.78, 0.68]] },
     room3: { top: 0.58, bottom: 0.87, left: 0.07, right: 0.82, spots: [[0.2, 0.82], [0.56, 0.75], [0.74, 0.67]] },
-    room4: { top: 0.60, bottom: 0.88, left: 0.07, right: 0.80, spots: [[0.16, 0.83], [0.45, 0.78], [0.70, 0.70]] }
+    room4: { top: 0.60, bottom: 0.88, left: 0.07, right: 0.80, spots: [[0.16, 0.83], [0.45, 0.78], [0.70, 0.70]] },
+    room5: { top: 0.68, bottom: 0.90, left: 0.08, right: 0.78, spots: [[0.16, 0.82], [0.36, 0.84], [0.64, 0.79]] }
   };
 
   const state = {

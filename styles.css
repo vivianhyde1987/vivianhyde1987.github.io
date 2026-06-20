@@ -7531,21 +7531,46 @@ select {
 /* Lightweight four-room cabin: one background image, four buttons, Mimi only. */
 .cabin-experience {
   --cabin-amber: #d18a43;
+  display: grid;
+  grid-template-columns: minmax(78px, 96px) minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
 }
 
 .cabin-map--simple {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: 1fr;
+  align-content: start;
   gap: 8px;
+  position: sticky;
+  top: 74px;
+  z-index: 4;
 }
 
 .cabin-map--simple button {
-  min-height: 44px;
+  min-height: 54px;
+  padding: 8px 7px;
+  background: rgba(31, 19, 14, 0.72);
+  border-color: rgba(232, 184, 119, 0.24);
+  color: rgba(255, 239, 214, 0.86);
+  backdrop-filter: blur(10px);
+}
+
+.cabin-map--simple button.active {
+  background: rgba(119, 74, 38, 0.84);
+  border-color: rgba(247, 204, 142, 0.45);
+  color: #fff5e8;
+}
+
+.cabin-room {
+  min-width: 0;
 }
 
 .cabin-room__scene--lightweight {
   position: relative;
-  min-height: clamp(360px, 58vw, 720px);
+  min-height: clamp(320px, 52vw, 760px);
+  max-height: calc(100vh - 142px);
+  aspect-ratio: 4 / 3;
   overflow: hidden;
   border-radius: 8px;
   background: #1b1009;
@@ -7560,7 +7585,7 @@ select {
   z-index: 1;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
   filter:
     sepia(0.08)
@@ -7660,12 +7685,26 @@ select {
 }
 
 @media (max-width: 720px) {
+  .cabin-experience {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
   .cabin-map--simple {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    position: static;
+    grid-template-columns: repeat(5, minmax(54px, 1fr));
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .cabin-map--simple button {
+    min-height: 44px;
+    white-space: nowrap;
   }
 
   .cabin-room__scene--lightweight {
-    min-height: 390px;
+    min-height: min(390px, 72vw);
+    max-height: none;
   }
 }
 
