@@ -3293,15 +3293,39 @@ function setupMimiPet() {
     positions[roomId] = { x, y };
     localStorage.setItem(positionStorageKey, JSON.stringify(positions));
   };
-  const clampMimiPosition = (x, y, container = currentMimiContainer) => {
+  const getMimiWalkableBounds = (container = currentMimiContainer) => {
+    const containerWidth = container?.clientWidth || 360;
+    const containerHeight = container?.clientHeight || 360;
     const width = Math.max(80, pet.offsetWidth || 120);
     const height = Math.max(90, pet.offsetHeight || 130);
     const safeInset = 14;
-    const maxX = Math.max(safeInset, (container?.clientWidth || 360) - width - safeInset);
-    const maxY = Math.max(safeInset, (container?.clientHeight || 360) - height - safeInset);
+    const maxX = Math.max(safeInset, containerWidth - width - safeInset);
+    const floorY = containerHeight - height - safeInset;
+    const roomFloorTop = {
+      studio: 0.58,
+      water: 0.6,
+      flowers: 0.57,
+      hearth: 0.57,
+      child: 0.58,
+      music: 0.55,
+      pet: 0.5
+    };
+    const minY = Math.min(
+      floorY,
+      Math.max(safeInset, Math.round(containerHeight * (roomFloorTop[currentMimiRoom] ?? 0.58)))
+    );
     return {
-      x: Math.max(safeInset, Math.min(maxX, Number(x) || safeInset)),
-      y: Math.max(safeInset, Math.min(maxY, Number(y) || safeInset))
+      minX: safeInset,
+      maxX,
+      minY,
+      maxY: Math.max(minY, floorY)
+    };
+  };
+  const clampMimiPosition = (x, y, container = currentMimiContainer) => {
+    const bounds = getMimiWalkableBounds(container);
+    return {
+      x: Math.max(bounds.minX, Math.min(bounds.maxX, Number(x) || bounds.minX)),
+      y: Math.max(bounds.minY, Math.min(bounds.maxY, Number(y) || bounds.maxY))
     };
   };
   const setMimiPosition = (x, y, persist = true) => {
@@ -3312,7 +3336,10 @@ function setupMimiPet() {
   };
   const applyMimiRoomPosition = () => {
     const saved = readMimiPositions()[currentMimiRoom];
-    const fallback = currentMimiRoom === "pet" ? { x: 46, y: 82 } : { x: 28, y: Math.max(120, (currentMimiContainer?.clientHeight || 360) - 180) };
+    const bounds = getMimiWalkableBounds();
+    const fallback = currentMimiRoom === "pet"
+      ? { x: Math.max(bounds.minX, bounds.maxX * 0.16), y: bounds.maxY }
+      : { x: Math.max(bounds.minX, bounds.maxX * 0.08), y: bounds.maxY };
     setMimiPosition(saved?.x ?? fallback.x, saved?.y ?? fallback.y, Boolean(saved));
   };
   const render = () => {
@@ -3447,23 +3474,24 @@ function setupMimiPet() {
   const move = () => {
     if (!pet.classList.contains("is-in-pet-room") || !currentMimiContainer || !panel.hidden || pet.classList.contains("is-held") || pet.classList.contains("is-dragging")) return;
     stopGrooming();
-    const safeWidth = Math.max(70, currentMimiContainer.clientWidth - 150);
-    const safeHeight = Math.max(120, currentMimiContainer.clientHeight - 155);
+    const bounds = getMimiWalkableBounds();
+    const yLow = bounds.maxY;
+    const yMid = bounds.minY + (bounds.maxY - bounds.minY) * 0.58;
     const restingSpots = currentMimiRoom === "pet"
       ? [
-        { x: safeWidth * 0.04, y: safeHeight * 0.2 },
-        { x: safeWidth * 0.66, y: safeHeight * 0.78 },
-        { x: safeWidth * 0.38, y: safeHeight * 0.64 },
-        { x: safeWidth * 0.94, y: safeHeight * 0.16 }
+        { x: bounds.maxX * 0.08, y: yLow },
+        { x: bounds.maxX * 0.34, y: yMid },
+        { x: bounds.maxX * 0.62, y: yLow },
+        { x: bounds.maxX * 0.86, y: yMid }
       ]
       : [
-        { x: safeWidth * 0.06, y: safeHeight * 0.74 },
-        { x: safeWidth * 0.7, y: safeHeight * 0.76 },
-        { x: safeWidth * 0.86, y: safeHeight * 0.48 }
+        { x: bounds.maxX * 0.08, y: yLow },
+        { x: bounds.maxX * 0.58, y: yLow },
+        { x: bounds.maxX * 0.82, y: yMid }
       ];
     const spot = restingSpots[Math.floor(Math.random() * restingSpots.length)];
-    const x = 18 + spot.x;
-    const y = 36 + spot.y;
+    const x = spot.x;
+    const y = spot.y;
     pet.style.setProperty("--mimi-face", x > lastX ? "-1" : "1");
     lastX = x;
     pet.dataset.pose = "walk";

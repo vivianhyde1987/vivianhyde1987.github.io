@@ -4601,13 +4601,15 @@ body.has-bookmark-open .mimi-pet {
 
 .mimi-pet__shadow {
   position: absolute;
-  right: 8%;
+  right: 9%;
   bottom: 0;
-  left: 8%;
-  height: 16px;
+  left: 9%;
+  height: 18px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.48);
-  filter: blur(6px);
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.56), rgba(0, 0, 0, 0.18) 62%, transparent 74%);
+  filter: blur(5px);
+  transform: translateY(4px) scaleX(1.08);
+  transform-origin: center;
 }
 
 .mimi-pet.is-walking .mimi-pet__cat {
