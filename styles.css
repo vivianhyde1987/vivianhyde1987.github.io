@@ -7288,3 +7288,58 @@ select {
     radial-gradient(ellipse, rgba(47, 61, 34, 0.26), rgba(41, 26, 18, 0.18) 58%, transparent 74%),
     radial-gradient(ellipse at 48% 38%, rgba(211, 161, 82, 0.08), transparent 50%);
 }
+
+/* Lit cabin wall color: cocoa cream paint tone, close to a soft Nippon-style 可可蛋奶 feel. */
+.cabin-experience.is-lit .cabin-room__scene {
+  --cocoa-cream-wall: #d8c2a3;
+  --cocoa-cream-shadow: #8c7054;
+  background:
+    radial-gradient(circle at 74% 25%, rgba(255, 218, 164, 0.24), transparent 34%),
+    radial-gradient(ellipse at 52% 62%, rgba(214, 181, 136, 0.18), transparent 48%),
+    linear-gradient(180deg, #d8c2a3 0%, #c8ae8d 43%, rgba(108, 78, 52, 0.42) 44% 47%, rgba(31, 18, 11, 0.05) 48%),
+    repeating-linear-gradient(90deg, rgba(255, 244, 224, 0.07) 0 1px, transparent 1px 96px),
+    linear-gradient(90deg, #b79a77, #dcc7a8 46%, #a88664);
+}
+
+.cabin-experience.is-lit .cabin-wall-lines {
+  background:
+    radial-gradient(circle at 78% 30%, rgba(255, 232, 189, 0.28), transparent 30%),
+    linear-gradient(180deg, rgba(255, 246, 226, 0.22), rgba(183, 151, 113, 0.12) 54%, rgba(70, 45, 29, 0.18)),
+    repeating-linear-gradient(90deg, rgba(116, 84, 58, 0.055) 0 1px, transparent 1px 88px);
+  box-shadow: inset 0 -72px 92px rgba(79, 49, 31, 0.28);
+}
+
+.cabin-experience.is-lit .cabin-wall-lines::after {
+  background:
+    radial-gradient(circle at 78% 34%, rgba(255, 207, 132, 0.18), transparent 26%),
+    radial-gradient(ellipse at 50% 100%, rgba(72, 42, 25, 0.22), transparent 58%),
+    linear-gradient(90deg, rgba(101, 70, 45, 0.18), transparent 20% 80%, rgba(93, 60, 38, 0.2));
+  mix-blend-mode: multiply;
+  opacity: 0.72;
+}
+
+.cabin-experience.is-lit .cabin-room__scene::after {
+  background:
+    linear-gradient(180deg, rgba(255, 240, 207, 0.44), rgba(135, 91, 57, 0.86)),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.12) 0 1px, transparent 1px 54px);
+}
+
+.cabin-experience.is-lit[data-cabin-theme="flowers"] .cabin-room__scene {
+  background:
+    radial-gradient(circle at 69% 24%, rgba(219, 190, 137, 0.32), transparent 34%),
+    radial-gradient(ellipse at 50% 64%, rgba(166, 137, 87, 0.16), transparent 50%),
+    linear-gradient(180deg, #d8c2a3 0%, #cbb392 42%, rgba(90, 69, 42, 0.34) 44% 47%, rgba(24, 15, 10, 0.04) 48%),
+    repeating-linear-gradient(90deg, rgba(117, 89, 61, 0.045) 0 1px, transparent 1px 88px),
+    linear-gradient(90deg, #bfa17b, #ddc8a8 46%, #a98b67);
+}
+
+.cabin-experience.is-lit[data-cabin-theme="flowers"] .cabin-room__plant,
+.cabin-experience.is-lit[data-cabin-theme="flowers"] .cabin-room__prop,
+.cabin-experience.is-lit[data-cabin-theme="flowers"] .cabin-room__accent {
+  filter:
+    brightness(0.99)
+    saturate(0.9)
+    sepia(0.08)
+    drop-shadow(0 24px 24px rgba(72, 43, 25, 0.34))
+    drop-shadow(0 0 20px rgba(215, 185, 132, 0.22));
+}
