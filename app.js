@@ -4428,6 +4428,117 @@ function setupCabinExperience() {
   applyCabinRoomAssets("studio", rooms.studio);
 }
 
+function createRoomEngineV3(experience, scene) {
+  const rooms = {
+    room1: {
+      mood: "calm",
+      lightIntensity: 1.02,
+      warmth: 1.12,
+      motionLevel: 0.08,
+      vignette: 0.28,
+      shimmer: 0,
+      weights: { idle: 0.70, walk: 0.10, sit: 0.17, sleep: 0.03 },
+      moveSpeed: 0.052,
+      actionDelay: [15000, 30000]
+    },
+    room2: {
+      mood: "reflective",
+      lightIntensity: 0.98,
+      warmth: 0.96,
+      motionLevel: 0.18,
+      vignette: 0.24,
+      shimmer: 0.42,
+      weights: { idle: 0.40, walk: 0.34, sit: 0.20, sleep: 0.06 },
+      moveSpeed: 0.034,
+      actionDelay: [15000, 28000]
+    },
+    room3: {
+      mood: "alive",
+      lightIntensity: 1.04,
+      warmth: 1.12,
+      motionLevel: 0.46,
+      vignette: 0.22,
+      shimmer: 0.18,
+      weights: { idle: 0.16, walk: 0.70, sit: 0.12, sleep: 0.02 },
+      moveSpeed: 0.066,
+      actionDelay: [9000, 18000]
+    },
+    room4: {
+      mood: "cozy",
+      lightIntensity: 1.08,
+      warmth: 1.22,
+      motionLevel: 0.20,
+      vignette: 0.42,
+      shimmer: 0.08,
+      weights: { idle: 0.26, walk: 0.12, sit: 0.42, sleep: 0.20 },
+      moveSpeed: 0.046,
+      actionDelay: [13000, 26000]
+    },
+    room5: {
+      mood: "reflective",
+      lightIntensity: 1.00,
+      warmth: 1.05,
+      motionLevel: 0.12,
+      vignette: 0.30,
+      shimmer: 0.12,
+      weights: { idle: 0.50, walk: 0.22, sit: 0.22, sleep: 0.06 },
+      moveSpeed: 0.040,
+      actionDelay: [14000, 28000]
+    },
+    room6: {
+      mood: "alive",
+      lightIntensity: 1.03,
+      warmth: 1.12,
+      motionLevel: 0.30,
+      vignette: 0.26,
+      shimmer: 0.16,
+      weights: { idle: 0.24, walk: 0.55, sit: 0.18, sleep: 0.03 },
+      moveSpeed: 0.058,
+      actionDelay: [10000, 22000]
+    }
+  };
+  const engine = {
+    rooms,
+    currentRoom: "room1",
+    moodState: { ...rooms.room1 },
+    updateMood(roomId = "room1") {
+      const next = rooms[roomId] || rooms.room1;
+      this.currentRoom = roomId;
+      this.moodState = { ...next };
+      this.applyMoodToScene();
+      document.dispatchEvent(new CustomEvent("room-engine-v3-change", {
+        detail: { roomId, mood: next.mood, moodState: this.moodState }
+      }));
+    },
+    applyMoodToScene() {
+      if (!experience || !scene) return;
+      const mood = this.moodState;
+      experience.dataset.roomMood = mood.mood;
+      scene.style.setProperty("--room-brightness", mood.lightIntensity);
+      scene.style.setProperty("--room-warmth", mood.warmth);
+      scene.style.setProperty("--room-motion", mood.motionLevel);
+      scene.style.setProperty("--room-vignette", mood.vignette);
+      scene.style.setProperty("--room-shimmer", mood.shimmer);
+      scene.style.setProperty("--room-sepia", Math.min(0.18, 0.06 + mood.warmth * 0.045).toFixed(3));
+      scene.style.setProperty("--room-saturation", Math.min(1.18, 0.88 + mood.warmth * 0.13).toFixed(3));
+      scene.style.setProperty("--room-contrast", Math.max(0.94, 1.03 - mood.motionLevel * 0.05).toFixed(3));
+    },
+    getBehaviorWeight(roomId = this.currentRoom) {
+      const room = rooms[roomId] || rooms.room1;
+      return {
+        mood: room.mood,
+        weights: room.weights,
+        moveSpeed: room.moveSpeed,
+        actionDelay: room.actionDelay,
+        motionLevel: room.motionLevel
+      };
+    }
+  };
+  window.RoomEngineV3 = engine;
+  engine.updateMood("room1");
+  return engine;
+}
+
 function setupCabinExperienceLightweight() {
   const experience = document.querySelector(".cabin-experience");
   const scene = experience?.querySelector(".cabin-room__scene");
@@ -4445,6 +4556,7 @@ function setupCabinExperienceLightweight() {
   const roomIds = Object.keys(rooms);
   const cache = {};
   window.cabinRoomCache = cache;
+  const roomEngine = createRoomEngineV3(experience, scene);
 
   const preloadRoom = (id) => {
     const room = rooms[id];
@@ -4462,6 +4574,7 @@ function setupCabinExperienceLightweight() {
     background.alt = room.title;
     experience.dataset.cabinRoom = room.id;
     experience.dataset.cabinTheme = "amber";
+    roomEngine.updateMood(room.id);
     document.dispatchEvent(new CustomEvent("cabin-room-change", { detail: { roomId: room.id } }));
   };
 
@@ -4572,6 +4685,27 @@ function setupMimiPetV2() {
   const purrAudioPath = getBlogMaterials().audio?.mimiPurr || "assets/blog-materials/audio/mimi-purr-soft-source.mp3";
 
   const randomBetween = (min, max) => min + Math.random() * (max - min);
+  const getRoomBehavior = () => window.RoomEngineV3?.getBehaviorWeight(state.room) || {
+    mood: "calm",
+    weights: { idle: 0.55, walk: 0.22, sit: 0.18, sleep: 0.05 },
+    moveSpeed: 0.052,
+    actionDelay: [12000, 24000],
+    motionLevel: 0.12
+  };
+  const chooseWeightedBehavior = () => {
+    const weights = getRoomBehavior().weights;
+    const total = Object.values(weights).reduce((sum, value) => sum + value, 0) || 1;
+    let cursor = Math.random() * total;
+    for (const [name, weight] of Object.entries(weights)) {
+      cursor -= weight;
+      if (cursor <= 0) return name;
+    }
+    return "idle";
+  };
+  const nextActionDelay = () => {
+    const [min, max] = getRoomBehavior().actionDelay;
+    return randomBetween(min, max);
+  };
   const getBounds = (roomId = state.room) => {
     const rect = scene.getBoundingClientRect();
     const width = scene.clientWidth || rect.width || 360;
@@ -4694,8 +4828,9 @@ function setupMimiPetV2() {
         const dx = state.target.x - state.position.x;
         const dy = state.target.y - state.position.y;
         pet.style.setProperty("--mimi-face", dx >= 0 ? "-1" : "1");
-        state.position.x += dx * 0.055;
-        state.position.y += dy * 0.055;
+        const speed = getRoomBehavior().moveSpeed;
+        state.position.x += dx * speed;
+        state.position.y += dy * speed;
         if (Math.abs(dx) < 1.2 && Math.abs(dy) < 1.2) {
           state.position = { ...state.target };
           applyPosition();
@@ -4718,14 +4853,12 @@ function setupMimiPetV2() {
     },
     chooseBehavior() {
       if (!state.active || document.hidden) return;
-      const roll = Math.random();
-      if (roll < 0.48) BehaviorManager.moveTo(randomSpot());
-      else if (roll < 0.70) BehaviorManager.switchState("sit");
-      else if (roll < 0.93) BehaviorManager.switchState("idle");
-      else BehaviorManager.switchState("sleep");
+      const next = chooseWeightedBehavior();
+      if (next === "walk") BehaviorManager.moveTo(randomSpot());
+      else BehaviorManager.switchState(next);
       BehaviorManager.scheduleNextAction();
     },
-    scheduleNextAction(delay = randomBetween(10000, 25000)) {
+    scheduleNextAction(delay = nextActionDelay()) {
       window.clearTimeout(state.actionTimer);
       state.actionTimer = window.setTimeout(() => BehaviorManager.chooseBehavior(), delay);
     },
@@ -4764,7 +4897,8 @@ function setupMimiPetV2() {
       state.position = current;
       state.target = current;
       applyPosition();
-      BehaviorManager.switchState(Math.random() < 0.65 ? "idle" : "sit");
+      const restingState = chooseWeightedBehavior();
+      BehaviorManager.switchState(restingState === "sleep" ? "sleep" : restingState === "sit" ? "sit" : "idle");
     },
     pause() {
       state.active = false;
