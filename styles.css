@@ -7568,6 +7568,10 @@ select {
 
 .cabin-room__scene--lightweight {
   position: relative;
+  --camera-rotate-x: 0deg;
+  --camera-rotate-y: 0deg;
+  --camera-pan-x: 0px;
+  --camera-pan-y: 0px;
   --room-brightness: 1;
   --room-warmth: 1.08;
   --room-motion: 0.12;
@@ -7582,9 +7586,16 @@ select {
   overflow: hidden;
   border-radius: 8px;
   background: #1b1009;
+  cursor: grab;
+  perspective: 900px;
+  touch-action: none;
   box-shadow:
     inset 0 0 0 1px rgba(255, 205, 143, 0.08),
     0 24px 48px rgba(0, 0, 0, 0.28);
+}
+
+.cabin-room__scene--lightweight.is-camera-dragging {
+  cursor: grabbing;
 }
 
 .cabin-room__background {
@@ -7602,17 +7613,24 @@ select {
     contrast(var(--room-contrast, 1))
     drop-shadow(0 0 0 rgba(0,0,0,0));
   opacity: 1;
-  transition: opacity 300ms ease, filter 520ms ease;
+  transform:
+    translate3d(var(--camera-pan-x), var(--camera-pan-y), 0)
+    rotateX(var(--camera-rotate-x))
+    rotateY(var(--camera-rotate-y))
+    scale(1.018);
+  transform-origin: 50% 58%;
+  transition: opacity 620ms ease, filter 620ms ease, transform 820ms cubic-bezier(.2,.72,.18,1);
+  will-change: transform, opacity, filter;
 }
 
 .cabin-room__scene--lightweight.is-fading-out .cabin-room__background {
   opacity: 0;
-  transition-duration: 200ms;
+  transition-duration: 600ms;
 }
 
 .cabin-room__scene--lightweight.is-fading-in .cabin-room__background {
   opacity: 1;
-  transition-duration: 300ms;
+  transition-duration: 820ms;
 }
 
 .cabin-room__scene--lightweight .cabin-wall-lines,
@@ -7645,6 +7663,12 @@ select {
   z-index: 2;
   pointer-events: none;
   transition: opacity 520ms ease, background 520ms ease;
+  transform:
+    translate3d(calc(var(--camera-pan-x) * 0.45), calc(var(--camera-pan-y) * 0.45), 0)
+    rotateX(calc(var(--camera-rotate-x) * 0.36))
+    rotateY(calc(var(--camera-rotate-y) * 0.36))
+    scale(1.01);
+  transform-origin: 50% 58%;
 }
 
 .cabin-room__scene--lightweight::before {
@@ -7706,6 +7730,12 @@ select {
 
 .cabin-room__scene--lightweight .mimi-pet {
   z-index: 3;
+  transform:
+    translate3d(var(--mimi-x), var(--mimi-y), 0)
+    translate3d(calc(var(--camera-pan-x) * 0.22), calc(var(--camera-pan-y) * 0.22), 0)
+    rotateX(calc(var(--camera-rotate-x) * 0.12))
+    rotateY(calc(var(--camera-rotate-y) * 0.12));
+  transition: none;
 }
 
 .mimi-pet.is-ai-v2 {

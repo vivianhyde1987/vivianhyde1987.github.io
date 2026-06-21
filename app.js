@@ -4475,26 +4475,26 @@ function createRoomEngineV3(experience, scene) {
       actionDelay: [13000, 26000]
     },
     room5: {
-      mood: "reflective",
-      lightIntensity: 1.00,
-      warmth: 1.05,
-      motionLevel: 0.12,
-      vignette: 0.30,
+      mood: "calm",
+      lightIntensity: 1.03,
+      warmth: 1.14,
+      motionLevel: 0.18,
+      vignette: 0.28,
       shimmer: 0.12,
-      weights: { idle: 0.50, walk: 0.22, sit: 0.22, sleep: 0.06 },
-      moveSpeed: 0.040,
-      actionDelay: [14000, 28000]
+      weights: { idle: 0.42, walk: 0.30, sit: 0.23, sleep: 0.05 },
+      moveSpeed: 0.046,
+      actionDelay: [12000, 26000]
     },
     room6: {
-      mood: "alive",
-      lightIntensity: 1.03,
-      warmth: 1.12,
-      motionLevel: 0.30,
-      vignette: 0.26,
-      shimmer: 0.16,
-      weights: { idle: 0.24, walk: 0.55, sit: 0.18, sleep: 0.03 },
-      moveSpeed: 0.058,
-      actionDelay: [10000, 22000]
+      mood: "cozy",
+      lightIntensity: 1.05,
+      warmth: 1.18,
+      motionLevel: 0.16,
+      vignette: 0.34,
+      shimmer: 0.10,
+      weights: { idle: 0.38, walk: 0.18, sit: 0.34, sleep: 0.10 },
+      moveSpeed: 0.044,
+      actionDelay: [13000, 27000]
     }
   };
   const engine = {
@@ -4539,6 +4539,73 @@ function createRoomEngineV3(experience, scene) {
   return engine;
 }
 
+function createCabinCameraController(scene) {
+  const camera = {
+    x: 0,
+    y: 0,
+    targetX: 0,
+    targetY: 0,
+    rafId: 0,
+    dragging: false,
+    startX: 0,
+    startY: 0,
+    baseX: 0,
+    baseY: 0
+  };
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+  const apply = () => {
+    camera.x += (camera.targetX - camera.x) * 0.18;
+    camera.y += (camera.targetY - camera.y) * 0.18;
+    scene.style.setProperty("--camera-rotate-x", `${camera.y.toFixed(2)}deg`);
+    scene.style.setProperty("--camera-rotate-y", `${camera.x.toFixed(2)}deg`);
+    scene.style.setProperty("--camera-pan-x", `${(-camera.x * 0.18).toFixed(2)}px`);
+    scene.style.setProperty("--camera-pan-y", `${(camera.y * 0.12).toFixed(2)}px`);
+    if (Math.abs(camera.targetX - camera.x) > 0.04 || Math.abs(camera.targetY - camera.y) > 0.04) {
+      camera.rafId = requestAnimationFrame(apply);
+    } else {
+      camera.rafId = 0;
+    }
+  };
+  const requestApply = () => {
+    if (!camera.rafId) camera.rafId = requestAnimationFrame(apply);
+  };
+  const setTarget = (x, y) => {
+    camera.targetX = clamp(x, -5.2, 5.2);
+    camera.targetY = clamp(y, -3.2, 3.2);
+    requestApply();
+  };
+  const reset = () => setTarget(0, 0);
+  const start = (event) => {
+    if (event.target?.closest?.(".mimi-pet")) return;
+    camera.dragging = true;
+    camera.startX = event.clientX;
+    camera.startY = event.clientY;
+    camera.baseX = camera.targetX;
+    camera.baseY = camera.targetY;
+    scene.classList.add("is-camera-dragging");
+    scene.setPointerCapture?.(event.pointerId);
+  };
+  const move = (event) => {
+    if (!camera.dragging) return;
+    const rect = scene.getBoundingClientRect();
+    const dx = (event.clientX - camera.startX) / Math.max(1, rect.width);
+    const dy = (event.clientY - camera.startY) / Math.max(1, rect.height);
+    setTarget(camera.baseX + dx * 13, camera.baseY - dy * 9);
+  };
+  const end = () => {
+    if (!camera.dragging) return;
+    camera.dragging = false;
+    scene.classList.remove("is-camera-dragging");
+    window.setTimeout(reset, 260);
+  };
+  scene.addEventListener("pointerdown", start);
+  scene.addEventListener("pointermove", move);
+  scene.addEventListener("pointerup", end);
+  scene.addEventListener("pointercancel", end);
+  scene.addEventListener("pointerleave", end);
+  return { reset, setTarget };
+}
+
 function setupCabinExperienceLightweight() {
   const experience = document.querySelector(".cabin-experience");
   const scene = experience?.querySelector(".cabin-room__scene");
@@ -4550,13 +4617,14 @@ function setupCabinExperienceLightweight() {
     room2: { id: "room2", title: "水边", src: "assets/blog-materials/rooms/room2-water.webp" },
     room3: { id: "room3", title: "花房", src: "assets/blog-materials/rooms/room3-flowers.webp" },
     room4: { id: "room4", title: "炉边", src: "assets/blog-materials/rooms/room4-hearth.webp" },
-    room5: { id: "room5", title: "\u4e66\u5c4b", src: "assets/blog-materials/rooms/room5-library.webp" },
-    room6: { id: "room6", title: "\u7434\u623f", src: "assets/blog-materials/rooms/room6-music.webp" }
+    room5: { id: "room5", title: "\u521b\u4f5c\u5ba4", src: "assets/blog-materials/rooms/room5-library.webp" },
+    room6: { id: "room6", title: "\u751f\u6d3b\u89d2\u843d", src: "assets/blog-materials/rooms/room6-music.webp" }
   };
   const roomIds = Object.keys(rooms);
   const cache = {};
   window.cabinRoomCache = cache;
   const roomEngine = createRoomEngineV3(experience, scene);
+  const camera = createCabinCameraController(scene);
 
   const preloadRoom = (id) => {
     const room = rooms[id];
@@ -4579,14 +4647,16 @@ function setupCabinExperienceLightweight() {
   };
 
   const fadeOut = () => {
+    camera.setTarget(0, -1.2);
     scene.classList.add("is-fading-out");
-    return new Promise((resolve) => window.setTimeout(resolve, 200));
+    return new Promise((resolve) => window.setTimeout(resolve, 600));
   };
 
   const fadeIn = () => {
     scene.classList.remove("is-fading-out");
     scene.classList.add("is-fading-in");
-    window.setTimeout(() => scene.classList.remove("is-fading-in"), 300);
+    camera.reset();
+    window.setTimeout(() => scene.classList.remove("is-fading-in"), 820);
   };
 
   const switchRoom = async (id) => {
